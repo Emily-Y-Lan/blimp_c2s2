@@ -24,11 +24,11 @@ class OStream:
         self.exp_msgs = []
         self._coro = None
 
-        self.rdy.value = 0
+        self.ostream_rdy.value = 0
 
-    def add_exp_msgs(self, msgs) -> None:
+    def add_exp_msg(self, msg) -> None:
         """Add to the expected messages to receive"""
-        self.exp_msgs.append(msgs)
+        self.exp_msgs.append(msg)
 
     def start(self) -> None:
         """Start the monitor"""
@@ -51,13 +51,13 @@ class OStream:
         while True:
             await self.clk.edge()
             if self.clk.value == Logic(0):
-                if self.val.value == Logic(1):
+                if self.ostream_val.value == Logic(1):
                     if len(self.exp_msgs) == 0:
                         raise Exception("Didn't expect a message")
                     exp_msg = self.exp_msgs.pop(0)
-                    print(f"Asserting {self.msg.value} == {exp_msg}")
-                    assert self.msg.value.integer == exp_msg
-                    self.rdy.value = Logic(1)
+                    print(f"Asserting {self.ostream_msg.value} == {exp_msg}")
+                    assert self.ostream_msg.value.integer == exp_msg
+                    self.ostream_rdy.value = Logic(1)
                 else:
-                    self.rdy.value = Logic(0)
+                    self.ostream_rdy.value = Logic(0)
 

@@ -47,10 +47,10 @@ class IStream:
         while True:
             await self.clk.edge()
             if self.clk.value == Logic(0):
-                if (len(self.msgs) > 0) and (self.rdy.value):
+                if (len(self.msgs) > 0) and (self.istream_rdy.value):
                     new_msg = self.msgs.pop(0)
-                    self.val.value = Logic(1)
-                    self.msg.value = LogicArray(new_msg, Range(self.n_bits - 1, "downto", 0))
+                    self.istream_val.value = Logic(1)
+                    self.istream_msg.value = LogicArray(new_msg, Range(self.n_bits - 1, "downto", 0))
                 else:
-                    self.val.value = Logic(0)
+                    self.istream_val.value = Logic(0)
 

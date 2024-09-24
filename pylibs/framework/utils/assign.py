@@ -11,7 +11,7 @@ from typing import Union
 
 from framework.utils.signal import Signal
 
-def assign(driver, load):
+def assign(load, driver):
     """Bind two signals together. The second signal is the driver.
 
     Args:
@@ -20,7 +20,7 @@ def assign(driver, load):
     """
     if isinstance(load, cocotb.handle.NonConstantObject):
         # Make sure there's no other drivers
-        if len(load.drivers()) > 0:
+        if len(list(load.drivers())) > 0:
             raise Exception("Trying to assign to an already-driven signal!")
         
     if len(driver) != len(load):
@@ -30,23 +30,32 @@ def assign(driver, load):
 
     # Bind the driver and load
     if isinstance(driver, cocotb.handle.NonConstantObject):
-        async def update():
-            while True:
-                await Edge(driver)
-                if isinstance(load, cocotb.handle.NonConstantObject):
-                    load.binstr = driver.binstr
+        def update():
+            if isinstance(load, cocotb.handle.NonConstantObject):
+                load.binstr = driver.binstr
+            else:
+                if signal_len == 1:
+                    load.value = Logic(driver.value.binstr)
                 else:
-                    if signal_len == 1:
-                        load.value = Logic(driver.value)
-                    else:
-                        load.value = LogicArray(driver.value, Range(signal_len - 1, "downto", 0))
+                    load.value = LogicArray(driver.value.binstr, Range(signal_len - 1, "downto", 0))
     else:
-        async def update():
-            while True:
-                await driver.edge()
-                if isinstance(load, cocotb.handle.NonConstantObject):
-                    load.value = driver.value.integer
+        def update():
+            if isinstance(load, cocotb.handle.NonConstantObject):
+                if signal_len == 1:
+                    load.value = driver.value
                 else:
                     load.value = driver.value
+            else:
+                load.value = driver.value
 
-    cocotb.start(update())
+    update()
+    async def update_trigger():
+        while True:
+            if isinstance(driver, cocotb.handle.NonConstantObject):
+                await Edge(driver)
+                update()
+            else:
+                await driver.edge()
+                update()
+
+    cocotb.start_soon(update_trigger())

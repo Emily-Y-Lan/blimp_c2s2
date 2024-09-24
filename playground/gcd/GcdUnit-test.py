@@ -34,14 +34,6 @@ async def simple_test(dut):
     src = IStream(32)
     snk = OStream(16)
 
-    assign(src.istream_val, dut.istream_val)
-    assign(dut.istream_rdy, src.istream_rdy)
-    assign(src.istream_msg, dut.istream_msg)
-
-    assign(dut.ostream_val, snk.ostream_val)
-    assign(snk.ostream_rdy, dut.ostream_rdy)
-    assign(dut.ostream_msg, snk.ostream_msg)
-
     def add_test(a, b):
         src.add_msg((a << 16) | b)
         snk.add_exp_msg(gcd(a, b))
@@ -54,9 +46,19 @@ async def simple_test(dut):
         await RisingEdge(dut.clk)
     dut.reset.value = 0
 
+    assign(src.clk,         dut.clk        )
+    assign(dut.istream_val, src.istream_val)
+    assign(src.istream_rdy, dut.istream_rdy)
+    assign(dut.istream_msg, src.istream_msg)
+
+    assign(snk.clk,         dut.clk        )
+    assign(snk.ostream_val, dut.ostream_val)
+    assign(dut.ostream_rdy, snk.ostream_rdy)
+    assign(snk.ostream_msg, dut.ostream_msg)
+
     # Start the test
-    cocotb.start(src.run())
-    cocotb.start(snk.run())
+    src.start()
+    snk.start()
 
     # Wait for the operation to pass through
     while len(snk.exp_msgs) > 0:
@@ -116,5 +118,5 @@ def test_sort_unit():
     )
     runner.test(
         hdl_toplevel = "tut3_verilog_gcd_GcdUnit", # Top-level module to test
-        test_module = "GCDUnitCocotb_test", # The Python module to test with
+        test_module = "GcdUnit-test", # The Python module to test with
     )

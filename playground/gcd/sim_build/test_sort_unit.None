@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1727190381" />
+    <testcase classname="GcdUnit-test" file="/home/acm289/blimp/playground/gcd/GcdUnit-test.py" lineno="29" name="simple_test" ratio_time="13.149942153524552" sim_time_ns="110.001" time="8.365131855010986" />
+  </testsuite>
+</testsuites>
