@@ -1,1 +1,1 @@
-export PYTHONPATH=$PWD/pylibs:$PYTHONPATH
+export PYTHONPATH=$(dirname $0)/pylibs:$PYTHONPATH

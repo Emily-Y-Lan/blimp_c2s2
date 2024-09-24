@@ -55,7 +55,6 @@ class OStream:
                     if len(self.exp_msgs) == 0:
                         raise Exception("Didn't expect a message")
                     exp_msg = self.exp_msgs.pop(0)
-                    print(f"Asserting {self.ostream_msg.value} == {exp_msg}")
                     assert self.ostream_msg.value.integer == exp_msg
                     self.ostream_rdy.value = Logic(1)
                 else:

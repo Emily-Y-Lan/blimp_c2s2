@@ -5,9 +5,18 @@ Author: Aidan McNay
 Date: September 23rd, 2024
 """
 
+import asyncio
+import cocotb
 from cocotb.triggers import Timer
 from cocotb.types import Logic, LogicArray
 from dataclasses import dataclass
+
+async def forever():
+    """A task that runs 'forever'."""
+    try:
+        await Timer(3600, 'sec')
+    except asyncio.CancelledError:
+        pass
 
 @dataclass
 class Signal:
@@ -15,7 +24,7 @@ class Signal:
 
     def __init__(self, n_bits = 1):
         self.n_bits = n_bits
-        self.changed = False
+        self.waiting_for_change = []
         if n_bits <= 0:
             raise Exception("Must have a positive width!")
         if n_bits == 1:
@@ -28,12 +37,14 @@ class Signal:
         return self.n_bits
 
     def __setattr__(self, name, value) -> None:
-        if name == "value":
-            object.__setattr__(self, "changed", True)
         object.__setattr__(self, name, value)
+        if name == "value":
+            for task in self.waiting_for_change:
+                task.cancel()
+            self.waiting_for_change = []
 
     async def edge(self) -> None:
         """Wait for a change in the signal."""
-        while not self.changed:
-            await Timer(1, 'step')
-        self.changed = False
+        changed_task = cocotb.create_task(forever())
+        self.waiting_for_change.append(changed_task)
+        await changed_task

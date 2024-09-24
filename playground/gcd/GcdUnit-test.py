@@ -12,8 +12,6 @@ from cocotb.triggers import RisingEdge, FallingEdge, ClockCycles
 from cocotb.types import LogicArray
 
 from math import gcd
-import os
-import pytest
 import random
 
 random.seed(0xdeadbeef)
@@ -34,6 +32,16 @@ async def simple_test(dut):
     src = IStream(32)
     snk = OStream(16)
 
+    assign(src.clk,         dut.clk        )
+    assign(dut.istream_val, src.istream_val)
+    assign(src.istream_rdy, dut.istream_rdy)
+    assign(dut.istream_msg, src.istream_msg)
+
+    assign(snk.clk,         dut.clk        )
+    assign(snk.ostream_val, dut.ostream_val)
+    assign(dut.ostream_rdy, snk.ostream_rdy)
+    assign(snk.ostream_msg, dut.ostream_msg)
+
     def add_test(a, b):
         src.add_msg((a << 16) | b)
         snk.add_exp_msg(gcd(a, b))
@@ -46,6 +54,23 @@ async def simple_test(dut):
         await RisingEdge(dut.clk)
     dut.reset.value = 0
 
+    # Start the test
+    src.start()
+    snk.start()
+
+    # Wait for the operation to pass through
+    while len(snk.exp_msgs) > 0:
+        await RisingEdge(dut.clk)
+    print("All tests passed")
+
+@cocotb.test()
+async def random_test(dut):
+    """Test with random inputs"""
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
+
+    src = IStream(32)
+    snk = OStream(16)
+
     assign(src.clk,         dut.clk        )
     assign(dut.istream_val, src.istream_val)
     assign(src.istream_rdy, dut.istream_rdy)
@@ -56,45 +81,35 @@ async def simple_test(dut):
     assign(dut.ostream_rdy, snk.ostream_rdy)
     assign(snk.ostream_msg, dut.ostream_msg)
 
+    def add_test(a, b):
+        src.add_msg((a << 16) | b)
+        snk.add_exp_msg(gcd(a, b))
+
+    min_input = 0
+    max_input = (1 << 16) - 1
+
+    for _ in range(50):
+        a = random.randint(min_input, max_input)
+        b = random.randint(min_input, max_input)
+        add_test(
+            a,
+            b
+        )
+
+    # Reset the design
+    dut.reset.value = 1
+    for _ in range(3):
+        await RisingEdge(dut.clk)
+    dut.reset.value = 0
+
     # Start the test
     src.start()
     snk.start()
 
-    # Wait for the operation to pass through
+    # Wait for the operations to pass through
     while len(snk.exp_msgs) > 0:
         await RisingEdge(dut.clk)
     print("All tests passed")
-
-# @cocotb.test()
-# async def random_test(dut):
-#     """Test with random inputs"""
-#     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
-#     tester = GCDTester(dut)
-
-#     min_input = 0
-#     max_input = (1 << 16) - 1
-
-#     for _ in range(50):
-#         a = random.randint(min_input, max_input)
-#         b = random.randint(min_input, max_input)
-#         tester.add_test(
-#             a,
-#             b
-#         )
-
-#     # Reset the design
-#     dut.reset.value = 1
-#     for _ in range(3):
-#         await RisingEdge(dut.clk)
-#     dut.reset.value = 0
-
-#     # Start the test
-#     tester.start()
-
-#     # Wait for the operations to pass through
-#     while not tester.passed():
-#         await RisingEdge(dut.clk)
-#     print("All tests passed")
 
 # -----------------------------------------------------------------------------
 # Run the tests
