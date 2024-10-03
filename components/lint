@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#=========================================================================
+# lint
+#=========================================================================
+# A helper script for linting Blimp's components
+
+VERILOG_FILES=$(find . -name "*.v")
+
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+BLUE='\033[1;34m'
+RESET='\033[0m'
+
+info() {
+    echo -e "${BLUE}[INFO]${RESET} $1"
+}
+
+error() {
+    echo -e "${RED}[ERROR]${RESET} $1"
+}
+
+success() {
+    echo -e "${GREEN}[SUCCESS]${RESET} $1"
+}
+
+#-------------------------------------------------------------------------
+# Lint with Verilator
+#-------------------------------------------------------------------------
+
+info "Linting with Verilator..."
+verilator --lint-only -Wall verilator_waivers.vlt $VERILOG_FILES
+if [ $? == 0 ]; then
+    success "Lint clean!"
+else
+    error "Not lint clean"
+    exit 1
+fi
