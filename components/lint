@@ -28,7 +28,7 @@ success() {
 #-------------------------------------------------------------------------
 
 info "Linting with Verilator..."
-verilator --lint-only -Wall verilator_waivers.vlt $VERILOG_FILES
+verilator --lint-only -Wall -Wno-MULTITOP verilator_waivers.vlt $VERILOG_FILES
 if [ $? == 0 ]; then
     success "Lint clean!"
 else

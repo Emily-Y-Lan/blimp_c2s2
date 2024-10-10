@@ -8,8 +8,8 @@
 
 module Fifo
 #(
-  parameter WIDTH = 32,
-  parameter DEPTH = 32
+  parameter type t_entry = logic [31:0],
+  parameter p_depth      = 32
 )(
   input  logic clk,
   input  logic rst,
@@ -27,17 +27,17 @@ module Fifo
   // Data Signals
   //----------------------------------------------------------------------
 
-  input  logic [WIDTH-1:0] wdata,
-  output logic [WIDTH-1:0] rdata
+  input  t_entry wdata,
+  output t_entry rdata
 );
 
   //----------------------------------------------------------------------
   // Create our pointers
   //----------------------------------------------------------------------
 
-  localparam ADDR_BITS = $clog2(DEPTH);
+  localparam p_addr_bits = $clog2(p_depth);
 
-  logic [ADDR_BITS:0] rptr, wptr;
+  logic [p_addr_bits:0] rptr, wptr;
 
   always @( posedge clk ) begin
     if( rst ) begin
@@ -50,24 +50,24 @@ module Fifo
   end
 
   assign empty = ( wptr == rptr );
-  assign full  = ( wptr[ADDR_BITS-1:0] == rptr[ADDR_BITS-1:0] )
-               & ( wptr[ADDR_BITS]     != rptr[ADDR_BITS]     );
+  assign full  = ( wptr[p_addr_bits-1:0] == rptr[p_addr_bits-1:0] )
+               & ( wptr[p_addr_bits]     != rptr[p_addr_bits]     );
 
   //----------------------------------------------------------------------
   // Create our data array
   //----------------------------------------------------------------------
 
-  logic [WIDTH-1:0] arr [DEPTH-1:0];
+  t_entry arr [p_depth-1:0];
 
   always @( posedge clk ) begin
     if( rst ) begin
       arr <= '{default: '0};
     end else if( push ) begin
-      arr[wptr[ADDR_BITS-1:0]] <= wdata;
+      arr[wptr[p_addr_bits-1:0]] <= wdata;
     end
   end
 
-  assign rdata = arr[rptr[ADDR_BITS-1:0]];
+  assign rdata = arr[rptr[p_addr_bits-1:0]];
 
 endmodule
 
