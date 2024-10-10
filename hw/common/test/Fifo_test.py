@@ -3,15 +3,13 @@
 # ========================================================================
 
 import os
-import pytest
-import sys
-import inspect
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.runner import get_runner
 from cocotb.triggers import RisingEdge, Timer
 from cocotb.types import Logic
+
+from framework.cocotb import gen_tests
 
 # ------------------------------------------------------------------------
 # FifoTester
@@ -126,43 +124,11 @@ async def full_test(dut):
 # ------------------------------------------------------------------------
 # Run Tests
 # ------------------------------------------------------------------------
-  
-tests = [
-  "basic_test",
-  "full_test"
-]
-depths = [
-  "2",
-  "8",
-  "32"
+
+params_to_try = [
+  {"p_depth": "2"},
+  {"p_depth": "8"},
+  {"p_depth": "32"},
 ]
 
-@pytest.mark.parametrize("depth", depths)
-@pytest.mark.parametrize("test", tests)
-def test_fifo(test, depth, top_dir, build_dir, test_dir, waves, request):
-    """Run a given test on the FIFO."""
-    sim = "verilator"
-    sources = ["hw/common/Fifo.v"]
-
-    build_dir = os.path.join(build_dir, "build" + depth)
-    test_dir = os.path.join(test_dir, request.node.name)
-
-    # Create, build, and run a runner
-    runner = get_runner(sim)
-    runner.build(
-        sources = sources,
-        hdl_toplevel = "Fifo", # Top-level module to build
-        includes = [top_dir],
-        build_dir = build_dir,
-        parameters = {"p_depth": depth},
-        waves = waves
-    )
-    runner.test(
-        hdl_toplevel = "Fifo", # Top-level module to test
-        test_module = "hw.common.test.Fifo_test", # The Python module to test with
-        build_dir = build_dir,
-        test_dir = test_dir,
-        testcase = test,
-        extra_env = {"p_depth": depth},
-        waves = waves
-    )
+gen_tests("Fifo", ["hw/common/Fifo.v"], params_to_try)
