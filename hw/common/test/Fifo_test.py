@@ -4,6 +4,8 @@
 
 import os
 import pytest
+import sys
+import inspect
 
 import cocotb
 from cocotb.clock import Clock

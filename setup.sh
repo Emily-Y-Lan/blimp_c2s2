@@ -1,1 +1,0 @@
-export PYTHONPATH=$(dirname $0)/pylibs:$PYTHONPATH
