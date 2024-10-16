@@ -6,9 +6,7 @@
 `ifndef HW_FETCH_FETCH_V
 `define HW_FETCH_FETCH_V
 
-`include "hw/common/Fifo.v"
-
-`include "intf/F__D.v"
+`include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
 
 module Fetch
@@ -20,24 +18,24 @@ module Fetch
   //----------------------------------------------------------------------
 
   parameter p_addr_bits = 32,
-  // parameter p_inst_bits = 32,
+  parameter p_inst_bits = 32,
   parameter p_opaq_bits = 8
 )
 (
-  input  logic   clk,
-  input  logic   rst,
+  input  logic    clk,
+  input  logic    rst,
 
   //----------------------------------------------------------------------
   // Memory Interface
   //----------------------------------------------------------------------
 
-  MemIntf.client mem,
+  MemIntf.client  mem,
 
   //----------------------------------------------------------------------
   // F <-> D Interface
   //----------------------------------------------------------------------
 
-  F__D.F_intf    D
+  F__DIntf.F_intf D
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -160,6 +158,20 @@ module Fetch
     D.val        = mem.resp_val & !should_drop;
     D.inst       = mem.resp_msg.data;
     D.pc         = mem.resp_msg.addr;
+  end
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Unused signals
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  parameter p_len_bits = p_inst_bits / 8;
+
+  logic                  unused_resp_op;
+  logic [p_len_bits-1:0] unused_resp_len;
+
+  always_comb begin
+    unused_resp_op  = mem.resp_msg.op;
+    unused_resp_len = mem.resp_msg.len;
   end
 
 endmodule

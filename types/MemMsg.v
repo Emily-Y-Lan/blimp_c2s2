@@ -23,7 +23,7 @@ virtual class MemMsg;
   typedef logic [ p_len_bits-1:0] t_len;
   typedef logic [p_data_bits-1:0] t_data;
 
-  typedef struct {
+  typedef struct packed {
     t_op     op;
     t_opaque opaque;
     t_addr   addr;
@@ -31,7 +31,7 @@ virtual class MemMsg;
     t_data   data;
   } t_req_msg;
 
-  typedef struct {
+  typedef struct packed {
     t_op     op;
     t_opaque opaque;
     t_addr   addr;

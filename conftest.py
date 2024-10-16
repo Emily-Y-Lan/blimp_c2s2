@@ -31,6 +31,11 @@ build_dir_path = os.path.join(dir_path, "build")
 test_dir_path  = os.path.join(dir_path, "build")
 
 @pytest.fixture
+def cwd():
+  """Return the current working directory."""
+  return curr_dir_path
+
+@pytest.fixture
 def top_dir():
   """Return the top-level directory to include from."""
   return dir_path
@@ -38,12 +43,12 @@ def top_dir():
 @pytest.fixture
 def build_dir():
   """Return the directory to build cocotb tests in."""
-  return build_dir_path
+  return curr_dir_path
 
 @pytest.fixture
 def test_dir():
   """Return the directory to test cocotb tests in."""
-  return test_dir_path
+  return curr_dir_path
 
 # ------------------------------------------------------------------------
 # Change to root directory to get includes correct

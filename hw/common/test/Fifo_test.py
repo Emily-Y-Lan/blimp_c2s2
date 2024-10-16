@@ -1,5 +1,5 @@
 # ========================================================================
-# FifoTest.py
+# Fifo_test.py
 # ========================================================================
 
 import os
@@ -9,7 +9,7 @@ from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 from cocotb.types import Logic
 
-from framework.cocotb import gen_tests
+from cocode.sim.tests import gen_tests
 
 # ------------------------------------------------------------------------
 # FifoTester

@@ -1,12 +1,12 @@
 //========================================================================
-// F__D.v
+// F__DIntf.v
 //========================================================================
 // The interface definition going between F and D
 
 `ifndef INTF_F__D_INTF_V
 `define INTF_F__D_INTF_V
 
-interface F__D
+interface F__DIntf
 #(
   parameter p_addr_bits = 32,
   parameter p_inst_bits = 32

@@ -8,8 +8,10 @@
 
 `include "hw/fetch/Fetch.v"
 
-`include "intf/F__D.v"
+`include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
+
+`include "types/MemMsg.v"
 
 module Fetch_flat
 #(
@@ -75,7 +77,7 @@ module Fetch_flat
   // Memory Interface
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  F__D #(
+  F__DIntf #(
     .p_addr_bits (p_addr_bits),
     .p_inst_bits (p_inst_bits)
   ) D;
