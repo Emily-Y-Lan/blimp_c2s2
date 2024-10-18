@@ -1,57 +1,56 @@
 //========================================================================
-// Fifo_test.v
+// Mux_test.v
 //========================================================================
-// A testbench for our general-purpose FIFO
+// A testbench for our parametrized Mux
 
 `include "test/TestUtils.v"
-`include "hw/common/Fifo.v"
+`include "hw/common/Mux.v"
 
 import TestEnv::*;
 
 //========================================================================
-// FifoTestSuite
+// MuxTestSuite
 //========================================================================
 // A test suite for a particular parametrization of the FIFO
 
-module FifoTestSuite #(
-  parameter p_suite_num  = 0,
-  parameter type t_entry = logic [31:0],
-  parameter p_depth      = 32
+module MuxTestSuite #(
+  parameter p_suite_num = 0,
+  parameter type t_data = logic [31:0],
+  parameter p_num_ports = 4,
+
+  // Internal parameter
+  parameter p_sel_bits  = $clog2(p_num_ports)
 );
-  string suite_name = $sformatf("%0d: FifoTestSuite_%s_%0d", p_suite_num,
-                                $typename(t_entry), p_depth);
+  string suite_name = $sformatf("%0d: MuxTestSuite_%s_%0d", p_suite_num,
+                                $typename(t_data), p_num_ports);
 
   //----------------------------------------------------------------------
   // Setup
   //----------------------------------------------------------------------
 
+  // verilator lint_off UNUSED
   logic clk, rst;
+  // verilator lint_on UNUSED
+
   TestUtils t( .* );
 
   //----------------------------------------------------------------------
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  logic   dut_rst;
-  logic   dut_push;
-  logic   dut_pop;
-  logic   dut_empty;
-  logic   dut_full;
-  t_entry dut_wdata;
-  t_entry dut_rdata;
+  typedef t_data mux_inputs [p_num_ports-1:0];
 
-  Fifo #(
-    .t_entry (t_entry),
-    .p_depth (p_depth)
+  mux_inputs             dut_in;
+  logic [p_sel_bits-1:0] dut_sel;
+  t_data                 dut_out;
+
+  Mux #(
+    .t_data      (t_data),
+    .p_num_ports (p_num_ports)
   ) DUT (
-    .clk     (clk),
-    .rst     (rst | dut_rst),
-    .push    (dut_push),
-    .pop     (dut_pop),
-    .empty   (dut_empty),
-    .full    (dut_full),
-    .wdata   (dut_wdata),
-    .rdata   (dut_rdata)
+    .in  (dut_in),
+    .sel (dut_sel),
+    .out (dut_out)
   );
 
   //----------------------------------------------------------------------
@@ -62,36 +61,41 @@ module FifoTestSuite #(
   // before the next rising edge.
 
   task check (
-    input logic   _rst,
-    input logic   push,
-    input logic   pop,
-    input logic   empty,
-    input logic   full,
-    input t_entry wdata,
-    input t_entry rdata
+    input mux_inputs               in,
+    input logic  [p_sel_bits-1:0]  sel,
+    input t_data                   out
   );
     if ( !t.failed ) begin
-      dut_rst   = _rst;
-      dut_push  = push;
-      dut_pop   = pop;
-      dut_wdata = wdata;
+      for( int i = 0; i < p_num_ports; i = i + 1 )
+        dut_in[i] = in[i];
+      dut_sel = sel;
 
       #8;
 
       if ( t.n != 0 ) begin
-        $display( "%3d: %b %b %b %p > %b %b %p", t.cycles,
-                  dut_rst, dut_push, dut_pop, dut_wdata, 
-                  dut_empty, dut_full, dut_rdata );
+        $display( "%3d: %p %b > %p", t.cycles,
+                  dut_in, dut_sel, dut_out );
       end
 
-      `CHECK_EQ( dut_empty, empty );
-      `CHECK_EQ( dut_full,  full  );
-      `CHECK_EQ( dut_rdata, rdata );
+      `CHECK_EQ( dut_out, out );
 
       #2;
 
     end
   endtask
+
+  //----------------------------------------------------------------------
+  // get_inputs
+  //----------------------------------------------------------------------
+
+  function mux_inputs get_inputs( int start, int stride );
+    int curr_val;
+    curr_val = start;
+    for( int i = 0; i < p_num_ports; i = i + 1 ) begin
+      get_inputs[i] = t_data'(curr_val);
+      curr_val = curr_val + stride;
+    end
+  endfunction
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -100,12 +104,9 @@ module FifoTestSuite #(
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
 
-    //     rst push pop empty full wdata                 rdata
-    check( 0,  0,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
-    check( 0,  1,   0,  1,    0,   t_entry'('hdeadbeef), t_entry'('h00000000) );
-    check( 0,  0,   0,  0,    0,   t_entry'('h00000000), t_entry'('hdeadbeef) );
-    check( 0,  0,   1,  0,    0,   t_entry'('h00000000), t_entry'('hdeadbeef) );
-    check( 0,  0,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
+    //     in                  sel out
+    check( get_inputs( 0, 1 ), 0,  t_data'(0) );
+    check( get_inputs( 0, 1 ), 0,  t_data'(0) );
   endtask
 
   //----------------------------------------------------------------------
@@ -117,18 +118,17 @@ module FifoTestSuite #(
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
 
-
   endtask
 endmodule
 
 //========================================================================
-// Fifo_test
+// Mux_test
 //========================================================================
 
-module Fifo_test;
-  FifoTestSuite #(1)                  suite_1;
-  FifoTestSuite #(2, logic,       32) suite_2;
-  FifoTestSuite #(3, logic [7:0], 2 ) suite_3;
+module Mux_test;
+  MuxTestSuite #(1)                  suite_1;
+  MuxTestSuite #(2, logic,       32) suite_2;
+  MuxTestSuite #(3, logic [7:0], 2 ) suite_3;
 
   int s;
 
