@@ -14,6 +14,9 @@ int main( int argc, char** argv )
   // Construct a VerilatedContext to hold simulation time, etc.
   VerilatedContext* const contextp = new VerilatedContext;
 
+  // Verilator must compute traced signals
+  contextp->traceEverOn( true );
+
   // Pass arguments so Verilated code can see them, e.g. $value$plusargs
   // This needs to be called before you create any model
   contextp->commandArgs( argc, argv );
@@ -31,7 +34,8 @@ int main( int argc, char** argv )
   }
 
   // Final model cleanup
-  top->final();
+  //  - This causes double-free issues with Fetch_test for some reason
+  // top->final();
 
   // Destroy model
   delete top;

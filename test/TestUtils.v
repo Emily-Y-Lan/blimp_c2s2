@@ -36,7 +36,7 @@ package TestEnv;
   // test_bench_begin
 
   task test_bench_begin( string filename );
-    $write({"\nRunning ",filename});
+    $write("\nRunning %s", filename);
     #1;
   endtask
 
@@ -117,7 +117,7 @@ module TestUtils
   //----------------------------------------------------------------------
 
   task test_suite_begin( string suitename );
-    $write({"\n  ",`PURPLE,suitename,`RESET});
+    $write("\n  %s%s%s", `PURPLE, suitename, `RESET);
   endtask
 
   //----------------------------------------------------------------------
@@ -125,7 +125,7 @@ module TestUtils
   //----------------------------------------------------------------------
 
   task test_case_begin( string taskname );
-    $write({"\n    ",taskname," "});
+    $write("\n    %s ", taskname);
     if ( t.n != 0 )
       $write("\n");
 
@@ -146,18 +146,19 @@ endmodule
 // XOR operator so that an X in __ref will match 0, 1, or X in __dut, but
 // an X in __dut will only match an X in __ref.
 
-`define CHECK_EQ( __dut, __ref )                                \
+`define CHECK_EQ( __dut, __ref )                                        \
   if ( __ref !== ( __ref ^ __dut ^ __ref ) ) begin                      \
     if ( t.n != 0 )                                                     \
-      $display( {"\n",`RED,"ERROR",`RESET," (cycle=%0d): %s != %s (%b != %b)"},\
-                t.cycles, "__dut", "__ref", __dut, __ref );             \
+      $display( "\n%sERROR%s (cycle=%0d): %s != %s (%b != %b)",         \
+                `RED, `RESET, t.cycles, "__dut", "__ref",               \
+                __dut, __ref );                                         \
     else                                                                \
-      $write( {`RED,"F",`RESET} );                                      \
+      $write( "%sF%s", `RED, `RESET );                                  \
     t.failed = 1;                                                       \
   end                                                                   \
   else begin                                                            \
     if ( t.n == 0 )                                                     \
-      $write( `GREEN, ".", `RESET );                                    \
+      $write( "%s.%s", `GREEN, `RESET );                                \
   end                                                                   \
   if (1)
 

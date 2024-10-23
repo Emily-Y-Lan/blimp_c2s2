@@ -83,7 +83,7 @@ foreach(V_TEST_FILE_PATH ${V_TEST_FILES})
     ${V_TEST_BIN} 
     SOURCES ${V_TEST_FILE_PATH} 
     INCLUDE_DIRS ${V_INCL_DIR}
-    VERILATOR_ARGS --timing -CFLAGS -DVL_DEBUG=1 --cc
+    VERILATOR_ARGS --timing
   )
 
   add_dependencies(check ${V_TEST_BIN})
