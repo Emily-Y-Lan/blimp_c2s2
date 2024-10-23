@@ -43,7 +43,11 @@ module FetchTestSuite #(
   //----------------------------------------------------------------------
 
   MemIntf  mem_intf;
-  F__DIntf F__D_intf;
+
+  F__DIntf #(
+    .p_addr_bits (p_addr_bits),
+    .p_inst_bits (p_inst_bits)
+  ) F__D_intf;
 
   Fetch #(
     .p_rst_addr  (p_rst_addr ),
@@ -84,15 +88,15 @@ module FetchTestSuite #(
     t.test_case_begin( "test_case_1_basic" );
 
     //                           addr            data
-    fl_mem_test_server.init_mem( p_rst_addr,     32'hdeadbeef );
-    fl_mem_test_server.init_mem( p_rst_addr + 4, 32'hcafef00d );
-    fl_mem_test_server.init_mem( p_rst_addr + 8, 32'hbaadb0ba );
+    fl_mem_test_server.init_mem( p_rst_addr,     p_inst_bits'(32'hdeadbeef) );
+    fl_mem_test_server.init_mem( p_rst_addr + 4, p_inst_bits'(32'hcafef00d) );
+    fl_mem_test_server.init_mem( p_rst_addr + 8, p_inst_bits'(32'hbaadb0ba) );
 
-    //                                                          br
-    //                      inst          pc              sq    tar
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0, '0 );
-    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b0, '0 );
-    fl_D_test_intf.add_msg( 32'hbaadb0ba, p_rst_addr + 8, 1'b0, '0 );
+    //                                                                        br
+    //                      inst                        pc              sq    tar
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0, '0 );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hcafef00d), p_rst_addr + 4, 1'b0, '0 );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hbaadb0ba), p_rst_addr + 8, 1'b0, '0 );
 
     while( !fl_D_test_intf.done() ) #10;
   endtask
@@ -105,14 +109,14 @@ module FetchTestSuite #(
     t.test_case_begin( "test_case_2_branch" );
 
     //                           addr            data
-    fl_mem_test_server.init_mem( p_rst_addr,     32'hdeadbeef );
-    fl_mem_test_server.init_mem( p_rst_addr + 4, 32'hcafef00d );
+    fl_mem_test_server.init_mem( p_rst_addr,     p_inst_bits'(32'hdeadbeef) );
+    fl_mem_test_server.init_mem( p_rst_addr + 4, p_inst_bits'(32'hcafef00d) );
 
-    //                                                          br
-    //                      inst          pc              sq    tar       
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0 );
-    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b1, p_rst_addr );
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0 );
+    //                                                                        br
+    //                      inst                        pc              sq    tar       
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0,         '0 );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hcafef00d), p_rst_addr + 4, 1'b1, p_rst_addr );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0,         '0 );
 
     while( !fl_D_test_intf.done() ) #10;
   endtask
@@ -135,9 +139,11 @@ endmodule
 //========================================================================
 
 module Fetch_test;
-  FetchTestSuite #(1)                         suite_1;
-  FetchTestSuite #(2, 32'h0, 32, 32, 8, 3, 0) suite_2;
-  FetchTestSuite #(3, 32'h0, 32, 32, 8, 0, 3) suite_3;
+  FetchTestSuite #(1)                                suite_1;
+  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0) suite_2;
+  // FetchTestSuite #(2, 8'hF0,         8,  8, 1, 0, 0) suite_3;
+  FetchTestSuite #(3, 32'h0,        32, 32, 8, 3, 0) suite_3;
+  FetchTestSuite #(4, 32'h0,        32, 32, 8, 0, 3) suite_4;
 
   int s;
 
@@ -148,6 +154,7 @@ module Fetch_test;
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
     if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
 
     test_bench_end();
   end

@@ -3,15 +3,19 @@
 # ========================================================================
 # A build system for blimp
 
-#------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 # Get all of the test files
-#------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 
-file(GLOB_RECURSE V_TEST_FILES "*_test.v")
+set(V_TEST_FILES
+  hw/common/test/Fifo_test.v
+  hw/common/test/Mux_test.v
+  hw/fetch/test/Fetch_test.v
+)
 
-#------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 # Boilerplate
-#------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.10)
 project(BLIMP VERSION 1.0)
@@ -70,7 +74,8 @@ endfunction()
 add_custom_target(check COMMAND ctest "--timeout" "10")
 set(V_INCL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-foreach(V_TEST_FILE_PATH ${V_TEST_FILES})
+foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
+  set(V_TEST_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_TEST_FILE_REL_PATH}")
   get_leaf(V_TEST_FILE ${V_TEST_FILE_PATH})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
@@ -83,11 +88,12 @@ foreach(V_TEST_FILE_PATH ${V_TEST_FILES})
     ${V_TEST_BIN} 
     SOURCES ${V_TEST_FILE_PATH} 
     INCLUDE_DIRS ${V_INCL_DIR}
-    VERILATOR_ARGS --timing --trace
+    VERILATE_TRACE
+    VERILATOR_ARGS --timing
   )
 
   add_dependencies(check ${V_TEST_BIN})
   file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
   remove_extension(TEST_NAME ${TEST_PATH})
   add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
-endforeach(V_TEST_FILE_PATH)
+endforeach(V_TEST_FILE_REL_PATH)

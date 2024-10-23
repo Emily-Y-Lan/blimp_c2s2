@@ -102,15 +102,19 @@ module F__DTestD #(
         dut.rdy = 1'b0;
   
         // Inform our design of a squash/branch when needed
-        for( int i = 0; i < p_branch_delay; i = i + 1 ) begin
+        if( exp_transaction.dut_squash ) begin
+          for( int i = 0; i < p_branch_delay; i = i + 1 ) begin
+            #10;
+            if( rst ) break;
+          end
+
+          dut.squash        = exp_transaction.dut_squash;
+          dut.branch_target = exp_transaction.dut_branch_target;
           #10;
-          if( rst ) break;
+
+          dut.squash        = 1'b0;
+          dut.branch_target = '0;
         end
-        dut.squash        = exp_transaction.dut_squash;
-        dut.branch_target = exp_transaction.dut_branch_target;
-        #10;
-        dut.squash        = 1'b0;
-        dut.branch_target = '0;
 
         num_in_flight -= 1;
       end
