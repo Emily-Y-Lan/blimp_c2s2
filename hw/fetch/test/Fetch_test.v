@@ -88,11 +88,11 @@ module FetchTestSuite #(
     fl_mem_test_server.init_mem( p_rst_addr + 4, 32'hcafef00d );
     fl_mem_test_server.init_mem( p_rst_addr + 8, 32'hbaadb0ba );
 
-    //                                                          br  br
-    //                      inst          pc              sq    tar val
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0, '0, 1'b0 );
-    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b0, '0, 1'b0 );
-    fl_D_test_intf.add_msg( 32'hbaadb0ba, p_rst_addr + 8, 1'b0, '0, 1'b0 );
+    //                                                          br
+    //                      inst          pc              sq    tar
+    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0, '0 );
+    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b0, '0 );
+    fl_D_test_intf.add_msg( 32'hbaadb0ba, p_rst_addr + 8, 1'b0, '0 );
 
     while( !fl_D_test_intf.done() ) #10;
   endtask
@@ -108,11 +108,11 @@ module FetchTestSuite #(
     fl_mem_test_server.init_mem( p_rst_addr,     32'hdeadbeef );
     fl_mem_test_server.init_mem( p_rst_addr + 4, 32'hcafef00d );
 
-    //                                                          br           br
-    //                      inst          pc              sq    tar          val
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0, 1'b0 );
-    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b1, p_rst_addr, 1'b1 );
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0, 1'b0 );
+    //                                                          br
+    //                      inst          pc              sq    tar       
+    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0 );
+    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b1, p_rst_addr );
+    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0 );
 
     while( !fl_D_test_intf.done() ) #10;
   endtask

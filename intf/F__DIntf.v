@@ -26,7 +26,6 @@ interface F__DIntf
 
   // Redirection Signals
   logic [p_addr_bits-1:0] branch_target;
-  logic                   branch_val;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -40,8 +39,7 @@ interface F__DIntf
 
     input  squash,
 
-    input  branch_target,
-    input  branch_val
+    input  branch_target
   );
 
   modport D_intf (
@@ -52,8 +50,7 @@ interface F__DIntf
 
     output squash,
 
-    output branch_target,
-    output branch_val
+    output branch_target
   );
 
 endinterface

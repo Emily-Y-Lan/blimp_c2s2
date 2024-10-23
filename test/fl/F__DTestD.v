@@ -32,7 +32,6 @@ module F__DTestD #(
     logic [p_addr_bits-1:0] exp_pc;
     logic                   dut_squash;
     logic [p_addr_bits-1:0] dut_branch_target;
-    logic                   dut_branch_val;
   } transaction;
 
   transaction transaction_queue [$];
@@ -43,14 +42,12 @@ module F__DTestD #(
     logic [p_inst_bits-1:0] exp_inst,
     logic [p_addr_bits-1:0] exp_pc,
     logic                   dut_squash,
-    logic [p_addr_bits-1:0] dut_branch_target,
-    logic                   dut_branch_val
+    logic [p_addr_bits-1:0] dut_branch_target
   );
     new_transaction.exp_inst          = exp_inst;
     new_transaction.exp_pc            = exp_pc;
     new_transaction.dut_squash        = dut_squash;
     new_transaction.dut_branch_target = dut_branch_target;
-    new_transaction.dut_branch_val    = dut_branch_val;
 
     transaction_queue.push_back( new_transaction );
   endtask
@@ -75,7 +72,6 @@ module F__DTestD #(
       dut.rdy           = 1'b0;
       dut.squash        = 1'b0;
       dut.branch_target = '0;
-      dut.branch_val    = 1'b0;
 
       // Wait for reset
       @( negedge rst );
@@ -112,11 +108,9 @@ module F__DTestD #(
         end
         dut.squash        = exp_transaction.dut_squash;
         dut.branch_target = exp_transaction.dut_branch_target;
-        dut.branch_val    = exp_transaction.dut_branch_val;
         #10;
         dut.squash        = 1'b0;
         dut.branch_target = '0;
-        dut.branch_val    = 1'b0;
 
         num_in_flight -= 1;
       end

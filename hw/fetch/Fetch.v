@@ -103,7 +103,7 @@ module Fetch
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   always_comb begin
-    if ( D.branch_val )
+    if ( D.squash )
       mem.req_msg.addr = D.branch_target;
     else
       mem.req_msg.addr = curr_addr;
