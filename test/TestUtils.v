@@ -37,6 +37,10 @@ package TestEnv;
 
   task test_bench_begin( string filename );
     $write("\nRunning %s", filename);
+    if ( $value$plusargs( "dump-vcd=%s", filename ) ) begin
+      $dumpfile(filename);
+      $dumpvars();
+    end
     #1;
   endtask
 
@@ -73,17 +77,11 @@ module TestUtils
   // This variable holds the +test-case command line argument indicating
   // which test cases to run.
 
-  string vcd_filename;
   int n = 0;
   initial begin
 
     if ( !$value$plusargs( "test-case=%d", n ) )
       n = 0;
-
-    if ( $value$plusargs( "dump-vcd=%s", vcd_filename ) ) begin
-      $dumpfile(vcd_filename);
-      $dumpvars();
-    end
 
   end
 

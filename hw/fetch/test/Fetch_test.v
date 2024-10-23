@@ -83,12 +83,36 @@ module FetchTestSuite #(
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
 
-    //                           addr        data
-    fl_mem_test_server.init_mem( p_rst_addr, 32'hdeadbeef );
+    //                           addr            data
+    fl_mem_test_server.init_mem( p_rst_addr,     32'hdeadbeef );
+    fl_mem_test_server.init_mem( p_rst_addr + 4, 32'hcafef00d );
+    fl_mem_test_server.init_mem( p_rst_addr + 8, 32'hbaadb0ba );
 
-    //                                                      br  br
-    //                      inst          pc          sq    tar val
-    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr, 1'b0, '0, 1'b0 );
+    //                                                          br  br
+    //                      inst          pc              sq    tar val
+    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0, '0, 1'b0 );
+    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b0, '0, 1'b0 );
+    fl_D_test_intf.add_msg( 32'hbaadb0ba, p_rst_addr + 8, 1'b0, '0, 1'b0 );
+
+    while( !fl_D_test_intf.done() ) #10;
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_2_branch
+  //----------------------------------------------------------------------
+
+  task test_case_2_branch();
+    t.test_case_begin( "test_case_2_branch" );
+
+    //                           addr            data
+    fl_mem_test_server.init_mem( p_rst_addr,     32'hdeadbeef );
+    fl_mem_test_server.init_mem( p_rst_addr + 4, 32'hcafef00d );
+
+    //                                                          br           br
+    //                      inst          pc              sq    tar          val
+    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0, 1'b0 );
+    fl_D_test_intf.add_msg( 32'hcafef00d, p_rst_addr + 4, 1'b1, p_rst_addr, 1'b1 );
+    fl_D_test_intf.add_msg( 32'hdeadbeef, p_rst_addr,     1'b0,         '0, 1'b0 );
 
     while( !fl_D_test_intf.done() ) #10;
   endtask
@@ -101,6 +125,7 @@ module FetchTestSuite #(
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
+    // if ((t.n <= 0) || (t.n == 1)) test_case_2_branch();
 
   endtask
 endmodule

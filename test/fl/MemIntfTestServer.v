@@ -70,6 +70,13 @@ module MemIntfTestServer #(
 
   mem_resp mem_resp_queue [$];
 
+  always_ff @( posedge clk ) begin
+    if( rst ) begin
+      mem_req_queue.delete();
+      mem_resp_queue.delete();
+    end
+  end
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Handle requests
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,32 +84,32 @@ module MemIntfTestServer #(
   mem_req req_transaction;
 
   initial begin
-    dut.req_rdy = 1'b0;
-
-    // Wait for reset
-    @( negedge rst );
-    
-    // Align with clock edge
-    @( posedge clk );
-    #1;
-
-    while ( 1 ) begin
-
-      // Offset assignments by #1 to avoid conflicts with resetting
-      // signals after a transaction
-
-      #1;
-      dut.req_rdy = 1'b1;
-
-      // Get the transaction #1 before the clock edge
-      while( !dut.req_val ) #10;
-      #7;
-      req_transaction.msg   = dut.req_msg;
-      req_transaction.delay = p_transac_delay;
-      if( dut.req_val ) mem_req_queue.push_back( req_transaction );
-
-      #2;
+    while( 1 ) begin
       dut.req_rdy = 1'b0;
+  
+      // Wait for reset
+      @( negedge rst );
+      
+      // Align with clock edge
+      @( posedge clk );
+      #1;
+  
+      while ( 1 ) begin
+  
+        dut.req_rdy = 1'b1;
+  
+        // Get the transaction #1 before the clock edge
+        while( ~rst & !dut.req_val ) begin
+          #10;
+        end
+        if( rst ) break;
+        #8;
+        req_transaction.msg   = dut.req_msg;
+        req_transaction.delay = p_transac_delay;
+        if( dut.req_val ) mem_req_queue.push_back( req_transaction );
+  
+        #2;
+      end
     end
   end
 
@@ -159,33 +166,41 @@ module MemIntfTestServer #(
   mem_resp resp_transaction;
 
   initial begin
-    dut.resp_val = 1'b0;
-    dut.resp_msg = 'x;
-
-    // Wait for reset
-    @( negedge rst );
-
-    // Align with clock edge
-    @( posedge clk );
-    #1;
-
-    while ( 1 ) begin
-      // Wait for new messages to be put in the queue
-      #1;
-
-      while( mem_resp_queue.size() == 0 ) #10;
-      resp_transaction = mem_resp_queue.pop_front();
-
-      dut.resp_val = 1'b1;
-      dut.resp_msg = resp_transaction;
-
-      // Check the transaction #1 before the clock edge
-      #7;
-      while( !dut.resp_val ) #10;
-
-      #2;
+    while( 1 ) begin
       dut.resp_val = 1'b0;
       dut.resp_msg = 'x;
+  
+      // Wait for reset
+      @( negedge rst );
+  
+      // Align with clock edge
+      @( posedge clk );
+      #1;
+  
+      while ( 1 ) begin
+        // Wait for new messages to be put in the queue
+        #1;
+  
+        while( !rst & mem_resp_queue.size() == 0 ) begin
+          #10;
+        end
+        if( rst ) break;
+        resp_transaction = mem_resp_queue.pop_front();
+  
+        dut.resp_val = 1'b1;
+        dut.resp_msg = resp_transaction;
+  
+        // Check the transaction #1 before the clock edge
+        #7;
+        while( !rst & !dut.resp_rdy ) begin
+          #10;
+        end
+        if( rst ) break;
+  
+        #2;
+        dut.resp_val = 1'b0;
+        dut.resp_msg = 'x;
+      end
     end
   end
 endmodule

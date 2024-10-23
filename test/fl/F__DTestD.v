@@ -70,60 +70,56 @@ module F__DTestD #(
   transaction exp_transaction;
 
   initial begin
-    // Initial signal values
-    dut.rdy           = 1'b0;
-    dut.squash        = 1'b0;
-    dut.branch_target = '0;
-    dut.branch_val    = 1'b0;
+    while( 1 ) begin
+      // Initial signal values
+      dut.rdy           = 1'b0;
+      dut.squash        = 1'b0;
+      dut.branch_target = '0;
+      dut.branch_val    = 1'b0;
 
-    // Wait for reset
-    @( negedge rst );
+      // Wait for reset
+      @( negedge rst );
 
-    // Align with clock edge
-    @( posedge clk );
-    #1;
+      // Align with clock edge
+      @( posedge clk );
+      #1;
 
-    while ( !done() ) begin
-      num_in_flight += 1;
-      exp_transaction = transaction_queue.pop_front();
-
-      // Set input values for the transaction
-      dut.rdy = 1'b1;
-      if( p_branch_delay == 0 ) begin
-        dut.squash        = exp_transaction.dut_squash;
-        dut.branch_target = exp_transaction.dut_branch_target;
-        dut.branch_val    = exp_transaction.dut_branch_val;
-      end
-
-      // Wait for the next transaction before a clock edge
-      #8;
-      while ( !dut.val ) #10;
-
-      // Check expected values
-      `CHECK_EQ( dut.inst, exp_transaction.exp_inst );
-      `CHECK_EQ( dut.pc,   exp_transaction.exp_pc   );
-
-      #2;
-      dut.rdy = 1'b0;
-      if( p_branch_delay == 0 ) begin
-        dut.squash        = 1'b0;
-        dut.branch_target = '0;
-        dut.branch_val    = 1'b0;
-      end
-
-      // Inform our design of a squash/branch when needed
-      if( p_branch_delay != 0 ) begin
-        for( int i = 1; i < p_branch_delay; i = i + 1 ) #10;
+      while ( !done() ) begin
+        num_in_flight += 1;
+        exp_transaction = transaction_queue.pop_front();
+  
+        // Set input values for the transaction
+        dut.rdy = 1'b1;
+  
+        // Wait for the next transaction before a clock edge
+        #8;
+        while ( !dut.val & !rst ) begin
+          #10;
+        end
+        if( rst ) break;
+  
+        // Check expected values
+        `CHECK_EQ( dut.inst, exp_transaction.exp_inst );
+        `CHECK_EQ( dut.pc,   exp_transaction.exp_pc   );
+  
+        #2;
+        dut.rdy = 1'b0;
+  
+        // Inform our design of a squash/branch when needed
+        for( int i = 0; i < p_branch_delay; i = i + 1 ) begin
+          #10;
+          if( rst ) break;
+        end
         dut.squash        = exp_transaction.dut_squash;
         dut.branch_target = exp_transaction.dut_branch_target;
         dut.branch_val    = exp_transaction.dut_branch_val;
         #10;
-        dut.rdy           = 1'b0;
         dut.squash        = 1'b0;
         dut.branch_target = '0;
         dut.branch_val    = 1'b0;
+
+        num_in_flight -= 1;
       end
-      num_in_flight -= 1;
     end
   end
 
