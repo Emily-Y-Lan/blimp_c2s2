@@ -125,7 +125,7 @@ module FetchTestSuite #(
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    // if ((t.n <= 0) || (t.n == 1)) test_case_2_branch();
+    if ((t.n <= 0) || (t.n == 1)) test_case_2_branch();
 
   endtask
 endmodule

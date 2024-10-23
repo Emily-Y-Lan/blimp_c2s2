@@ -117,7 +117,7 @@ module Fetch
   logic [p_opaq_bits-1:0] req_opaque;
 
   always_comb
-    req_opaque_next = mem.req_msg.opaque + 1;
+    req_opaque_next = req_opaque + 1;
   
   assign mem.req_val = (num_in_flight < MAX_IN_FLIGHT);
 
@@ -132,7 +132,7 @@ module Fetch
     mem.req_val = (num_in_flight < MAX_IN_FLIGHT);
 
     mem.req_msg.op     = MEM_MSG_READ;
-    mem.req_msg.opaque = req_opaque;
+    mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
     mem.req_msg.len    = '0;
     mem.req_msg.data   = 32'bx;
   end
