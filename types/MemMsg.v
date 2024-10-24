@@ -6,42 +6,45 @@
 `ifndef TYPES_MEMMSG_V
 `define TYPES_MEMMSG_V
 
+//------------------------------------------------------------------------
+// Implement parametrized typed through macro functions
+//------------------------------------------------------------------------
+
 typedef enum logic {
   MEM_MSG_READ  = 1'b0,
   MEM_MSG_WRITE = 1'b1,
   MEM_MSG_X     = 1'bx
 } t_op;
 
-virtual class MemMsg;
-  localparam p_data_bits = 32;
-  localparam p_addr_bits = 32;
-  localparam p_opaq_bits = 8;
+`define MEM_REQ( DATA_BITS, ADDR_BITS, OPAQ_BITS ) \
+  t_mem_req_msg_``DATA_BITS``_``ADDR_BITS``_``OPAQ_BITS``
 
-  localparam p_len_bits  = p_data_bits / 8;
+`define MEM_REQ_DEFINE( DATA_BITS, ADDR_BITS, OPAQ_BITS ) \
+  typedef struct packed {                                 \
+    t_op                      op;                         \
+    logic [OPAQ_BITS-1:0]     opaque;                     \
+    logic [ADDR_BITS-1:0]     addr;                       \
+    logic [(ADDR_BITS/8)-1:0] len;                        \
+    logic [DATA_BITS-1:0]     data;                       \
+  } `MEM_REQ( DATA_BITS, ADDR_BITS, OPAQ_BITS )
 
-  typedef logic [p_opaq_bits-1:0] t_opaque;
-  typedef logic [p_addr_bits-1:0] t_addr;
-  typedef logic [ p_len_bits-1:0] t_len;
-  typedef logic [p_data_bits-1:0] t_data;
+`define MEM_RESP( DATA_BITS, ADDR_BITS, OPAQ_BITS ) \
+  t_mem_resp_msg_``DATA_BITS``_``ADDR_BITS``_``OPAQ_BITS``
 
-  typedef struct packed {
-    t_op     op;
-    t_opaque opaque;
-    t_addr   addr;
-    t_len    len;
-    t_data   data;
-  } t_req_msg;
+`define MEM_RESP_DEFINE( DATA_BITS, ADDR_BITS, OPAQ_BITS ) \
+  typedef struct packed {                                  \
+    t_op                      op;                          \
+    logic [OPAQ_BITS-1:0]     opaque;                      \
+    logic [ADDR_BITS-1:0]     addr;                        \
+    logic [(ADDR_BITS/8)-1:0] len;                         \
+    logic [DATA_BITS-1:0]     data;                        \
+  } `MEM_RESP( DATA_BITS, ADDR_BITS, OPAQ_BITS )
 
-  typedef struct packed {
-    t_op     op;
-    t_opaque opaque;
-    t_addr   addr;
-    t_len    len;
-    t_data   data;
-  } t_resp_msg;
-endclass
+//------------------------------------------------------------------------
+// Define commonly-used parametrizations
+//------------------------------------------------------------------------
 
-typedef MemMsg::t_req_msg  t_mem_req_msg_32_32_8;
-typedef MemMsg::t_resp_msg t_mem_resp_msg_32_32_8;
+`MEM_REQ_DEFINE ( 32, 32, 8 );
+`MEM_RESP_DEFINE( 32, 32, 8 );
 
 `endif // TYPES_MEMMSG_V

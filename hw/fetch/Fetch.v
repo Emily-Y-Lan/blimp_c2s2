@@ -136,7 +136,7 @@ module Fetch
     mem.req_msg.op     = MEM_MSG_READ;
     mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
     mem.req_msg.len    = '0;
-    mem.req_msg.data   = 32'bx;
+    mem.req_msg.data   = 'x;
   end
 
   //----------------------------------------------------------------------

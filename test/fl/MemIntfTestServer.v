@@ -12,8 +12,8 @@
 `define TEST_FL_MEM_INTF_TEST_SERVER_V
 
 module MemIntfTestServer #(
-  parameter type t_req_msg  = t_mem_req_msg_32_32_8,
-  parameter type t_resp_msg = t_mem_resp_msg_32_32_8,
+  parameter type t_req_msg  = `MEM_REQ ( 32, 32, 8 ),
+  parameter type t_resp_msg = `MEM_RESP( 32, 32, 8 ),
 
   parameter p_send_intv_delay  = 1,
   parameter p_recv_intv_delay = 1,
