@@ -4,4 +4,6 @@
 // Use these to ignore specific warnings from Verilator
 
 `verilator_config
-lint_off -rule DECLFILENAME -file "intf/Mem.v"
+lint_off -rule DECLFILENAME
+lint_off -rule IMPORTSTAR
+lint_off -rule MULTITOP

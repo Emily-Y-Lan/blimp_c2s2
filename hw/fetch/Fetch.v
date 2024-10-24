@@ -57,8 +57,8 @@ module Fetch
   logic               memresp_xfer;
 
   always_comb begin
-    memreq_xfer  = mem.req_val  && mem.req_rdy;
-    memresp_xfer = mem.resp_val && mem.resp_rdy;
+    memreq_xfer  = mem.req_val  & mem.req_rdy;
+    memresp_xfer = mem.resp_val & mem.resp_rdy;
   end
 
   logic [p_opaq_bits:0] num_in_flight;
@@ -74,9 +74,9 @@ module Fetch
   always_comb begin
     num_in_flight_next = num_in_flight;
 
-    if ( memreq_xfer && !memresp_xfer )
+    if ( memreq_xfer & !memresp_xfer )
       num_in_flight_next = num_in_flight + 1;
-    if ( memresp_xfer && !memreq_xfer )
+    if ( memresp_xfer & !memreq_xfer )
       num_in_flight_next = num_in_flight - 1;
   end
 
@@ -120,8 +120,6 @@ module Fetch
 
   always_comb
     req_opaque_next = req_opaque + 1;
-  
-  assign mem.req_val = (num_in_flight < MAX_IN_FLIGHT);
 
   always_ff @( posedge clk ) begin
     if ( rst )
@@ -131,8 +129,7 @@ module Fetch
   end
 
   always_comb begin
-    mem.req_val = (num_in_flight < MAX_IN_FLIGHT);
-
+    mem.req_val        = (num_in_flight < MAX_IN_FLIGHT);
     mem.req_msg.op     = MEM_MSG_READ;
     mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
     mem.req_msg.len    = '0;
