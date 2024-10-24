@@ -3,7 +3,7 @@
 //========================================================================
 // A FL model of a memory server, to use in testing
 
-`include "hw/common/DelayStream.v"
+`include "hw/util/DelayStream.v"
 `include "intf/MemIntf.v"
 `include "test/FLTestUtils.v"
 `include "types/MemMsg.v"
@@ -56,7 +56,7 @@ module MemIntfTestServer #(
   
   DelayStream #(
     .t_msg             (t_req_msg),
-    .p_send_intv_delay (p_send_intv_delay),
+    .p_send_intv_delay (p_send_intv_delay)
   ) req_queue (
     .clk      (clk),
     .rst      (rst),

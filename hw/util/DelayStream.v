@@ -10,7 +10,7 @@
 `define HW_COMMON_DELAY_STREAM_V
 
 module DelayStream #(
-  parameter type t_msg   = logic,
+  parameter type t_msg        = logic,
   parameter p_send_intv_delay = 0,
   parameter p_recv_intv_delay = 0
 )(
@@ -73,7 +73,9 @@ module DelayStream #(
 
   always_ff @( posedge clk ) begin
     #1;
-    if( rst );
+    if( rst ) begin
+      send_rdy <= 1'b0;
+    end
     else begin
       if( send_intv_delay == 0 ) begin
         send_rdy <= 1'b1;
@@ -105,7 +107,10 @@ module DelayStream #(
 
   always_ff @( posedge clk ) begin
     #1;
-    if( rst );
+    if( rst ) begin
+      recv_val <= 1'b0;
+      recv_msg <= 'x;
+    end
     else begin
       if( (recv_intv_delay == 0) & (num_msgs() > 0) ) begin
         recv_val <= 1'b1;

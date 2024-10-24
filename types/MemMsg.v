@@ -8,7 +8,8 @@
 
 typedef enum logic {
   MEM_MSG_READ  = 1'b0,
-  MEM_MSG_WRITE = 1'b1
+  MEM_MSG_WRITE = 1'b1,
+  MEM_MSG_X     = 1'bx
 } t_op;
 
 virtual class MemMsg;

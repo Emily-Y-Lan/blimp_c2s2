@@ -25,13 +25,13 @@ module FetchTestSuite #(
 
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1,
-  parameter p_D_branch_delay      = 0
+  parameter p_D_dut_intv_delay    = 0
 );
   string suite_name = $sformatf("%0d: FetchTestSuite_%0p_%0d_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_rst_addr, p_addr_bits,
                                 p_inst_bits, p_opaq_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay,
-                                p_D_branch_delay);
+                                p_D_dut_intv_delay);
 
   //----------------------------------------------------------------------
   // Setup
@@ -75,9 +75,9 @@ module FetchTestSuite #(
   );
 
   F__DTestD #(
-    .p_branch_delay (p_D_branch_delay),
-    .p_addr_bits    (p_addr_bits),
-    .p_inst_bits    (p_inst_bits)
+    .p_dut_intv_delay (p_D_dut_intv_delay),
+    .p_addr_bits      (p_addr_bits),
+    .p_inst_bits      (p_inst_bits)
   ) fl_D_test_intf (
     .dut (F__D_intf),
     .*
