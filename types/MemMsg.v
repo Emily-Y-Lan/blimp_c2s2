@@ -24,7 +24,7 @@ typedef enum logic {
     t_op                      op;                         \
     logic [OPAQ_BITS-1:0]     opaque;                     \
     logic [ADDR_BITS-1:0]     addr;                       \
-    logic [(ADDR_BITS/8)-1:0] len;                        \
+    logic [(DATA_BITS/8)-1:0] len;                        \
     logic [DATA_BITS-1:0]     data;                       \
   } `MEM_REQ( DATA_BITS, ADDR_BITS, OPAQ_BITS )
 
@@ -36,7 +36,7 @@ typedef enum logic {
     t_op                      op;                          \
     logic [OPAQ_BITS-1:0]     opaque;                      \
     logic [ADDR_BITS-1:0]     addr;                        \
-    logic [(ADDR_BITS/8)-1:0] len;                         \
+    logic [(DATA_BITS/8)-1:0] len;                         \
     logic [DATA_BITS-1:0]     data;                        \
   } `MEM_RESP( DATA_BITS, ADDR_BITS, OPAQ_BITS )
 

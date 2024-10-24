@@ -40,16 +40,16 @@ module FetchTestSuite #(
   logic clk, rst;
   TestUtils t( .* );
 
-  `MEM_REQ_DEFINE ( p_addr_bits, p_inst_bits, p_opaq_bits );
-  `MEM_RESP_DEFINE( p_addr_bits, p_inst_bits, p_opaq_bits );
+  `MEM_REQ_DEFINE ( p_inst_bits, p_addr_bits, p_opaq_bits );
+  `MEM_RESP_DEFINE( p_inst_bits, p_addr_bits, p_opaq_bits );
 
   //----------------------------------------------------------------------
   // Instantiate design under test
   //----------------------------------------------------------------------
 
   MemIntf #(
-    .t_req_msg  (`MEM_REQ ( p_addr_bits, p_inst_bits, p_opaq_bits )),
-    .t_resp_msg (`MEM_RESP( p_addr_bits, p_inst_bits, p_opaq_bits ))
+    .t_req_msg  (`MEM_REQ ( p_inst_bits, p_addr_bits, p_opaq_bits )),
+    .t_resp_msg (`MEM_RESP( p_inst_bits, p_addr_bits, p_opaq_bits ))
   ) mem_intf;
 
   F__DIntf #(
@@ -69,8 +69,8 @@ module FetchTestSuite #(
   );
 
   MemIntfTestServer #(
-    .t_req_msg         (`MEM_REQ ( p_addr_bits, p_inst_bits, p_opaq_bits )),
-    .t_resp_msg        (`MEM_RESP( p_addr_bits, p_inst_bits, p_opaq_bits )),
+    .t_req_msg         (`MEM_REQ ( p_inst_bits, p_addr_bits, p_opaq_bits )),
+    .t_resp_msg        (`MEM_RESP( p_inst_bits, p_addr_bits, p_opaq_bits )),
     .p_send_intv_delay (p_mem_send_intv_delay),
     .p_recv_intv_delay (p_mem_recv_intv_delay),
     .p_addr_bits       (p_addr_bits),
@@ -187,9 +187,11 @@ endmodule
 module Fetch_test;
   FetchTestSuite #(1)                                   suite_1;
   FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
-  FetchTestSuite #(2, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3;
-  FetchTestSuite #(3, 32'h0,        32, 32, 8, 3, 3, 0) suite_4;
-  FetchTestSuite #(4, 32'h0,        32, 32, 8, 0, 0, 3) suite_5;
+  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3;
+  FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4;
+  FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5;
+  FetchTestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6;
+  FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7;
 
   int s;
 
@@ -202,6 +204,8 @@ module Fetch_test;
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
     if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
     if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
+    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
+    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
 
     test_bench_end();
   end
