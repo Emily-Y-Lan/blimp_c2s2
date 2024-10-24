@@ -14,7 +14,7 @@ import TestEnv::*;
 //========================================================================
 // FetchTestSuite
 //========================================================================
-// A test suite for a particular parametrization of the FIFO
+// A test suite for a particular parametrization of the Fetch unit
 
 module FetchTestSuite #(
   parameter p_suite_num = 0,
@@ -111,21 +111,57 @@ module FetchTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // test_case_2_branch
+  // test_case_2_branch_basic
   //----------------------------------------------------------------------
 
-  task test_case_2_branch();
-    t.test_case_begin( "test_case_2_branch" );
+  task test_case_2_branch_basic();
+    t.test_case_begin( "test_case_2_branch_basic" );
 
     //                           addr            data
     fl_mem_test_server.init_mem( p_rst_addr,     p_inst_bits'(32'hdeadbeef) );
-    fl_mem_test_server.init_mem( p_rst_addr + 4, p_inst_bits'(32'hcafef00d) );
+    fl_mem_test_server.init_mem( p_rst_addr + 4, p_inst_bits'(32'hfedcba00) );
+    fl_mem_test_server.init_mem( p_rst_addr + 8, p_inst_bits'(32'h12345678) );
 
     //                                                                        br
     //                      inst                        pc              sq    tar       
-    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0,         '0 );
-    fl_D_test_intf.add_msg( p_inst_bits'(32'hcafef00d), p_rst_addr + 4, 1'b1, p_rst_addr );
-    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0,         '0 );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0, '0             );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hfedcba00), p_rst_addr + 4, 1'b1, p_rst_addr     );
+
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hdeadbeef), p_rst_addr,     1'b0, '0             );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hfedcba00), p_rst_addr + 4, 1'b0, '0             );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h12345678), p_rst_addr + 8, 1'b1, p_rst_addr + 4 );
+
+    fl_D_test_intf.add_msg( p_inst_bits'(32'hfedcba00), p_rst_addr + 4, 1'b0, '0             );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h12345678), p_rst_addr + 8, 1'b0, '0             );
+
+    while( !fl_D_test_intf.done() ) #10;
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_3_branch_forward
+  //----------------------------------------------------------------------
+
+  task test_case_3_branch_forward();
+    t.test_case_begin( "test_case_3_branch_forward" );
+
+    //                           addr               data
+    fl_mem_test_server.init_mem( p_rst_addr,        p_inst_bits'(32'h10101010) );
+    fl_mem_test_server.init_mem( p_rst_addr + 'h4,  p_inst_bits'(32'h20202020) );
+    fl_mem_test_server.init_mem( p_rst_addr + 'h10, p_inst_bits'(32'h30303030) );
+    fl_mem_test_server.init_mem( p_rst_addr + 'h14, p_inst_bits'(32'h40404040) );
+    fl_mem_test_server.init_mem( p_rst_addr + 'h48, p_inst_bits'(32'h50505050) );
+    fl_mem_test_server.init_mem( p_rst_addr + 'h4c, p_inst_bits'(32'h60606060) );
+
+    //                                                                           br
+    //                      inst                        pc                 sq    tar       
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h10101010), p_rst_addr,        1'b0, '0                );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h20202020), p_rst_addr + 'h4,  1'b1, p_rst_addr + 'h10 );
+
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h30303030), p_rst_addr + 'h10, 1'b0, '0                );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h40404040), p_rst_addr + 'h14, 1'b1, p_rst_addr + 'h48 );
+
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h50505050), p_rst_addr + 'h48, 1'b0, '0                );
+    fl_D_test_intf.add_msg( p_inst_bits'(32'h60606060), p_rst_addr + 'h4c, 1'b0, '0                );
 
     while( !fl_D_test_intf.done() ) #10;
   endtask
@@ -138,7 +174,8 @@ module FetchTestSuite #(
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 1)) test_case_2_branch();
+    if ((t.n <= 0) || (t.n == 2)) test_case_2_branch_basic();
+    if ((t.n <= 0) || (t.n == 3)) test_case_3_branch_forward();
 
   endtask
 endmodule
