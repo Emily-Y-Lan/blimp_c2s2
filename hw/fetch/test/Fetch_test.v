@@ -23,12 +23,14 @@ module FetchTestSuite #(
   parameter p_inst_bits = 32,
   parameter p_opaq_bits = 8,
 
-  parameter p_mem_transac_delay = 1,
-  parameter p_D_branch_delay    = 0
+  parameter p_mem_send_intv_delay = 1,
+  parameter p_mem_recv_intv_delay = 1,
+  parameter p_D_branch_delay      = 0
 );
-  string suite_name = $sformatf("%0d: FetchTestSuite_%0p_%0d_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: FetchTestSuite_%0p_%0d_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_rst_addr, p_addr_bits,
-                                p_inst_bits, p_opaq_bits, p_mem_transac_delay,
+                                p_inst_bits, p_opaq_bits,
+                                p_mem_send_intv_delay, p_mem_recv_intv_delay,
                                 p_D_branch_delay);
 
   //----------------------------------------------------------------------
@@ -61,11 +63,12 @@ module FetchTestSuite #(
   );
 
   MemIntfTestServer #(
-    .t_req_msg  (t_mem_req_msg_32_32_8),
-    .t_resp_msg (t_mem_resp_msg_32_32_8),
-    .p_transac_delay (p_mem_transac_delay),
-    .p_addr_bits  (p_addr_bits),
-    .p_data_bits  (p_inst_bits)
+    .t_req_msg         (t_mem_req_msg_32_32_8),
+    .t_resp_msg        (t_mem_resp_msg_32_32_8),
+    .p_send_intv_delay (p_mem_send_intv_delay),
+    .p_recv_intv_delay (p_mem_recv_intv_delay),
+    .p_addr_bits       (p_addr_bits),
+    .p_data_bits       (p_inst_bits)
   ) fl_mem_test_server (
     .dut (mem_intf),
     .*
@@ -139,11 +142,11 @@ endmodule
 //========================================================================
 
 module Fetch_test;
-  FetchTestSuite #(1)                                suite_1;
-  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0) suite_2;
+  FetchTestSuite #(1)                                   suite_1;
+  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
   // FetchTestSuite #(2, 8'hF0,         8,  8, 1, 0, 0) suite_3;
-  FetchTestSuite #(3, 32'h0,        32, 32, 8, 3, 0) suite_3;
-  FetchTestSuite #(4, 32'h0,        32, 32, 8, 0, 3) suite_4;
+  FetchTestSuite #(3, 32'h0,        32, 32, 8, 3, 3, 0) suite_3;
+  FetchTestSuite #(4, 32'h0,        32, 32, 8, 0, 0, 3) suite_4;
 
   int s;
 

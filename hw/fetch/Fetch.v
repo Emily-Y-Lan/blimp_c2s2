@@ -90,6 +90,8 @@ module Fetch
   always_ff @( posedge clk ) begin
     if ( rst )
       curr_addr <= p_rst_addr;
+    else if ( D.squash & !memreq_xfer )
+      curr_addr <= D.branch_target;
     else if ( memreq_xfer )
       curr_addr <= curr_addr_next;
   end
