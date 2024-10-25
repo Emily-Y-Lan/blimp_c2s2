@@ -4,7 +4,7 @@
 #=========================================================================
 # A helper script for linting Blimp's components
 
-VERILOG_FILES=$(find . -name "*.v")
+VERILOG_FILES=$(find . -name "*_test.v")
 
 RED='\033[1;31m'
 GREEN='\033[1;32m'

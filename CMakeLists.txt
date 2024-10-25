@@ -10,6 +10,8 @@
 set(V_TEST_FILES
   hw/common/test/Fifo_test.v
   hw/common/test/Mux_test.v
+  hw/common/test/PriorityEncoder_test.v
+  hw/common/test/RRArb_test.v
   hw/fetch/test/Fetch_test.v
 )
 

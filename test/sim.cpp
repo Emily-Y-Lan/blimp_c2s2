@@ -34,8 +34,7 @@ int main( int argc, char** argv )
   }
 
   // Final model cleanup
-  //  - This causes double-free issues with Fetch_test for some reason
-  // top->final();
+  top->final();
 
   // Destroy model
   delete top;
