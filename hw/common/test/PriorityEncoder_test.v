@@ -123,15 +123,15 @@ module PriorityEncoderTestSuite #(
     t.test_case_begin( "test_case_4_random" );
 
     for( int i = 0; i < 20; i = i + 1 ) begin
-      rand_in = p_width'( $urandom(t.seed) );
+      rand_in = p_width'( $urandom() );
 
       // Get correct output
       if( rand_in == 0 )
         exp_out = 0;
       else begin
         exp_out = p_width'('b1);
-        for( int i = 0; i < p_width; i = i + 1 ) begin
-          if( rand_in[i] ) break;
+        for( int j = 0; j < p_width; j = j + 1 ) begin
+          if( rand_in[j] ) break;
           exp_out = exp_out << 1;
         end
       end
@@ -164,6 +164,7 @@ module PriorityEncoder_test;
   PriorityEncoderTestSuite #(1)     suite_1;
   PriorityEncoderTestSuite #(2,  8) suite_2;
   PriorityEncoderTestSuite #(3, 32) suite_3;
+  PriorityEncoderTestSuite #(3,  1) suite_4;
 
   int s;
 
@@ -174,6 +175,7 @@ module PriorityEncoder_test;
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
     if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 3)) suite_4.run_test_suite();
 
     test_bench_end();
   end

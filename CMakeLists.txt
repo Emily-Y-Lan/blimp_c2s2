@@ -73,7 +73,7 @@ endfunction()
 # Add our targets
 #------------------------------------------------------------------------
 
-add_custom_target(check COMMAND ctest "--timeout" "10")
+add_custom_target(check COMMAND "ctest" "--timeout" "10")
 set(V_INCL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})

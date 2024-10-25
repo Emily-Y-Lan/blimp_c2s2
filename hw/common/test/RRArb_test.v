@@ -86,7 +86,8 @@ module RRArbTestSuite #(
     check( p_width'('b0001), p_width'('b0001) );
     check( p_width'('b0010), p_width'('b0010) );
     check( p_width'('b0011), p_width'('b0001) );
-    check( p_width'('b0011), p_width'('b0010) );
+    if( p_width > 1 )
+      check( p_width'('b0011), p_width'('b0010) );
   endtask
 
   //----------------------------------------------------------------------
@@ -152,13 +153,13 @@ module RRArbTestSuite #(
     prev_gnt_idx = p_width;
 
     for( int i = 0; i < 20; i = i + 1 ) begin
-      rand_req = p_width'( $urandom(t.seed) );
+      rand_req = p_width'( $urandom() );
       granted  = 0;
       
       // Check for next highest priority
-      for( int i = prev_gnt_idx + 1; i < p_width; i = i + 1 ) begin
-        if( rand_req[i] ) begin
-          curr_gnt_idx = i;
+      for( int j = prev_gnt_idx + 1; j < p_width; j = j + 1 ) begin
+        if( rand_req[j] ) begin
+          curr_gnt_idx = j;
           granted = 1;
           break;
         end
@@ -166,9 +167,9 @@ module RRArbTestSuite #(
 
       // Start from beginning
       if( granted == 0 ) begin
-        for( int i = 0; i <= prev_gnt_idx; i = i + 1 ) begin
-          if( rand_req[i] ) begin
-          curr_gnt_idx = i;
+        for( int j = 0; j <= prev_gnt_idx; j = j + 1 ) begin
+          if( rand_req[j] ) begin
+          curr_gnt_idx = j;
           granted = 1;
           break;
         end
@@ -194,10 +195,11 @@ module RRArbTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 2)) test_case_2_no_grant();
-    if ((t.n <= 0) || (t.n == 3)) test_case_3_oscillate();
-    if ((t.n <= 0) || (t.n == 3)) test_case_4_random();
+    if ( (t.n <= 0) || (t.n == 1)) test_case_1_basic();
+    if ( (t.n <= 0) || (t.n == 2)) test_case_2_no_grant();
+    if (((t.n <= 0) || (t.n == 3)) 
+         & (p_width >= 4))         test_case_3_oscillate();
+    if ( (t.n <= 0) || (t.n == 3)) test_case_4_random();
 
   endtask
 endmodule
@@ -210,6 +212,7 @@ module RRArb_test;
   RRArbTestSuite #(1)     suite_1;
   RRArbTestSuite #(2,  8) suite_2;
   RRArbTestSuite #(3, 32) suite_3;
+  RRArbTestSuite #(3,  1) suite_4;
 
   int s;
 
@@ -220,6 +223,7 @@ module RRArb_test;
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
     if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
 
     test_bench_end();
   end

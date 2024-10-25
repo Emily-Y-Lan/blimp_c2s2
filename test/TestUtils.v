@@ -85,12 +85,9 @@ module TestUtils
 
   end
 
-  // Always call $urandom with this seed variable to ensure that random
-  // test cases are both isolated and reproducible.
-
-  // verilator lint_off UNUSEDSIGNAL
+  // Seed random test cases
   int seed = 32'hdeadbeef;
-  // verilator lint_on UNUSEDSIGNAL
+  initial $urandom(seed);
 
   // Cycle counter with timeout check
 

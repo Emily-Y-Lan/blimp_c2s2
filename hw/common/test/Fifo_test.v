@@ -68,7 +68,9 @@ module FifoTestSuite #(
     input logic   empty,
     input logic   full,
     input t_entry wdata,
-    input t_entry rdata
+    input t_entry rdata,
+
+    input int     check_rdata = 1
   );
     if ( !t.failed ) begin
       dut_rst   = _rst;
@@ -86,7 +88,8 @@ module FifoTestSuite #(
 
       `CHECK_EQ( dut_empty, empty );
       `CHECK_EQ( dut_full,  full  );
-      `CHECK_EQ( dut_rdata, rdata );
+      if( check_rdata == 1 )
+        `CHECK_EQ( dut_rdata, rdata );
 
       #2;
 
@@ -109,6 +112,73 @@ module FifoTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
+  // test_case_2_full
+  //----------------------------------------------------------------------
+
+  task test_case_2_full();
+    t.test_case_begin( "test_case_2_full" );
+
+    //     rst push pop empty full wdata                 rdata
+    check( 0,  1,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
+    
+    for( int i = 1; i < p_depth; i = i + 1 ) begin
+      check( 0, 1, 0, 0, 0, t_entry'(i), t_entry'('h00000000) );
+    end
+
+    //     rst push pop empty full wdata         rdata
+    check( 0,  0,   0,  0,    1,   t_entry'('x), t_entry'('h00000000) );
+    check( 0,  0,   1,  0,    1,   t_entry'('x), t_entry'('h00000000) );
+
+    for( int i = 1; i < p_depth; i = i + 1 ) begin
+      check( 0, 0, 1, 0, 0, t_entry'('x), t_entry'(i) );
+    end
+
+    //     rst push pop empty full wdata         rdata
+    check( 0,  0,   0,  1,    0,   t_entry'('x), t_entry'('h00000000) );
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_3_random
+  //----------------------------------------------------------------------
+
+  t_entry fl_queue [$:p_depth];
+
+  logic   rand_push;
+  logic   rand_pop;
+  t_entry rand_wdata;
+  logic   exp_empty;
+  logic   exp_full;
+  t_entry exp_rdata;
+
+  task test_case_3_random();
+    t.test_case_begin( "test_case_3_random" );
+
+    // Push once, to avoid having an empty queue (rdata undetermined)
+    // rand_wdata = t_entry'($urandom(t.seed));
+    // check( 0, 1, 0,  1, 0, rand_wdata, t_entry'('h00000000) );
+    // fl_queue.push_back( rand_wdata );
+
+    for( int i = 0; i < 30; i = i + 1 ) begin
+      rand_push  = 1'($urandom());
+      rand_pop   = 1'($urandom());
+      rand_wdata = t_entry'($urandom());
+
+      if( fl_queue.size() == 0       ) rand_pop  = 0;
+      if( fl_queue.size() == p_depth ) rand_push = 0;
+
+      exp_empty = ( fl_queue.size() == 0       );
+      exp_full  = ( fl_queue.size() == p_depth );
+      exp_rdata = ( exp_empty ) ? t_entry'(1'bx) : fl_queue[0];
+
+      check( 0, rand_push, rand_pop, exp_empty, exp_full, 
+             rand_wdata, exp_rdata, int'(!exp_empty) );
+
+      if( rand_push ) fl_queue.push_back( rand_wdata );
+      if( rand_pop  ) fl_queue.delete(0);
+    end
+  endtask
+
+  //----------------------------------------------------------------------
   // run_test_suite
   //----------------------------------------------------------------------
 
@@ -116,7 +186,8 @@ module FifoTestSuite #(
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-
+    if ((t.n <= 0) || (t.n == 2)) test_case_2_full();
+    if ((t.n <= 0) || (t.n == 3)) test_case_3_random();
 
   endtask
 endmodule
