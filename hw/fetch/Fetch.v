@@ -173,6 +173,16 @@ module Fetch
     unused_resp_len = mem.resp_msg.len;
   end
 
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+`ifndef SYNTHESIS
+  string trace;
+  always_comb
+    trace = $sformatf("(%h)", req_opaque);
+`endif
+
 endmodule
 
 `endif // HW_FETCH_FETCH_V

@@ -94,7 +94,7 @@ module FetchTestSuite #(
   Tracer tracer ( clk, {
     fl_mem_test_server.trace,
     " | ",
-    dut.req_opaque,
+    dut.trace,
     " | ",
     fl_D_test_intf.trace
   });
@@ -213,10 +213,11 @@ module Fetch_test;
   FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
   FetchTestSuite #(1)                                   suite_1;
   FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3;
-  // FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4;
-  // FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5;
+  FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4;
+  FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5;
   FetchTestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6;
-  // FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7;
+  FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7;
+  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8;
 
   int s;
 
@@ -224,14 +225,14 @@ module Fetch_test;
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
 
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    
+    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
-    // if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
-    // if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
+    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
     if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
-    // if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
+    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
+    if ((s <= 0) || (s == 7)) suite_8.run_test_suite();
 
     test_bench_end();
   end
