@@ -91,7 +91,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
     SOURCES ${V_TEST_FILE_PATH} 
     INCLUDE_DIRS ${V_INCL_DIR}
     TRACE
-    VERILATOR_ARGS --timing
+    VERILATOR_ARGS --timing --flatten
   )
 
   add_dependencies(check ${V_TEST_BIN})

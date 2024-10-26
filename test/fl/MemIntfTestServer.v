@@ -6,6 +6,7 @@
 `include "hw/util/DelayStream.v"
 `include "intf/MemIntf.v"
 `include "test/FLTestUtils.v"
+`include "test/TraceUtils.v"
 `include "types/MemMsg.v"
 
 `ifndef TEST_FL_MEM_INTF_TEST_SERVER_V
@@ -19,7 +20,8 @@ module MemIntfTestServer #(
   parameter p_recv_intv_delay = 1,
 
   parameter p_addr_bits = 32,
-  parameter p_data_bits = 32
+  parameter p_data_bits = 32,
+  parameter p_opaq_bits = 8
 )(
   input  logic clk,
   input  logic rst,
@@ -126,6 +128,56 @@ module MemIntfTestServer #(
     end
   end
   // verilator lint_on BLKSEQ
+
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+  function int ceil_div_4( int val );
+    return (val / 4) + (val % 4);
+  endfunction
+
+  string trace;
+
+  always_comb begin
+    string req_linetrace, resp_linetrace;
+    int str_len;
+
+    str_len = 2 + 1 +                       // op
+              ceil_div_4(p_opaq_bits) + 1 + // opaque
+              ceil_div_4(p_addr_bits) + 1 + // addr
+              ceil_div_4(p_data_bits);      // data
+
+    if( dut.req_val & dut.req_rdy ) begin
+      case( dut.req_msg.op )
+        MEM_MSG_READ:  req_linetrace = "rd:";
+        MEM_MSG_WRITE: req_linetrace = "wr:";
+        default:       req_linetrace = "??:";
+      endcase
+
+      req_linetrace = {req_linetrace, $sformatf("%h:%h:%h", 
+                       dut.req_msg.opaque, dut.req_msg.addr,
+                       dut.req_msg.data)};
+    end else begin
+      req_linetrace = {str_len{" "}};
+    end
+
+    if( dut.resp_val & dut.resp_rdy ) begin
+      case( dut.resp_msg.op )
+        MEM_MSG_READ:  resp_linetrace = "rd:";
+        MEM_MSG_WRITE: resp_linetrace = "wr:";
+        default:       resp_linetrace = "??:";
+      endcase
+
+      resp_linetrace = {resp_linetrace, $sformatf("%h:%h:%h", 
+                       dut.resp_msg.opaque, dut.resp_msg.addr,
+                       dut.resp_msg.data)};
+    end else begin
+      resp_linetrace = {str_len{" "}};
+    end
+
+    trace = $sformatf("%s > %s", req_linetrace, resp_linetrace);
+  end
 
 endmodule
 

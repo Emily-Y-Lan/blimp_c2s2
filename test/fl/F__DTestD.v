@@ -115,13 +115,15 @@ module F__DTestD #(
         actual_msg = dut_queue.dequeue();
         exp_msg    = transaction_queue.pop_front();
 
-        // Check the actual vs expectation
-        `CHECK_EQ( actual_msg.inst, exp_msg.exp_inst );
-        `CHECK_EQ( actual_msg.pc,   exp_msg.exp_pc   );
-
         // Set squash/branch target
         dut.squash        = exp_msg.dut_squash;
         dut.branch_target = exp_msg.dut_branch_target;
+
+        #2;
+
+        // Check the actual vs expectation
+        `CHECK_EQ( actual_msg.inst, exp_msg.exp_inst );
+        `CHECK_EQ( actual_msg.pc,   exp_msg.exp_pc   );
       end else begin
         dut.squash        = 1'b0;
         dut.branch_target = 'x;
@@ -129,6 +131,37 @@ module F__DTestD #(
     end
   end
 
+  // verilator lint_on BLKSEQ
+
+  //----------------------------------------------------------------------
+  // Linetrace
+  //----------------------------------------------------------------------
+
+  function int ceil_div_4( int val );
+    return (val / 4) + (val % 4);
+  endfunction
+
+  string trace;
+
+  // verilator lint_off BLKSEQ
+  always_comb begin
+    int str_len;
+
+    str_len = ceil_div_4(p_inst_bits) + 1 + // inst
+              ceil_div_4(p_addr_bits);      // addr
+
+    if( dut.val & dut.rdy )
+      trace = $sformatf("%h:%h", dut.pc, dut.inst);
+    else
+      trace = {str_len{" "}};
+
+    trace = {trace, " "};
+
+    if( dut.squash )
+      trace = {trace, $sformatf("(%h)", dut.branch_target)};
+    else
+      trace = {trace, $sformatf("(%s)", {ceil_div_4(p_addr_bits){" "}})};
+  end
   // verilator lint_on BLKSEQ
 
 endmodule

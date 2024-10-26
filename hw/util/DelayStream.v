@@ -79,7 +79,7 @@ module DelayStream #(
     else begin
       if( send_intv_delay == 0 ) begin
         send_rdy <= 1'b1;
-        #1;
+        #2;
         if( send_val ) begin
           enqueue( send_msg );
           send_intv_delay <= p_send_intv_delay;
@@ -115,7 +115,7 @@ module DelayStream #(
       if( (recv_intv_delay == 0) & (num_msgs() > 0) ) begin
         recv_val <= 1'b1;
         recv_msg <= msg_queue[0];
-        #1;
+        #2;
         if( recv_rdy ) begin
           msg_queue.pop_front();
           recv_intv_delay <= p_recv_intv_delay;
