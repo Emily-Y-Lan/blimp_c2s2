@@ -4,7 +4,8 @@
 #=========================================================================
 # A helper script for linting Blimp's components
 
-VERILOG_FILES=$(find . -name "*_test.v")
+VERILOG_SOURCES=$(find . -name "*.v" ! -name "*_test.v")
+VERILOG_TESTS=$(find . -name "*_test.v")
 
 RED='\033[1;31m'
 GREEN='\033[1;32m'
@@ -24,14 +25,38 @@ success() {
 }
 
 #-------------------------------------------------------------------------
+# Format with Verible
+#-------------------------------------------------------------------------
+# Don't format tests, however; spaces for alignment are often needed
+
+# if command -v verible-verilog-format 2>&1 >/dev/null; then
+#   info "Formatting with Verible..."
+#   verible-verilog-format --inplace --flagfile verible_flags.txt $VERILOG_SOURCES
+#   if [ $? == 0 ]; then
+#       success "Formatted!"
+#   else
+#       error "Could not format"
+#       exit 1
+#   fi
+# else
+#   info "Not formatting with Verible (couldn't find)"
+# fi
+
+#-------------------------------------------------------------------------
 # Lint with Verilator
 #-------------------------------------------------------------------------
+# Only lint from the tests (others may throw issues due to interfaces not
+# being driven from both sides)
 
-info "Linting with Verilator..."
-verilator --lint-only -Wall --timing verilator_waivers.vlt $VERILOG_FILES
-if [ $? == 0 ]; then
-    success "Lint clean!"
+if command -v verilator 2>&1 >/dev/null; then
+  info "Linting with Verilator..."
+  verilator --lint-only -Wall --timing verilator_waivers.vlt $VERILOG_TESTS
+  if [ $? == 0 ]; then
+      success "Lint clean!"
+  else
+      error "Not lint clean"
+      exit 1
+  fi
 else
-    error "Not lint clean"
-    exit 1
+  info "Not linting with Verilator (couldn't find)"
 fi
