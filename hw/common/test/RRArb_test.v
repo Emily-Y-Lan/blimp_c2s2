@@ -199,7 +199,7 @@ module RRArbTestSuite #(
     if ( (t.n <= 0) || (t.n == 2)) test_case_2_no_grant();
     if (((t.n <= 0) || (t.n == 3)) 
          & (p_width >= 4))         test_case_3_oscillate();
-    if ( (t.n <= 0) || (t.n == 3)) test_case_4_random();
+    if ( (t.n <= 0) || (t.n == 4)) test_case_4_random();
 
   endtask
 endmodule
@@ -212,7 +212,7 @@ module RRArb_test;
   RRArbTestSuite #(1)     suite_1;
   RRArbTestSuite #(2,  8) suite_2;
   RRArbTestSuite #(3, 32) suite_3;
-  RRArbTestSuite #(3,  1) suite_4;
+  RRArbTestSuite #(4,  1) suite_4;
 
   int s;
 

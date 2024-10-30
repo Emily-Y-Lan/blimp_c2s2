@@ -17,6 +17,10 @@ module Tracer (
   input string trace_strs []
 );
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Keep track of whether we're enabled
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
   logic enabled;
   initial enabled = 0;
 
@@ -28,13 +32,28 @@ module Tracer (
     enabled = 0;
   endtask
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Keep track of the number of cycles in
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  int num_cycles;
+
+  initial num_cycles = 0;
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Output the trace
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   always_ff @( posedge clk ) begin
     #2;
     if( enabled ) begin
-      $write("      ");
+      $write("      %3d: ", num_cycles );
       foreach( trace_strs[i] )
         $write(trace_strs[i]);
       $display("");
+      num_cycles <= num_cycles + 1;
+    end else begin
+      num_cycles <= 0;
     end
   end
 endmodule

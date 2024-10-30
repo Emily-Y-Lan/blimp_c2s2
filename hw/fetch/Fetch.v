@@ -17,9 +17,9 @@ module Fetch
   // Interface Parameters
   //----------------------------------------------------------------------
 
-  parameter p_addr_bits = 32,
-  parameter p_inst_bits = 32,
-  parameter p_opaq_bits = 8
+  // parameter p_addr_bits = 32,
+  // parameter p_inst_bits = 32,
+  // parameter p_opaq_bits = 8
 )
 (
   input  logic    clk,
@@ -38,6 +38,8 @@ module Fetch
   F__DIntf.F_intf D
 );
 
+  localparam p_addr_bits = MemIntf.p_addr_bits;
+  
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Local Parameters
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,8 +120,7 @@ module Fetch
   logic [p_opaq_bits-1:0] req_opaque_next;
   logic [p_opaq_bits-1:0] req_opaque;
 
-  always_comb
-    req_opaque_next = req_opaque + 1;
+  assign req_opaque_next = req_opaque + 1;
 
   always_ff @( posedge clk ) begin
     if ( rst )
