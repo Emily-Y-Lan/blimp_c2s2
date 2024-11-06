@@ -33,6 +33,8 @@ int main( int argc, char** argv )
     top->eval();
   }
 
+  int exit_code = top->exit_code;
+
   // Final model cleanup
   top->final();
 
@@ -40,5 +42,5 @@ int main( int argc, char** argv )
   delete top;
 
   // Return good completion status
-  return 0;
+  return exit_code;
 }

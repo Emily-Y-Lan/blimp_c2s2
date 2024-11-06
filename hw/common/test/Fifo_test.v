@@ -182,13 +182,14 @@ module FifoTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite();
+  task run_test_suite(inout logic exit_code);
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
     if ((t.n <= 0) || (t.n == 2)) test_case_2_full();
     if ((t.n <= 0) || (t.n == 3)) test_case_3_random();
 
+    exit_code |= t.failed;
   endtask
 endmodule
 
@@ -196,7 +197,9 @@ endmodule
 // Fifo_test
 //========================================================================
 
-module Fifo_test;
+module Fifo_test(
+  output logic exit_code
+);
   FifoTestSuite #(1)                  suite_1;
   FifoTestSuite #(2, logic,       32) suite_2;
   FifoTestSuite #(3, logic [7:0], 2 ) suite_3;
@@ -206,10 +209,11 @@ module Fifo_test;
   initial begin
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
+    exit_code = 0;
 
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 1)) suite_1.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 2)) suite_2.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 3)) suite_3.run_test_suite(exit_code);
 
     test_bench_end();
   end

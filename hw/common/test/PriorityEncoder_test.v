@@ -145,7 +145,7 @@ module PriorityEncoderTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite();
+  task run_test_suite(inout logic exit_code);
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
@@ -153,6 +153,7 @@ module PriorityEncoderTestSuite #(
     if ((t.n <= 0) || (t.n == 3)) test_case_3_multi_bit();
     if ((t.n <= 0) || (t.n == 4)) test_case_4_random();
 
+    exit_code |= t.failed;
   endtask
 endmodule
 
@@ -160,7 +161,9 @@ endmodule
 // PriorityEncoder_test
 //========================================================================
 
-module PriorityEncoder_test;
+module PriorityEncoder_test(
+  output logic exit_code
+);
   PriorityEncoderTestSuite #(1)     suite_1;
   PriorityEncoderTestSuite #(2,  8) suite_2;
   PriorityEncoderTestSuite #(3, 32) suite_3;
@@ -171,11 +174,12 @@ module PriorityEncoder_test;
   initial begin
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
+    exit_code = 0;
 
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
-    if ((s <= 0) || (s == 3)) suite_4.run_test_suite();
+    if ((s <= 0) || (s == 1)) suite_1.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 2)) suite_2.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 3)) suite_3.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 3)) suite_4.run_test_suite(exit_code);
 
     test_bench_end();
   end
