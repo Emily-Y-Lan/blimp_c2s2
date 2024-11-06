@@ -19,7 +19,7 @@ module Fetch
 
   // parameter p_addr_bits = 32,
   // parameter p_inst_bits = 32,
-  // parameter p_opaq_bits = 8
+  parameter p_opaq_bits = 8
 )
 (
   input  logic    clk,
@@ -38,14 +38,15 @@ module Fetch
   F__DIntf.F_intf D
 );
 
-  localparam p_addr_bits = MemIntf.p_addr_bits;
+  localparam p_addr_bits = D.p_addr_bits;
+  localparam p_inst_bits = D.p_inst_bits;
   
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Local Parameters
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
-  localparam MAX_IN_FLIGHT  = 2 ** p_opaq_bits;
-  localparam type t_req_msg = type(mem.req_msg);
+  localparam p_max_in_flight = 2 ** p_opaq_bits;
+  localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
   // Request
@@ -130,7 +131,7 @@ module Fetch
   end
 
   always_comb begin
-    mem.req_val        = (num_in_flight < MAX_IN_FLIGHT);
+    mem.req_val        = (num_in_flight < p_max_in_flight);
     mem.req_msg.op     = MEM_MSG_READ;
     mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
     mem.req_msg.len    = '0;

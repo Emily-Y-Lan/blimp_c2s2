@@ -29,18 +29,18 @@ success() {
 #-------------------------------------------------------------------------
 # Don't format tests, however; spaces for alignment are often needed
 
-if command -v verible-verilog-format 2>&1 >/dev/null; then
-  info "Formatting with Verible..."
-  verible-verilog-format --inplace --flagfile verible_flags.txt $VERILOG_SOURCES
-  if [ $? == 0 ]; then
-      success "Formatted!"
-  else
-      error "Could not format"
-      exit 1
-  fi
-else
-  info "Not formatting with Verible (couldn't find)"
-fi
+# if command -v verible-verilog-format 2>&1 >/dev/null; then
+#   info "Formatting with Verible..."
+#   verible-verilog-format --inplace --flagfile verible_flags.txt $VERILOG_SOURCES
+#   if [ $? == 0 ]; then
+#       success "Formatted!"
+#   else
+#       error "Could not format"
+#       exit 1
+#   fi
+# else
+#   info "Not formatting with Verible (couldn't find)"
+# fi
 
 #-------------------------------------------------------------------------
 # Lint with Verilator

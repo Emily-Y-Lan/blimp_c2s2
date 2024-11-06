@@ -60,8 +60,8 @@ module FetchTestSuite #(
 
   Fetch #(
     .p_rst_addr  (p_rst_addr ),
-    .p_addr_bits (p_addr_bits),
-    .p_inst_bits (p_inst_bits),
+    // .p_addr_bits (p_addr_bits),
+    // .p_inst_bits (p_inst_bits),
     .p_opaq_bits (p_opaq_bits)
   ) dut (
     .mem (mem_intf),
