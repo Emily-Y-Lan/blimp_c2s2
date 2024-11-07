@@ -24,7 +24,6 @@ package ISA;
   typedef enum logic [p_num_pipe_types-1:0] {
     RVI_ARITH  = 4'b0001,
     RVI_MEM    = 4'b0010,
-    RVI_JUMP   = 4'b0100,
     RVI_BRANCH = 4'b1000
   } rv_pipe_type;
 

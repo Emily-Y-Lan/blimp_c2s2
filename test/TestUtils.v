@@ -74,6 +74,7 @@ module TestUtils
   // Error count
 
   logic failed = 0;
+  int exit_code = 0;
 
   // This variable holds the +test-case command line argument indicating
   // which test cases to run.
@@ -151,6 +152,7 @@ endmodule
     else                                                                \
       $write( "%sF%s", `RED, `RESET );                                  \
     t.failed = 1;                                                       \
+    t.exit_code += 1;                                                   \
   end                                                                   \
   else begin                                                            \
     if ( t.n == 0 )                                                     \

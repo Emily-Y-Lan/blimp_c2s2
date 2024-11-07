@@ -196,7 +196,7 @@ module RegfileTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite(inout logic exit_code);
+  task run_test_suite(inout int exit_code);
     t.test_suite_begin( suite_name );
 
     if ( (t.n <= 0) || (t.n == 1)) test_case_1_basic();
@@ -205,7 +205,7 @@ module RegfileTestSuite #(
     if ( (t.n <= 0) || (t.n == 4)) test_case_4_multi_read();
     if ( (t.n <= 0) || (t.n == 5)) test_case_5_random();
 
-    exit_code |= t.failed;
+    exit_code += t.exit_code;
   endtask
 endmodule
 
@@ -214,7 +214,7 @@ endmodule
 //========================================================================
 
 module Regfile_test(
-  output logic exit_code
+  output int exit_code
 );
   RegfileTestSuite #(1)                  suite_1;
   RegfileTestSuite #(2, logic[15:0], 32) suite_2;

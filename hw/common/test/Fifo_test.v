@@ -182,14 +182,14 @@ module FifoTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite(inout logic exit_code);
+  task run_test_suite(inout int exit_code);
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
     if ((t.n <= 0) || (t.n == 2)) test_case_2_full();
     if ((t.n <= 0) || (t.n == 3)) test_case_3_random();
 
-    exit_code |= t.failed;
+    exit_code += t.exit_code;
   endtask
 endmodule
 
@@ -198,7 +198,7 @@ endmodule
 //========================================================================
 
 module Fifo_test(
-  output logic exit_code
+  output int exit_code
 );
   FifoTestSuite #(1)                  suite_1;
   FifoTestSuite #(2, logic,       32) suite_2;

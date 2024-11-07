@@ -192,7 +192,7 @@ module RRArbTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite(inout logic exit_code);
+  task run_test_suite(inout int exit_code);
     t.test_suite_begin( suite_name );
 
     if ( (t.n <= 0) || (t.n == 1)) test_case_1_basic();
@@ -201,7 +201,7 @@ module RRArbTestSuite #(
          & (p_width >= 4))         test_case_3_oscillate();
     if ( (t.n <= 0) || (t.n == 4)) test_case_4_random();
 
-    exit_code |= t.failed;
+    exit_code += t.exit_code;
   endtask
 endmodule
 
@@ -210,7 +210,7 @@ endmodule
 //========================================================================
 
 module RRArb_test(
-  output logic exit_code
+  output int exit_code
 );
   RRArbTestSuite #(1)     suite_1;
   RRArbTestSuite #(2,  8) suite_2;

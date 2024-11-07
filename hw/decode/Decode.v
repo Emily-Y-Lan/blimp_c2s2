@@ -7,14 +7,42 @@
 `define HW_DECODE_DECODE_V
 
 `include "defs/ISA.v"
+`include "hw/decode/decode_variants/DecodeBasic.v"
+`include "intf/F__DIntf.v"
+`include "intf/D__XIntf.v"
 
 module Decode #(
-  parameter p_decode_type                 = "simple",
-  parameter p_num_pipes                   = 1,
-  parameter p_pipe_types [p_num_pipe-1:0] = {
-    RVI_ARITH | RVI_MEM | RVI_JUMP | RVI_BRANCH
-  }
+  parameter p_decode_type = "basic"
+) (
+  input  logic clk,
+  input  logic rst,
+
+  //----------------------------------------------------------------------
+  // F <-> D Interface
+  //----------------------------------------------------------------------
+
+  F__DIntf.D_intf F,
+
+  //----------------------------------------------------------------------
+  // D <-> X Interface
+  //----------------------------------------------------------------------
+
+  D__XIntf.D_intf Ex
 );
+
+generate
+  //----------------------------------------------------------------------
+  // basic
+  //----------------------------------------------------------------------
+
+  if ( p_decode_type == "basic" ) begin
+    DecodeBasics decode (
+      .*
+    );
+  end else begin
+    $error("Unknown decode type: '%s'", p_decode_type);
+  end
+endgenerate
 
 endmodule
 
