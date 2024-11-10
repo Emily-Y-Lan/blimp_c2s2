@@ -4,7 +4,7 @@
 // A testbench for our immediate generator
 
 `include "test/TestUtils.v"
-`include "hw/decode/ImmGen.v"
+`include "hw/decode_issue/ImmGen.v"
 
 import TestEnv::*;
 
@@ -141,7 +141,7 @@ module ImmGenTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite(inout int exit_code);
+  task run_test_suite();
     t.test_suite_begin( suite_name );
 
     if ( (t.n <= 0) || (t.n == 1)) test_case_1_imm_i();
@@ -150,7 +150,6 @@ module ImmGenTestSuite #(
     if ( (t.n <= 0) || (t.n == 4)) test_case_4_imm_u();
     if ( (t.n <= 0) || (t.n == 5)) test_case_5_imm_j();
 
-    exit_code += t.exit_code;
   endtask
 endmodule
 
@@ -158,9 +157,7 @@ endmodule
 // Regfile_test
 //========================================================================
 
-module ImmGen_test(
-  output int exit_code
-);
+module ImmGen_test;
   ImmGenTestSuite #(1) suite_1;
 
   int s;
@@ -168,9 +165,8 @@ module ImmGen_test(
   initial begin
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
-    exit_code = 0;
 
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
 
     test_bench_end();
   end

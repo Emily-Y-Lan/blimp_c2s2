@@ -4,7 +4,7 @@
 // A testbench for our parametrized register
 
 `include "test/TestUtils.v"
-`include "hw/decode/Regfile.v"
+`include "hw/decode_issue/Regfile.v"
 
 import TestEnv::*;
 
@@ -196,7 +196,7 @@ module RegfileTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite(inout int exit_code);
+  task run_test_suite();
     t.test_suite_begin( suite_name );
 
     if ( (t.n <= 0) || (t.n == 1)) test_case_1_basic();
@@ -205,7 +205,6 @@ module RegfileTestSuite #(
     if ( (t.n <= 0) || (t.n == 4)) test_case_4_multi_read();
     if ( (t.n <= 0) || (t.n == 5)) test_case_5_random();
 
-    exit_code += t.exit_code;
   endtask
 endmodule
 
@@ -213,9 +212,7 @@ endmodule
 // Regfile_test
 //========================================================================
 
-module Regfile_test(
-  output int exit_code
-);
+module Regfile_test;
   RegfileTestSuite #(1)                  suite_1;
   RegfileTestSuite #(2, logic[15:0], 32) suite_2;
   RegfileTestSuite #(3, logic[31:0], 8 ) suite_3;
@@ -226,12 +223,11 @@ module Regfile_test(
   initial begin
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
-    exit_code = 0;
 
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 4)) suite_4.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
+    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
+    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
 
     test_bench_end();
   end

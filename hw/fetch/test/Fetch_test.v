@@ -195,14 +195,13 @@ module FetchTestSuite #(
   // run_test_suite
   //----------------------------------------------------------------------
 
-  task run_test_suite(inout int exit_code);
+  task run_test_suite();
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
     if ((t.n <= 0) || (t.n == 2)) test_case_2_branch_basic();
     if ((t.n <= 0) || (t.n == 3)) test_case_3_branch_forward();
 
-    exit_code += t.exit_code + fl_D_test_intf.t.exit_code;
   endtask
 endmodule
 
@@ -210,9 +209,7 @@ endmodule
 // Fetch_test
 //========================================================================
 
-module Fetch_test(
-  output int exit_code
-);
+module Fetch_test;
   FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
   FetchTestSuite #(1)                                   suite_1;
   FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3;
@@ -227,16 +224,15 @@ module Fetch_test(
   initial begin
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
-    exit_code = 0;
 
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 4)) suite_4.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 5)) suite_5.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 6)) suite_6.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 7)) suite_7.run_test_suite(exit_code);
-    if ((s <= 0) || (s == 7)) suite_8.run_test_suite(exit_code);
+    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
+    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
+    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
+    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
+    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
+    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
+    if ((s <= 0) || (s == 7)) suite_8.run_test_suite();
 
     test_bench_end();
   end

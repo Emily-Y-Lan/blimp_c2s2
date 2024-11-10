@@ -18,11 +18,35 @@
 `define PURPLE "\033[35m"
 `define RESET  "\033[0m"
 
+//------------------------------------------------------------------------
+// TestStatus
+//------------------------------------------------------------------------
+// A class to statically track the number of failed tests, acting as a
+// way to hold a global variable of failed tests
+
+class TestStatus;
+  static int num_failed = 0;
+
+  static task test_fail();
+    num_failed += 1;
+  endtask
+endclass
+
+function int num_failed_tests();
+  return TestStatus::num_failed;
+endfunction
+
+export "DPI-C" function num_failed_tests;
+
+//------------------------------------------------------------------------
+// TestEnv
+//------------------------------------------------------------------------
+
 package TestEnv;
 
-  //------------------------------------------------------------------------
+  //----------------------------------------------------------------------
   // get_test_suite
-  //------------------------------------------------------------------------
+  //----------------------------------------------------------------------
 
   function int get_test_suite();
     if ( !$value$plusargs( "test-suite=%d", get_test_suite ) )
@@ -74,7 +98,6 @@ module TestUtils
   // Error count
 
   logic failed = 0;
-  int exit_code = 0;
 
   // This variable holds the +test-case command line argument indicating
   // which test cases to run.
@@ -152,7 +175,7 @@ endmodule
     else                                                                \
       $write( "%sF%s", `RED, `RESET );                                  \
     t.failed = 1;                                                       \
-    t.exit_code += 1;                                                   \
+    TestStatus::test_fail();                                            \
   end                                                                   \
   else begin                                                            \
     if ( t.n == 0 )                                                     \

@@ -6,8 +6,8 @@
 `ifndef HW_DECODE_DECODE_VARIANTS_BASIC_V
 `define HW_DECODE_DECODE_VARIANTS_BASIC_V
 
-`include "hw/decode/ImmGen.v"
-`include "hw/decode/Regfile.v"
+`include "hw/decode_issue/ImmGen.v"
+`include "hw/decode_issue/Regfile.v"
 `include "defs/ISA.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"

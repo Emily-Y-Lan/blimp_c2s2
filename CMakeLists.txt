@@ -11,8 +11,8 @@ set(V_TEST_FILES
   hw/common/test/Fifo_test.v
   hw/common/test/PriorityEncoder_test.v
   hw/common/test/RRArb_test.v
-  hw/decode/test/ImmGen_test.v
-  hw/decode/test/Regfile_test.v
+  hw/decode_issue/test/ImmGen_test.v
+  hw/decode_issue/test/Regfile_test.v
   hw/fetch/test/Fetch_test.v
 )
 
@@ -85,6 +85,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
     VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
+    VERILATOR_DPI_HEADER="V${V_TEST_BIN}__Dpi.h"
     VERILATOR_TOP_MODULE=V${V_TEST_BIN}
   )
   verilate(

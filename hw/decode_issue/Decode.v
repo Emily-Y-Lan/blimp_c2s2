@@ -7,7 +7,7 @@
 `define HW_DECODE_DECODE_V
 
 `include "defs/ISA.v"
-`include "hw/decode/decode_variants/DecodeBasic.v"
+`include "hw/decode_issue/variants/DecodeBasic.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 

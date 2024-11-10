@@ -4,10 +4,17 @@
 // A basic simulator for running testbenches
 
 // Include common routines
+#include <stdio.h>
 #include <verilated.h>
 
-// Include model header, generated from Verilating "top.v"
+// Include DPI functions
+#include "svdpi.h"
+
+// Include model header (ex. Vtop.h)
 #include VERILATOR_INCL_HEADER
+
+// Include model's DPI header (ex. Vtop__Dpi.h)
+#include VERILATOR_DPI_HEADER
 
 int main( int argc, char** argv )
 {
@@ -25,6 +32,11 @@ int main( int argc, char** argv )
   // "top.v"
   VERILATOR_TOP_MODULE* top = new VERILATOR_TOP_MODULE{ contextp };
 
+  // Set the scope, for access to DPI functions
+  const svScope scope = svGetScopeFromName( "TOP.$unit" );
+  assert( scope );  // Check for nullptr if scope not found
+  svSetScope( scope );
+
   // Simulate until $finish
   while ( !contextp->gotFinish() ) {
     // Increment time
@@ -33,7 +45,8 @@ int main( int argc, char** argv )
     top->eval();
   }
 
-  int exit_code = top->exit_code;
+  // Get the number of failed tests from the simulator over DPI
+  int exit_code = top->num_failed_tests();
 
   // Final model cleanup
   top->final();
