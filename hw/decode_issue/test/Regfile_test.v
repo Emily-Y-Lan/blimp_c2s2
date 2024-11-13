@@ -142,11 +142,39 @@ module RegfileTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // test_case_4_multi_read
+  // test_case_4_all
   //----------------------------------------------------------------------
 
-  task test_case_4_multi_read();
-    t.test_case_begin( "test_case_4_multi_read" );
+  logic [p_addr_bits-1:0] curr_addr;
+  t_entry                 curr_data;
+  logic [p_addr_bits-1:0] prev_addr;
+  t_entry                 prev_data;
+
+  task test_case_4_all();
+    t.test_case_begin( "test_case_4_all" );
+
+    prev_addr = '0;
+    prev_data = '0;
+
+    for ( int i = 1; i < p_num_regs; i = i + 1 ) begin
+      curr_addr = p_addr_bits'(i);
+      curr_data = t_entry'($urandom());
+
+      check( 0, prev_addr, prev_data, prev_addr, prev_data, curr_addr, curr_data, 1 );
+
+      prev_addr = curr_addr;
+      prev_data = curr_data;
+    end
+
+    check( 0, prev_addr, prev_data, prev_addr, prev_data, p_addr_bits'('0), t_entry'('0), 0 );
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_5_multi_read
+  //----------------------------------------------------------------------
+
+  task test_case_5_multi_read();
+    t.test_case_begin( "test_case_5_multi_read" );
 
     //    rst raddr0              rdata0            raddr1              rdata1            waddr               waddr            wen
     check( 0, p_addr_bits'('h00), t_entry'('h0000), p_addr_bits'('h00), t_entry'('h0000), p_addr_bits'('h06), t_entry'('h1234), 1 );
@@ -156,7 +184,7 @@ module RegfileTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // test_case_5_random
+  // test_case_6_random
   //----------------------------------------------------------------------
 
   t_entry rand_regs [p_num_regs-1:0];
@@ -172,8 +200,8 @@ module RegfileTestSuite #(
   t_entry                 exp_rdata0;
   t_entry                 exp_rdata1;
 
-  task test_case_5_random();
-    t.test_case_begin( "test_case_5_random" );
+  task test_case_6_random();
+    t.test_case_begin( "test_case_6_random" );
 
     for ( int i = 0; i < 20; i = i + 1 ) begin
       rand_raddr0 = p_addr_bits'($urandom());
@@ -202,8 +230,9 @@ module RegfileTestSuite #(
     if ( (t.n <= 0) || (t.n == 1)) test_case_1_basic();
     if ( (t.n <= 0) || (t.n == 2)) test_case_2_reset();
     if ( (t.n <= 0) || (t.n == 3)) test_case_3_zero();
-    if ( (t.n <= 0) || (t.n == 4)) test_case_4_multi_read();
-    if ( (t.n <= 0) || (t.n == 5)) test_case_5_random();
+    if ( (t.n <= 0) || (t.n == 4)) test_case_4_all();
+    if ( (t.n <= 0) || (t.n == 5)) test_case_5_multi_read();
+    if ( (t.n <= 0) || (t.n == 6)) test_case_6_random();
 
   endtask
 endmodule

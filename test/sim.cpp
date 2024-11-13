@@ -51,6 +51,11 @@ int main( int argc, char** argv )
   // Final model cleanup
   top->final();
 
+#if VM_COVERAGE
+  Verilated::mkdir( "logs" );
+  contextp->coveragep()->write( "logs/coverage.dat" );
+#endif
+
   // Destroy model
   delete top;
 

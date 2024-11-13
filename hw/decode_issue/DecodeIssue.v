@@ -1,18 +1,18 @@
 //========================================================================
-// Decode.v
+// DecodeIssue.v
 //========================================================================
 // A modular decode unit for decoding and issuing instructions
 
 `ifndef HW_DECODE_DECODE_V
 `define HW_DECODE_DECODE_V
 
-`include "defs/ISA.v"
-`include "hw/decode_issue/variants/DecodeBasic.v"
+`include "hw/decode_issue/decode_variants/DecodeBasic.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 
-module Decode #(
-  parameter p_decode_type = "basic"
+module DecodeIssue #(
+  parameter p_decode_issue_type = "basic",
+  parameter p_num_pipes         = 1
 ) (
   input  logic clk,
   input  logic rst,
@@ -27,7 +27,7 @@ module Decode #(
   // D <-> X Interface
   //----------------------------------------------------------------------
 
-  D__XIntf.D_intf Ex
+  D__XIntf.D_intf Ex [p_num_pipes-1:0]
 );
 
 generate
@@ -35,12 +35,14 @@ generate
   // basic
   //----------------------------------------------------------------------
 
-  if ( p_decode_type == "basic" ) begin
-    DecodeBasics decode (
+  if ( p_decode_issue_type == "basic" ) begin
+    DecodeBasic #(p_num_pipes) decode (
       .*
     );
-  end else begin
-    $error("Unknown decode type: '%s'", p_decode_type);
+  end
+  
+  else begin
+    $error("Unknown decode type: '%s'", p_decode_issue_type);
   end
 endgenerate
 

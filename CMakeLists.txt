@@ -16,6 +16,12 @@ set(V_TEST_FILES
   hw/fetch/test/Fetch_test.v
 )
 
+set(RV32_ASM_FILES
+  test/asm/rv32/arith32.cpp
+  test/asm/rv32/asm32.cpp
+  test/asm/rv32/utils32.cpp
+)
+
 #-------------------------------------------------------------------------
 # Boilerplate
 #-------------------------------------------------------------------------
@@ -71,6 +77,12 @@ function(remove_extension VARNAME FILE_NAME)
 endfunction()
 
 #------------------------------------------------------------------------
+# RV32 ASM Library
+#------------------------------------------------------------------------
+
+add_library(RV32_ASM_LIB STATIC ${RV32_ASM_FILES})
+
+#------------------------------------------------------------------------
 # Add our targets
 #------------------------------------------------------------------------
 
@@ -83,6 +95,8 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
   add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
+  target_link_libraries(${V_TEST_BIN} PRIVATE RV32_ASM_LIB) 
+
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
     VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
     VERILATOR_DPI_HEADER="V${V_TEST_BIN}__Dpi.h"

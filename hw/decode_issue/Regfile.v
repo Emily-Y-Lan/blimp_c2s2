@@ -35,15 +35,22 @@ module Regfile #(
   // Storage Elements
   //----------------------------------------------------------------------
 
-  t_entry regs [p_num_regs-1:0];
+  t_entry regs [p_num_regs-1:1];
 
   //----------------------------------------------------------------------
   // Read Interface
   //----------------------------------------------------------------------
 
   always_comb begin
-    rdata[0] = regs[raddr[0]];
-    rdata[1] = regs[raddr[1]];
+    if( raddr[0] == '0 )
+      rdata[0] = '0;
+    else
+      rdata[0] = regs[raddr[0]];
+    
+    if( raddr[1] == '0 )
+      rdata[1] = '0;
+    else
+      rdata[1] = regs[raddr[1]];
   end
 
   //----------------------------------------------------------------------

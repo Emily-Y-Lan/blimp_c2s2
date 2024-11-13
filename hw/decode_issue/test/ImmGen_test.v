@@ -33,7 +33,7 @@ module ImmGenTestSuite #(
   //----------------------------------------------------------------------
 
   logic [31:0] dut_inst;
-  imm_type     dut_imm_sel;
+  rv_imm_type  dut_imm_sel;
   logic [31:0] dut_imm;
 
   ImmGen DUT (
@@ -51,7 +51,7 @@ module ImmGenTestSuite #(
 
   task check (
     input logic [31:0] inst,
-    input imm_type     imm_sel,
+    input rv_imm_type  imm_sel,
     input logic [31:0] imm
   );
     if ( !t.failed ) begin

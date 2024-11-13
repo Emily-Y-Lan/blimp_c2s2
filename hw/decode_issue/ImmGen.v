@@ -6,17 +6,13 @@
 `ifndef HW_DECODE_IMMGEN_V
 `define HW_DECODE_IMMGEN_V
 
-typedef enum logic [2:0] {
-  IMM_I,
-  IMM_S,
-  IMM_B,
-  IMM_U,
-  IMM_J
-} imm_type;
+`include "defs/ISA.v"
+
+import ISA::*;
 
 module ImmGen (
   input  logic [31:0] inst,
-  input  imm_type     imm_sel,
+  input  rv_imm_type  imm_sel,
   output logic [31:0] imm
 );
 
