@@ -1,10 +1,10 @@
 //========================================================================
-// utils.h
+// inst32_utils.h
 //========================================================================
 // Utility function declarations for our assembler
 
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef INST32_UTILS_H
+#define INST32_UTILS_H
 
 #include <cstdint>
 #include <string>
@@ -21,6 +21,10 @@ uint32_t rd_mask( std::string reg_name );
 // Immediate Specifiers
 //------------------------------------------------------------------------
 
-uint32_t imm_i_mask( int imm );
+uint32_t imm_i_mask( std::string imm );
+uint32_t imm_s_mask( std::string imm );
+uint32_t imm_b_mask( std::string imm );
+uint32_t imm_u_mask( std::string imm );
+uint32_t imm_j_mask( std::string imm );
 
-#endif  // UTILS_H
+#endif  // INST32_UTILS_H

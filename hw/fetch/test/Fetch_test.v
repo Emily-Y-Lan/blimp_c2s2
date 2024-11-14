@@ -60,8 +60,6 @@ module FetchTestSuite #(
 
   Fetch #(
     .p_rst_addr  (p_rst_addr ),
-    // .p_addr_bits (p_addr_bits),
-    // .p_inst_bits (p_inst_bits),
     .p_opaq_bits (p_opaq_bits)
   ) dut (
     .mem (mem_intf),
@@ -83,9 +81,7 @@ module FetchTestSuite #(
   );
 
   F__DTestD #(
-    .p_dut_intv_delay (p_D_dut_intv_delay),
-    .p_addr_bits      (p_addr_bits),
-    .p_inst_bits      (p_inst_bits)
+    .p_dut_intv_delay (p_D_dut_intv_delay)
   ) fl_D_test_intf (
     .dut (F__D_intf),
     .*

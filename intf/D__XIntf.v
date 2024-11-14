@@ -16,7 +16,10 @@ import ISA::*;
 
 interface D__XIntf
 #(
-  parameter p_isa_subset = RVS_ARITH,
+  // verilator lint_off UNUSEDPARAM
+  parameter p_isa_subset = p_tinyrv1,
+  // verilator lint_on UNUSEDPARAM
+
   parameter p_addr_bits  = 32,
   parameter p_data_bits  = 32
 );
@@ -59,8 +62,8 @@ interface D__XIntf
     input  val,
     output rdy,
 
-    input  squash,
-    input  branch_target
+    output squash,
+    output branch_target
   );
 
 endinterface

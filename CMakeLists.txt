@@ -17,9 +17,9 @@ set(V_TEST_FILES
 )
 
 set(RV32_ASM_FILES
-  test/asm/rv32/arith32.cpp
-  test/asm/rv32/asm32.cpp
-  test/asm/rv32/utils32.cpp
+  test/asm/rv32/assemble32.cpp
+  test/asm/rv32/inst32.cpp
+  test/asm/rv32/inst32_utils.cpp
 )
 
 #-------------------------------------------------------------------------
@@ -33,6 +33,8 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
 enable_testing()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")
 
 #-------------------------------------------------------------------------
 # verilator_share_from_bin

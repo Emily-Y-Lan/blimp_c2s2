@@ -9,7 +9,7 @@
 `include "hw/decode_issue/decoder_variants/DecoderRV32.v"
 
 module Decoder #(
-  parameter p_isa_subset = RVS_ARITH,
+  parameter p_isa_subset = p_tinyrv1,
   parameter p_inst_bits  = 32
 ) (
   input  logic [p_inst_bits-1:0] inst,

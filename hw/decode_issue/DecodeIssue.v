@@ -11,7 +11,7 @@
 `include "intf/D__XIntf.v"
 
 module DecodeIssue #(
-  parameter p_decode_issue_type = "basic",
+  parameter p_decode_issue_type = "basic_tinyrv1",
   parameter p_num_pipes         = 1
 ) (
   input  logic clk,
@@ -35,8 +35,8 @@ generate
   // basic
   //----------------------------------------------------------------------
 
-  if ( p_decode_issue_type == "basic" ) begin
-    DecodeBasic #(p_num_pipes) decode (
+  if ( p_decode_issue_type == "basic_tinyrv1" ) begin
+    DecodeBasic #(p_tinyrv1, p_num_pipes) decode (
       .*
     );
   end

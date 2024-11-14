@@ -23,7 +23,6 @@ module FLTestUtils
 
   // verilator lint_off UNUSEDSIGNAL
   logic failed = 0;
-  int exit_code = 0;
   // verilator lint_on UNUSEDSIGNAL
 
   // This variable holds the +test-case command line argument indicating

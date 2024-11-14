@@ -14,7 +14,8 @@
 `include "intf/D__XIntf.v"
 
 module DecodeBasic #(
-  parameter p_num_pipes = 1
+  parameter p_isa_subset = p_tinyrv1,
+  parameter p_num_pipes  = 1
 ) (
   input  logic clk,
   input  logic rst,

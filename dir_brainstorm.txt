@@ -1,4 +1,0 @@
-/app
-/src
-/fpga
-/asic

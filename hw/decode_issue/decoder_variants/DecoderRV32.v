@@ -11,7 +11,7 @@
 import ISA::*;
 
 module DecoderRV32 #(
-  parameter p_isa_subset = RVS_ARITH
+  parameter p_isa_subset = p_tinyrv1
 ) (
   input  logic [31:0] inst,
 
@@ -74,10 +74,9 @@ module DecoderRV32 #(
       // Arithmetic
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if ( p_isa_subset == RVS_ARITH ) begin
+      if ( ( p_isa_subset & OP_ADD_VEC ) > 0 ) begin
         casez ( inst ) //     v  uop     raddr0 raddr1 imm_sel op2_sel
           `RVI_INST_ADD:  cs( y, OP_ADD, rs1,   rs2,   'x,     op2_rf  );
-          `RVI_INST_MUL:  cs( y, OP_MUL, rs1,   rs2,   'x,     op2_rf  );
           `RVI_INST_ADDI: cs( y, OP_ADD, rs1,   'x,    IMM_I,  op2_imm );
         endcase
       end

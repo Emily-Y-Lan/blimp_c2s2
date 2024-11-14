@@ -137,7 +137,9 @@ module MemIntfTestServer #(
     return (val / 4) + (val % 4);
   endfunction
 
+  // verilator lint_off UNUSEDSIGNAL
   string trace;
+  // verilator lint_on UNUSEDSIGNAL
 
   always_comb begin
     string req_linetrace, resp_linetrace;

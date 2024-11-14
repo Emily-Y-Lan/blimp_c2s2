@@ -1,36 +1,40 @@
 //========================================================================
-// F__DTestD.v
+// D__XTestX.v
 //========================================================================
-// A FL model of the Decode interface, to use in testing
+// A FL model of the Execute interface, to use in testing
 
-`ifndef TEST_FL_F__D_TEST_D_V
-`define TEST_FL_F__D_TEST_D_V
+`ifndef TEST_FL_D__X_TEST_X_V
+`define TEST_FL_D__X_TEST_X_V
 
-`include "hw/util/DelayStream.v"
-`include "intf/F__DIntf.v"
+`include "defs/ISA.v"
+`include "intf/D__XIntf.v"
 `include "test/FLTestUtils.v"
 
-module F__DTestD #(
+import ISA::*;
+
+module D__XTestX #(
   parameter p_dut_intv_delay = 0
 )(
   input logic clk,
   input logic rst,
   
-  F__DIntf.D_intf dut
+  D__XIntf.X_intf dut
 );
 
   FLTestUtils t( .* );
 
   localparam p_addr_bits = dut.p_addr_bits;
-  localparam p_inst_bits = dut.p_inst_bits;
-  
+  localparam p_data_bits = dut.p_data_bits;
+
   //----------------------------------------------------------------------
   // Store expected results in queue
   //----------------------------------------------------------------------
 
   typedef struct {
-    logic [p_inst_bits-1:0] exp_inst;
     logic [p_addr_bits-1:0] exp_pc;
+    logic [p_data_bits-1:0] exp_op1;
+    logic [p_data_bits-1:0] exp_op2;
+    rv_uop                  exp_uop;
     logic                   dut_squash;
     logic [p_addr_bits-1:0] dut_branch_target;
   } transaction;
@@ -40,13 +44,17 @@ module F__DTestD #(
   transaction new_transaction;
 
   task add_msg(
-    input logic [p_inst_bits-1:0] exp_inst,
     input logic [p_addr_bits-1:0] exp_pc,
+    input logic [p_data_bits-1:0] exp_op1,
+    input logic [p_data_bits-1:0] exp_op2,
+    input rv_uop                  exp_uop,
     input logic                   dut_squash,
     input logic [p_addr_bits-1:0] dut_branch_target
   );
-    new_transaction.exp_inst          = exp_inst;
     new_transaction.exp_pc            = exp_pc;
+    new_transaction.exp_op1           = exp_op1;
+    new_transaction.exp_op2           = exp_op2;
+    new_transaction.exp_uop           = exp_uop;
     new_transaction.dut_squash        = dut_squash;
     new_transaction.dut_branch_target = dut_branch_target;
 
@@ -62,13 +70,17 @@ module F__DTestD #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [p_inst_bits-1:0] inst;
     logic [p_addr_bits-1:0] pc;
+    logic [p_data_bits-1:0] op1;
+    logic [p_data_bits-1:0] op2;
+    rv_uop                  uop;
   } dut_input;
 
   dut_input curr_input;
-  assign curr_input.inst = dut.inst;
   assign curr_input.pc   = dut.pc;
+  assign curr_input.op1  = dut.op1;
+  assign curr_input.op2  = dut.op2;
+  assign curr_input.uop  = dut.uop;
 
   // verilator lint_off PINCONNECTEMPTY
 
@@ -122,8 +134,10 @@ module F__DTestD #(
         #2;
 
         // Check the actual vs expectation
-        `CHECK_EQ( actual_msg.inst, exp_msg.exp_inst );
-        `CHECK_EQ( actual_msg.pc,   exp_msg.exp_pc   );
+        `CHECK_EQ( actual_msg.pc,   exp_msg.exp_pc  );
+        `CHECK_EQ( actual_msg.op1,  exp_msg.exp_op1 );
+        `CHECK_EQ( actual_msg.op2,  exp_msg.exp_op2 );
+        `CHECK_EQ( actual_msg.uop,  exp_msg.exp_uop );
       end else begin
         dut.squash        = 1'b0;
         dut.branch_target = 'x;
@@ -149,11 +163,14 @@ module F__DTestD #(
   always_comb begin
     int str_len;
 
-    str_len = ceil_div_4(p_inst_bits) + 1 + // inst
-              ceil_div_4(p_addr_bits);      // addr
+    str_len = ceil_div_4(p_addr_bits) + 1 + // inst
+              ceil_div_4(p_data_bits) + 1 + // op1
+              ceil_div_4(p_data_bits) + 1 + // op2
+              11;                           // uop
 
     if( dut.val & dut.rdy )
-      trace = $sformatf("%h:%h", dut.pc, dut.inst);
+      trace = $sformatf("%h:%h:%h:%s", dut.pc, dut.op1, 
+                        dut.op2, dut.uop.name());
     else
       trace = {str_len{" "}};
 
@@ -168,4 +185,4 @@ module F__DTestD #(
 
 endmodule
 
-`endif // TEST_FL_F__D_TEST_D_V
+`endif // TEST_FL_D__X_TEST_X_V
