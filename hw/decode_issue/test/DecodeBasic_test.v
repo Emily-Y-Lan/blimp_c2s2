@@ -78,20 +78,7 @@ module DecodeBasicTestSuite #(
   D__XIntf #(
     .p_addr_bits (p_addr_bits),
     .p_data_bits (p_inst_bits)
-  ) Ex_intf [p_num_pipes-1:0]();
-
-  // verilator lint_off UNUSEDSIGNAL
-  virtual D__XIntf fl_x_wrappers [p_num_pipes-1:0];
-  // verilator lint_on UNUSEDSIGNAL
-
-  genvar k;
-  generate
-    for( genvar k = 0; k < p_num_pipes; k = k + 1 ) begin
-      initial begin
-        fl_x_wrappers[k] = Ex_intf[k];
-      end
-    end
-  endgenerate
+  ) Ex_intf [p_num_pipes-1:0];
 
   DecodeIssue #(
     .p_decode_issue_type ("basic_tinyrv1"),
@@ -151,6 +138,93 @@ module DecodeBasicTestSuite #(
   } );
 
   //----------------------------------------------------------------------
+  // Handle giving messages to the correct pipe
+  //----------------------------------------------------------------------
+
+  function rv_op_vec vec_of_uop (input rv_uop uop);
+    if( uop == OP_ADD  ) return OP_ADD_VEC;
+    if( uop == OP_MUL  ) return OP_MUL_VEC;
+    if( uop == OP_LW   ) return OP_LW_VEC;
+    if( uop == OP_SW   ) return OP_SW_VEC;
+    if( uop == OP_JAL  ) return OP_JAL_VEC;
+    if( uop == OP_JALR ) return OP_JALR_VEC;
+    if( uop == OP_BNE  ) return OP_BNE_VEC;
+  endfunction
+
+  typedef struct {
+    logic [p_addr_bits-1:0] exp_pc;
+    logic [p_inst_bits-1:0] exp_op1;
+    logic [p_inst_bits-1:0] exp_op2;
+    rv_uop                  exp_uop;
+    logic                   dut_squash;
+    logic [p_addr_bits-1:0] dut_branch_target;
+  } X_msg;
+
+  X_msg msgs [p_num_pipes][$];
+
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      always_ff @( posedge clk ) begin
+        foreach (msgs[i][j])
+          fl_X[i].fl_test_intf.add_msg(
+            msgs[i][j].exp_pc,
+            msgs[i][j].exp_op1,
+            msgs[i][j].exp_op2,
+            msgs[i][j].exp_uop,
+            msgs[i][j].dut_squash,
+            msgs[i][j].dut_branch_target
+          );
+        
+        msgs[i].delete();
+      end
+    end
+  endgenerate
+
+  int   pipe_delays [p_num_pipes];
+  int   pipe_found;
+  X_msg pipe_msg;
+
+  initial begin
+    pipe_delays = '{default: 0};
+  end
+
+  task add_msg(
+    input logic [p_addr_bits-1:0] exp_pc,
+    input logic [p_inst_bits-1:0] exp_op1,
+    input logic [p_inst_bits-1:0] exp_op2,
+    input rv_uop                  exp_uop,
+    input logic                   dut_squash,
+    input logic [p_addr_bits-1:0] dut_branch_target
+  );
+    // Set message correctly
+    pipe_msg.exp_pc            = exp_pc;
+    pipe_msg.exp_op1           = exp_op1;
+    pipe_msg.exp_op2           = exp_op2;
+    pipe_msg.exp_uop           = exp_uop;
+    pipe_msg.dut_squash        = dut_squash;
+    pipe_msg.dut_branch_target = dut_branch_target;
+
+    pipe_found = 0;
+    while( pipe_found == 0 ) begin
+      // Decrement all delays
+      for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
+        if( pipe_delays[j] > 0 )
+          pipe_delays[j] = pipe_delays[j] - 1;
+      end
+
+      // Find correct pipe
+      for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
+        if(( (p_pipe_subsets[j] & vec_of_uop(exp_uop)) > 0 ) & ( pipe_delays[j] == 0 )) begin
+          msgs[j].push_back( pipe_msg );
+          pipe_delays[j] = p_X_recv_intv_delay;
+          pipe_found = 1;
+          break;
+        end
+      end
+    end
+  endtask
+
+  //----------------------------------------------------------------------
   // Keep track of whether we're done
   //----------------------------------------------------------------------
   // Must use intermediate with a generate statement to have constant
@@ -186,9 +260,9 @@ module DecodeBasicTestSuite #(
     fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 0), "mul x1, x0, x0" );
     fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 4), "addi x1, x0, 10" );
 
-    // Pipe 1                     pc                            op1    op2    uop     sq br_tar
-    fl_X[0].fl_test_intf.add_msg( p_addr_bits'(p_rst_addr + 0), 32'h0, 32'h0, OP_MUL, 0, 'x );
-    fl_X[0].fl_test_intf.add_msg( p_addr_bits'(p_rst_addr + 4), 32'h0, 32'hA, OP_ADD, 0, 'x );
+    //       pc                            op1    op2    uop     sq br_tar
+    add_msg( p_addr_bits'(p_rst_addr + 0), 32'h0, 32'h0, OP_MUL, 0, 'x );
+    add_msg( p_addr_bits'(p_rst_addr + 4), 32'h0, 32'hA, OP_ADD, 0, 'x );
 
     while( !done() ) begin
       #10;
@@ -214,7 +288,7 @@ endmodule
 
 module DecodeBasic_test;
   DecodeBasicTestSuite #(1) suite_1;
-  DecodeBasicTestSuite #(1, 2) suite_2;
+  DecodeBasicTestSuite #(2, 2, 32, 32, 32'h0, 0, 0, {p_tinyrv1, OP_ADD_VEC}) suite_2;
 
   int s;
 
@@ -223,7 +297,7 @@ module DecodeBasic_test;
     s = get_test_suite();
 
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 1)) suite_2.run_test_suite();
+    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
 
     test_bench_end();
   end

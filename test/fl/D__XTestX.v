@@ -44,6 +44,7 @@ module D__XTestX #(
 
   transaction new_transaction;
 
+  // verilator lint_off BLKSEQ
   task add_msg(
     input logic [p_addr_bits-1:0] exp_pc,
     input logic [p_data_bits-1:0] exp_op1,
@@ -61,6 +62,7 @@ module D__XTestX #(
 
     transaction_queue.push_back( new_transaction );
   endtask
+  // verilator lint_on BLKSEQ
 
   function logic done();
     done = ( transaction_queue.size() == 0 );

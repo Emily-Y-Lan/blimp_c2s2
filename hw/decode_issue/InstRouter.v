@@ -40,7 +40,7 @@ module InstRouterUnit #(
       if( ( p_isa_subset & OP_SW_VEC   ) > 0 ) val_uop |= ( uop == OP_SW   );
       if( ( p_isa_subset & OP_JAL_VEC  ) > 0 ) val_uop |= ( uop == OP_JAL  );
       if( ( p_isa_subset & OP_JALR_VEC ) > 0 ) val_uop |= ( uop == OP_JALR );
-      if( ( p_isa_subset & OP_BEQ_VEC  ) > 0 ) val_uop |= ( uop == OP_BEQ  );
+      if( ( p_isa_subset & OP_BNE_VEC  ) > 0 ) val_uop |= ( uop == OP_BNE  );
     end
   endgenerate
 
@@ -65,7 +65,7 @@ module InstRouter #(
 );
 
   // verilator lint_off UNUSEDSIGNAL
-  logic [p_num_pipes:0] found;
+  logic found [p_num_pipes:0];
   // verilator lint_on UNUSEDSIGNAL
   assign found[0] = 1'b0;
   
