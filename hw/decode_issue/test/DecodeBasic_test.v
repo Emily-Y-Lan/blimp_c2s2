@@ -84,9 +84,14 @@ module DecodeBasicTestSuite #(
   virtual D__XIntf fl_x_wrappers [p_num_pipes-1:0];
   // verilator lint_on UNUSEDSIGNAL
 
-  initial begin
-    fl_x_wrappers = Ex_intf;
-  end
+  genvar k;
+  generate
+    for( genvar k = 0; k < p_num_pipes; k = k + 1 ) begin
+      initial begin
+        fl_x_wrappers[k] = Ex_intf[k];
+      end
+    end
+  endgenerate
 
   DecodeIssue #(
     .p_decode_issue_type ("basic_tinyrv1"),
@@ -177,7 +182,7 @@ module DecodeBasicTestSuite #(
     if( t.n != 0 )
       tracer.enable_trace();
 
-    //                       addr                      inst
+    //                       addr                          inst
     fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 0), "mul x1, x0, x0" );
     fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 4), "addi x1, x0, 10" );
 
