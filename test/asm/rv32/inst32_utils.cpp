@@ -7,8 +7,52 @@
 #define INST32_UTILS_CPP
 
 #include "inst32_utils.h"
+#include <iostream>
 #include <map>
 #include <stdexcept>
+
+//------------------------------------------------------------------------
+// Internal helper functions
+//------------------------------------------------------------------------
+
+template <typename T>
+uint32_t bitslice( T val, int end, int start )
+{
+  int      len  = end - start + 1;
+  uint32_t mask = ( 1 << len ) - 1;
+
+  return (uint32_t) ( val >> start ) & mask;
+}
+
+uint32_t repl_upper( uint32_t bit, int start_idx )
+{
+  bit = bit & 0x1;
+
+  uint32_t mask = 0;
+  for ( int i = start_idx; i < 32; i++ ) {
+    mask |= ( 1 << i );
+  }
+  return mask;
+}
+
+int get_imm_int( std::string imm )
+{
+  int val;
+
+  // Try hex conversion
+  if ( sscanf( imm.c_str(), "0x%x", &val ) ) {
+    return val;
+  }
+
+  // Try decimal conversion
+  if ( sscanf( imm.c_str(), "%d", &val ) ) {
+    return val;
+  }
+
+  // No conversion could be done
+  std::cout << "Invalid immediate: " << imm << std::endl;
+  throw std::invalid_argument( "Invalid immediate: " + imm );
+}
 
 //------------------------------------------------------------------------
 // Register Specifiers
@@ -39,34 +83,31 @@ uint32_t rd_mask( std::string reg_name )
   return reg_masks.at( reg_name ) << 7;
 }
 
+std::string get_rs1( uint32_t binary )
+{
+  return "x" + std::to_string( bitslice( binary, 19, 15 ) );
+}
+
+std::string get_rs2( uint32_t binary )
+{
+  return "x" + std::to_string( bitslice( binary, 24, 20 ) );
+}
+
+std::string get_rd( uint32_t binary )
+{
+  return "x" + std::to_string( bitslice( binary, 11, 7 ) );
+}
+
 //------------------------------------------------------------------------
 // Immediate Specifiers
 //------------------------------------------------------------------------
 
-uint32_t bitslice( int imm, int end, int start )
-{
-  int      len  = end - start + 1;
-  uint32_t mask = ( 1 << len ) - 1;
-
-  return (uint32_t) ( imm >> start ) & mask;
-}
-
-uint32_t repl_upper( uint32_t bit, int start_idx )
-{
-  bit = bit & 0x1;
-
-  uint32_t mask = 0;
-  for ( int i = start_idx; i < 32; i++ ) {
-    mask |= ( 1 << i );
-  }
-  return mask;
-}
-
 uint32_t imm_i_mask( std::string imm )
 {
-  int imm_val = std::stoi( imm );
+  int imm_val = get_imm_int( imm );
 
   if ( ( imm_val > 2047 ) || ( imm_val < -2048 ) ) {
+    std::cout << "Invalid I-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid I-immediate: " +
                                  std::to_string( imm_val ) );
   }
@@ -79,9 +120,10 @@ uint32_t imm_i_mask( std::string imm )
 
 uint32_t imm_s_mask( std::string imm )
 {
-  int imm_val = std::stoi( imm );
+  int imm_val = get_imm_int( imm );
 
   if ( ( imm_val > 2047 ) || ( imm_val < -2048 ) ) {
+    std::cout << "Invalid S-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid S-immediate: " +
                                  std::to_string( imm_val ) );
   }
@@ -95,14 +137,16 @@ uint32_t imm_s_mask( std::string imm )
 
 uint32_t imm_b_mask( std::string imm )
 {
-  int imm_val = std::stoi( imm );
+  int imm_val = get_imm_int( imm );
 
   if ( ( imm_val > 4095 ) || ( imm_val < -4096 ) ) {
+    std::cout << "Invalid B-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid B-immediate: " +
                                  std::to_string( imm_val ) );
   }
 
   if ( imm_val % 2 ) {
+    std::cout << "Invalid B-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid B-immediate: " +
                                  std::to_string( imm_val ) );
   }
@@ -118,9 +162,10 @@ uint32_t imm_b_mask( std::string imm )
 
 uint32_t imm_u_mask( std::string imm )
 {
-  int imm_val = std::stoi( imm );
+  int imm_val = get_imm_int( imm );
 
   if ( ( imm_val < 0 ) || ( imm_val > 0xFFFFF ) ) {
+    std::cout << "Invalid U-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid U-immediate: " +
                                  std::to_string( imm_val ) );
   }
@@ -132,14 +177,16 @@ uint32_t imm_u_mask( std::string imm )
 
 uint32_t imm_j_mask( std::string imm )
 {
-  int imm_val = std::stoi( imm );
+  int imm_val = get_imm_int( imm );
 
   if ( ( imm_val < 524288 ) || ( imm_val > -524288 ) ) {
+    std::cout << "Invalid J-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid J-immediate: " +
                                  std::to_string( imm_val ) );
   }
 
   if ( imm_val % 2 ) {
+    std::cout << "Invalid J-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid J-immediate: " +
                                  std::to_string( imm_val ) );
   }
@@ -151,6 +198,42 @@ uint32_t imm_j_mask( std::string imm )
   imm_encoding |= ( bitslice( imm_val, 20, 20 ) << 31 );
 
   return imm_encoding;
+}
+
+std::string get_imm_i( uint32_t binary )
+{
+  return std::to_string( (int) ( binary >> 20 ) );
+}
+
+std::string get_imm_s( uint32_t binary )
+{
+  uint32_t imm = 0;
+  imm |= ( binary >> 20 ) & 0xFFFFFFE0;
+  imm |= ( binary >> 7 ) & 0x0000001F;
+  return std::to_string( (int) imm );
+}
+
+std::string get_imm_b( uint32_t binary )
+{
+  uint32_t imm = 0;
+  imm |= ( binary >> 20 ) & 0xFFFFF7E0;
+  imm |= ( binary >> 7 ) & 0x0000001E;
+  imm |= ( binary << 4 ) & 0x00000800;
+  return std::to_string( (int) imm );
+}
+
+std::string get_imm_u( uint32_t binary )
+{
+  return std::to_string( (int) ( binary >> 12 ) );
+}
+
+std::string get_imm_j( uint32_t binary )
+{
+  uint32_t imm = 0;
+  imm |= ( binary >> 20 ) & 0xFFF007FE;
+  imm |= ( binary ) & 0x000FF000;
+  imm |= ( binary >> 9 ) & 0x00000800;
+  return std::to_string( (int) imm );
 }
 
 #endif  // INST32_UTILS_CPP

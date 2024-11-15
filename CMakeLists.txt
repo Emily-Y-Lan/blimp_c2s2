@@ -11,6 +11,7 @@ set(V_TEST_FILES
   hw/common/test/Fifo_test.v
   hw/common/test/PriorityEncoder_test.v
   hw/common/test/RRArb_test.v
+  hw/decode_issue/test/DecodeBasic_test.v
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/Regfile_test.v
   hw/fetch/test/Fetch_test.v
@@ -18,6 +19,7 @@ set(V_TEST_FILES
 
 set(RV32_ASM_FILES
   test/asm/rv32/assemble32.cpp
+  test/asm/rv32/disassemble32.cpp
   test/asm/rv32/inst32.cpp
   test/asm/rv32/inst32_utils.cpp
 )
@@ -29,12 +31,12 @@ set(RV32_ASM_FILES
 cmake_minimum_required(VERSION 3.10)
 project(BLIMP VERSION 1.0)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
 enable_testing()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wall")
+set(CMAKE_CXX_COMPILER "g++")
 
 #-------------------------------------------------------------------------
 # verilator_share_from_bin
@@ -96,8 +98,8 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   get_leaf(V_TEST_FILE ${V_TEST_FILE_PATH})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
-  add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
-  target_link_libraries(${V_TEST_BIN} PRIVATE RV32_ASM_LIB) 
+  add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp" ${RV32_ASM_FILES})
+  # target_link_libraries(${V_TEST_BIN} PRIVATE RV32_ASM_LIB) 
 
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
     VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"

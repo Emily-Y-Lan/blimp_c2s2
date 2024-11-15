@@ -16,10 +16,6 @@ import ISA::*;
 
 interface D__XIntf
 #(
-  // verilator lint_off UNUSEDPARAM
-  parameter p_isa_subset = p_tinyrv1,
-  // verilator lint_on UNUSEDPARAM
-
   parameter p_addr_bits  = 32,
   parameter p_data_bits  = 32
 );

@@ -14,7 +14,6 @@ module Decoder #(
 ) (
   input  logic [p_inst_bits-1:0] inst,
 
-  output logic                   val,
   output rv_uop                  uop,
   output logic [4:0]             raddr0,
   output logic [4:0]             raddr1,

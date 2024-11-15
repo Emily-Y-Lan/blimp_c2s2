@@ -7,6 +7,10 @@
 `ifndef HW_DECODE_INSTROUTER_V
 `define HW_DECODE_INSTROUTER_V
 
+`include "defs/ISA.v"
+
+import ISA::*;
+
 //------------------------------------------------------------------------
 // InstRouterUnit
 //------------------------------------------------------------------------
@@ -16,11 +20,12 @@ module InstRouterUnit #(
   parameter p_isa_subset = p_tinyrv1
 ) (
   input  rv_uop uop,
+  input  logic  uop_val,
   input  logic  already_found,
   input  logic  rdy,
 
   output logic  val,
-  output logic  been_found,
+  output logic  been_found
 );
 
   logic val_uop;
@@ -39,8 +44,8 @@ module InstRouterUnit #(
     end
   endgenerate
 
-  assign val        = val_uop         & (!already_found);
-  assign been_found = (val_uop & rdy) | already_found;
+  assign val        = (val_uop & uop_val) & (!already_found);
+  assign been_found = (val_uop & rdy)     | already_found;
 
 endmodule
 
@@ -49,27 +54,40 @@ endmodule
 //------------------------------------------------------------------------
 
 module InstRouter #(
-  parameter p_num_pipes = 3
+  parameter p_num_pipes                                = 3,
+  parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 ) (
   input rv_uop    uop,
+  input  logic    val,
+  output logic    F_rdy,
+
   D__XIntf.D_intf Ex [p_num_pipes-1:0]
 );
 
+  // verilator lint_off UNUSEDSIGNAL
   logic [p_num_pipes:0] found;
+  // verilator lint_on UNUSEDSIGNAL
   assign found[0] = 1'b0;
+  
+  logic [p_num_pipes-1:0] F_rdy_vec;
   
   genvar i;
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin: inst_router_units
-      InstRouterUnit #(Ex[i].p_isa_subset) router_unit (
+      InstRouterUnit #(p_pipe_subsets[i]) router_unit (
         .uop           (uop),
+        .uop_val       (val),
         .already_found (found[i]),
         .rdy           (Ex[i].rdy),
         .val           (Ex[i].val),
         .been_found    (found[i+1])
       );
+
+      assign F_rdy_vec[i] = Ex[i].val & Ex[i].rdy;
     end
   endgenerate
+
+  assign F_rdy = (|F_rdy_vec) | !val;
 
 endmodule
 

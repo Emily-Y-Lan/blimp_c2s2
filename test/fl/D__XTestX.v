@@ -7,6 +7,7 @@
 `define TEST_FL_D__X_TEST_X_V
 
 `include "defs/ISA.v"
+`include "hw/util/DelayStream.v"
 `include "intf/D__XIntf.v"
 `include "test/FLTestUtils.v"
 
@@ -161,18 +162,10 @@ module D__XTestX #(
 
   // verilator lint_off BLKSEQ
   always_comb begin
-    int str_len;
-
-    str_len = ceil_div_4(p_addr_bits) + 1 + // inst
-              ceil_div_4(p_data_bits) + 1 + // op1
-              ceil_div_4(p_data_bits) + 1 + // op2
-              11;                           // uop
-
     if( dut.val & dut.rdy )
-      trace = $sformatf("%h:%h:%h:%s", dut.pc, dut.op1, 
-                        dut.op2, dut.uop.name());
+      trace = $sformatf("%11s", dut.uop.name());
     else
-      trace = {str_len{" "}};
+      trace = {11{" "}};
 
     trace = {trace, " "};
 

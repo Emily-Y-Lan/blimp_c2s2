@@ -6,16 +6,24 @@
 `ifndef HW_DECODE_DECODE_VARIANTS_BASIC_V
 `define HW_DECODE_DECODE_VARIANTS_BASIC_V
 
-`include "hw/common/PriorityEncoder.v"
+`include "defs/ISA.v"
 `include "hw/decode_issue/Decoder.v"
 `include "hw/decode_issue/ImmGen.v"
+`include "hw/decode_issue/InstRouter.v"
 `include "hw/decode_issue/Regfile.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 
+import ISA::*;
+
+`ifndef SYNTHESIS
+import "DPI-C" function string disassemble32( bit [31:0] binary );
+`endif
+
 module DecodeBasic #(
-  parameter p_isa_subset = p_tinyrv1,
-  parameter p_num_pipes  = 1
+  parameter p_isa_subset                               = p_tinyrv1,
+  parameter p_num_pipes                                = 1,
+  parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 ) (
   input  logic clk,
   input  logic rst,
@@ -67,101 +75,26 @@ module DecodeBasic #(
   end
 
   //----------------------------------------------------------------------
-  // Determine whether we're ready, based on the pipes
+  // Instantiate Decoder, Regfile, ImmGen
   //----------------------------------------------------------------------
 
-  logic intf_val    [p_num_pipes-1:0];
-  logic intf_rdy    [p_num_pipes-1:0];
-  logic transac_rdy [p_num_pipes-1:0];
-
-  genvar i;
-  generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: rdy_logic
-      assign Ex[i].val = intf_val[i] & F_reg.val;
-      assign intf_rdy[i] = Ex[i].rdy;
-
-      // Indicate we're ready only if that pipe is valid
-      assign transac_rdy[i] = Ex[i].rdy & Ex[i].val;
-    end
-  endgenerate
-
-  assign F.rdy = intf_rdy.or();
-
-  //----------------------------------------------------------------------
-  // Arbitrate between decoders, if needed
-  //----------------------------------------------------------------------
-
-  logic [p_num_pipes-1:0] decoder_val;
-  logic [p_num_pipes-1:0] decoder_arb_val;
-
-  PriorityEncoder #(p_num_pipes) decoder_arb (
-    .in  (decoder_val),
-    .out (decoder_arb_val)
+  rv_uop      decoder_uop;
+  logic [4:0] decoder_raddr0;
+  logic [4:0] decoder_raddr1;
+  rv_imm_type decoder_imm_sel;
+  logic       decoder_op2_sel;
+  
+  Decoder #(
+    .p_isa_subset (p_isa_subset),
+    .p_inst_bits  (p_inst_bits)
+  ) decoder (
+    .inst    (F_reg.inst),
+    .uop     (decoder_uop),
+    .raddr0  (decoder_raddr0),
+    .raddr1  (decoder_raddr1),
+    .imm_sel (decoder_imm_sel),
+    .op2_sel (decoder_op2_sel)
   );
-
-  //----------------------------------------------------------------------
-  // Instantiate decoder for each pipe
-  //----------------------------------------------------------------------
-
-  logic [4:0]  decoder_raddr0  [p_num_pipes-1:0];
-  logic [4:0]  decoder_raddr1  [p_num_pipes-1:0];
-  rv_imm_type  decoder_imm_sel [p_num_pipes-1:0];
-  logic        decoder_op2_sel [p_num_pipes-1:0];
-
-  genvar j;
-  generate
-    for( j = 0; j < p_num_pipes; j = j + 1 ) begin: decoders
-      logic [4:0] raddr0;
-      logic [4:0] raddr1;
-      rv_imm_type imm_sel;
-      logic       op2_sel;
-
-      Decoder #(
-        .p_isa_subset (Ex[j].p_isa_subset),
-        .p_inst_bits  (p_inst_bits)
-      ) decoder (
-        .inst    (F_reg.inst),
-        .val     (decoder_val[j]),
-        .uop     (Ex[j].uop),
-        .raddr0  (raddr0),
-        .raddr1  (raddr1),
-        .imm_sel (imm_sel),
-        .op2_sel (op2_sel)
-      );
-
-      always_comb begin
-        if( decoder_arb_val[j] ) begin
-          decoder_raddr0[j]  = raddr0;
-          decoder_raddr1[j]  = raddr1;
-          decoder_imm_sel[j] = imm_sel;
-          decoder_op2_sel[j] = op2_sel;
-        end else begin
-          decoder_raddr0[j]  = '0;
-          decoder_raddr1[j]  = '0;
-          decoder_imm_sel[j] = rv_imm_type'('0);
-          decoder_op2_sel[j] = '0;
-        end
-      end
-    end
-  endgenerate
-
-  //----------------------------------------------------------------------
-  // Determine actual control signals
-  //----------------------------------------------------------------------
-
-  logic [4:0] raddr0;
-  logic [4:0] raddr1;
-  rv_imm_type imm_sel;
-  logic       op2_sel;
-
-  assign raddr0  = decoder_raddr0.or();
-  assign raddr1  = decoder_raddr1.or();
-  assign imm_sel = decoder_imm_sel.or();
-  assign op2_sel = decoder_op2_sel.or();
-
-  //----------------------------------------------------------------------
-  // Instantiate Register File and Immediate Generator
-  //----------------------------------------------------------------------
 
   logic [p_inst_bits-1:0] rdata0, rdata1;
 
@@ -171,7 +104,7 @@ module DecodeBasic #(
   ) regfile (
     .clk   (clk),
     .rst   (rst),
-    .raddr ({raddr1, raddr0}),
+    .raddr ({decoder_raddr1, decoder_raddr0}),
     .rdata ({rdata1, rdata0}),
     .waddr ('0),
     .wdata ('0),
@@ -182,8 +115,19 @@ module DecodeBasic #(
 
   ImmGen imm_gen (
     .inst    (F_reg.inst),
-    .imm_sel (imm_sel),
+    .imm_sel (decoder_imm_sel),
     .imm     (imm)
+  );
+
+  //----------------------------------------------------------------------
+  // Route the instruction (set val/rdy for pipes) based on uop
+  //----------------------------------------------------------------------
+
+  InstRouter #(p_num_pipes, p_pipe_subsets) inst_router (
+    .uop   (decoder_uop),
+    .val   (F_reg.val),
+    .Ex    (Ex),
+    .F_rdy (F.rdy)
   );
 
   //----------------------------------------------------------------------
@@ -194,7 +138,7 @@ module DecodeBasic #(
 
   always_comb begin
     op1 = rdata0;
-    if ( op2_sel )
+    if ( decoder_op2_sel )
       op2 = imm;
     else
       op2 = rdata1;
@@ -206,6 +150,7 @@ module DecodeBasic #(
       assign Ex[k].pc  = F_reg.pc;
       assign Ex[k].op1 = op1;
       assign Ex[k].op2 = op2;
+      assign Ex[k].uop = decoder_uop;
       
       logic unused_squash;
       logic [p_addr_bits-1:0] unused_branch_target;
@@ -214,6 +159,20 @@ module DecodeBasic #(
       assign unused_branch_target = Ex[k].branch_target;
     end
   endgenerate
+
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+`ifndef SYNTHESIS
+  string trace;
+  always_comb begin
+    if( F_reg.val & F.rdy )
+      trace = $sformatf("%20s", disassemble32(F_reg.inst) );
+    else
+      trace = {20{" "}};
+  end
+`endif
 
 endmodule
 

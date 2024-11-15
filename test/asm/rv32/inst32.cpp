@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <inttypes.h>
+#include <iostream>
 #include <stdexcept>
 #include <vector>
 
@@ -30,6 +31,7 @@ std::vector<std::string> tokenize( std::string assembly )
       if ( curr_token.length() > 0 ) {
         tokens.push_back( curr_token );
       }
+      curr_token = "";
     }
     else {
       curr_token += c;
@@ -59,6 +61,8 @@ inst_spec get_inst_spec( std::string inst_name )
   }
 
   // Didn't find instruction spec
+  std::cout << "Couldn't find specification for instruction '"
+            << inst_name << "'" << std::endl;
   throw std::invalid_argument(
       "Couldn't find specification for instruction '" + inst_name + "'" );
 }
@@ -66,15 +70,17 @@ inst_spec get_inst_spec( std::string inst_name )
 inst_spec get_inst_spec( uint32_t inst_bin )
 {
   for ( const inst_spec spec : inst_specs ) {
-    if ( inst_bin & spec.mask == spec.match ) {
+    if ( ( inst_bin & spec.mask ) == spec.match ) {
       return spec;
     }
   }
 
-  // Didn't find instruction spec
+  // Didn't find instruction spec (don't print, in case running test in
+  // background)
   char excp[100];
   sprintf( excp,
-           "Couldn't find specification for instruction '%" PRIu32 "'",
+           "Couldn't find specification for instruction '0x%08" PRIx32
+           "'",
            inst_bin );
   throw std::invalid_argument( excp );
 }

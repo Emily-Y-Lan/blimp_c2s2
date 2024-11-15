@@ -30,19 +30,21 @@ module F__DTestF #(
   logic [p_inst_bits-1:0] insts [logic [p_addr_bits-1:0]];
 
   always_ff @( posedge clk ) begin
-    if( rst )
+    if( rst ) begin
       insts.delete();
+    end
   end
 
   task add_inst(
     input logic [p_addr_bits-1:0] addr,
     input string                  inst
   );
-    if ( p_addr_bits == 32 )
+    if ( p_addr_bits == 32 ) begin
       insts[addr] = assemble32( inst );
-    else
+    end else begin
       $error(
         "Unsupported instruction size for assembly: %d", p_addr_bits);
+    end
   endtask
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,6 +52,8 @@ module F__DTestF #(
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   int send_intv_delay;
+
+  initial send_intv_delay = 0;
 
   always_ff @( posedge clk ) begin
     if( send_intv_delay > 0 ) send_intv_delay <= send_intv_delay - 1;
@@ -63,7 +67,7 @@ module F__DTestF #(
       dut.val <= 1'b0;
       incr_addr <= 1'b0;
     end else begin
-      if( send_intv_delay == 0 ) begin
+      if(( send_intv_delay == 0 ) & ( insts.exists(curr_addr) == 1 )) begin
         dut.val <= 1'b1;
         #2;
         if( dut.rdy & !dut.squash ) begin
@@ -92,13 +96,14 @@ module F__DTestF #(
       curr_addr <= curr_addr + 4;
   end
 
-  always_comb begin
-    dut.pc = curr_addr;
+  always_ff @(posedge clk) begin
+    #1;
+    dut.pc <= curr_addr;
 
     if( insts.exists(curr_addr) == 1 )
-      dut.inst = insts[curr_addr];
+      dut.inst <= insts[curr_addr];
     else
-      dut.inst = 'x;
+      dut.inst <= 'x;
   end
 
   //----------------------------------------------------------------------

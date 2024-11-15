@@ -206,8 +206,8 @@ endmodule
 //========================================================================
 
 module Fetch_test;
-  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
   FetchTestSuite #(1)                                   suite_1;
+  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
   FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3;
   FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4;
   FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5;

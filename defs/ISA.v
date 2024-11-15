@@ -45,6 +45,8 @@ package ISA;
   // one-hot encoding to specify combinations of operands that are
   // supported
 
+  typedef logic [num_ops-1:0] rv_op_vec;
+
   parameter OP_ADD_VEC  = num_ops'(1 << 0);
   parameter OP_MUL_VEC  = num_ops'(1 << 1);
   parameter OP_LW_VEC   = num_ops'(1 << 2);
