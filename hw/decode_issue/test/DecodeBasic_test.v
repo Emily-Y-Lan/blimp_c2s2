@@ -13,26 +13,49 @@ import ISA::*;
 import TestEnv::*;
 
 //========================================================================
+// FlXWrapper
+//========================================================================
+// A virtual wrapper around our FL X interfaces, to allow for non-constant
+// interface array accesses
+
+class FlXWrapper;
+  // verilator lint_off UNUSEDSIGNAL
+  virtual D__XIntf fl_x_intf;
+  // verilator lint_on UNUSEDSIGNAL
+
+  function new( virtual D__XIntf new_fl_x_intf );
+    this.fl_x_intf = new_fl_x_intf;
+  endfunction
+endclass
+
+//========================================================================
 // DecodeBasicTestSuite
 //========================================================================
 // A test suite for the basic decoder
 
 module DecodeBasicTestSuite #(
   parameter p_suite_num  = 0,
+  parameter p_num_pipes  = 3,
   parameter p_addr_bits  = 32,
   parameter p_inst_bits  = 32,
   parameter p_rst_addr   = 32'h0,
 
   parameter p_F_send_intv_delay = 0,
-  parameter p_X_recv_intv_delay = 0
+  parameter p_X_recv_intv_delay = 0,
+
+  parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 );
 
-  // verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: DecodeBasicTestSuite_%0d_%0d_%0d_%0d_%0d", 
-                                p_suite_num, p_addr_bits, 
+  string suite_name = $sformatf("%0d: DecodeBasicTestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
+                                p_suite_num, p_num_pipes, p_addr_bits, 
                                 p_inst_bits, p_rst_addr,
                                 p_F_send_intv_delay, p_X_recv_intv_delay);
-  // verilator lint_on UNUSEDSIGNAL
+
+  initial begin
+    for( int i = 0; i < p_num_pipes; i = i + 1 ) begin
+      suite_name = $sformatf("%s_%h", suite_name, p_pipe_subsets[i]);
+    end
+  end
 
   //----------------------------------------------------------------------
   // Setup
@@ -44,7 +67,8 @@ module DecodeBasicTestSuite #(
   //----------------------------------------------------------------------
   // Instantiate design under test
   //----------------------------------------------------------------------
-  // Here, we use three pipes for testing
+  // Here, we additionally use virtual fl_X interfaces to allow for
+  // non-constant indexing
 
   F__DIntf #(
     .p_addr_bits (p_addr_bits),
@@ -54,12 +78,20 @@ module DecodeBasicTestSuite #(
   D__XIntf #(
     .p_addr_bits (p_addr_bits),
     .p_data_bits (p_inst_bits)
-  ) Ex_intf [2:0]();
+  ) Ex_intf [p_num_pipes-1:0]();
+
+  // verilator lint_off UNUSEDSIGNAL
+  virtual D__XIntf fl_x_wrappers [p_num_pipes-1:0];
+  // verilator lint_on UNUSEDSIGNAL
+
+  initial begin
+    fl_x_wrappers = Ex_intf;
+  end
 
   DecodeIssue #(
     .p_decode_issue_type ("basic_tinyrv1"),
-    .p_num_pipes         (3),
-    .p_pipe_subsets      ({p_tinyrv1, OP_LW_VEC | OP_SW_VEC, p_tinyrv1})
+    .p_num_pipes         (p_num_pipes),
+    .p_pipe_subsets      (p_pipe_subsets)
   ) dut (
     .F  (F__D_intf),
     .Ex (Ex_intf),
@@ -74,39 +106,66 @@ module DecodeBasicTestSuite #(
     .*
   );
 
-  D__XTestX #(
-    .p_dut_intv_delay (p_X_recv_intv_delay)
-  ) fl_X_test_intf_1 (
-    .dut (Ex_intf[0]),
-    .*
-  );
+  genvar i;
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: fl_X
+      D__XTestX #(
+        .p_dut_intv_delay (p_X_recv_intv_delay)
+      ) fl_test_intf (
+        .dut (Ex_intf[i]),
+        .*
+      );
+    end
+  endgenerate
 
-  D__XTestX #(
-    .p_dut_intv_delay (p_X_recv_intv_delay)
-  ) fl_X_test_intf_2 (
-    .dut (Ex_intf[1]),
-    .*
-  );
+  //----------------------------------------------------------------------
+  // Trace the design
+  //----------------------------------------------------------------------
 
-  D__XTestX #(
-    .p_dut_intv_delay (p_X_recv_intv_delay)
-  ) fl_X_test_intf_3 (
-    .dut (Ex_intf[2]),
-    .*
-  );
+  string fl_X_traces [p_num_pipes-1:0];
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      assign fl_X_traces[i] = fl_X[i].fl_test_intf.trace;
+    end
+  endgenerate
+
+  string fl_X_trace;
+  always_comb begin
+    fl_X_trace = "";
+    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
+      fl_X_trace = { fl_X_trace, fl_X_traces[j] };
+    end
+  end
 
   Tracer tracer ( clk, {
     fl_F_test_intf.trace,
     " | ",
     dut.trace,
     " | ",
-    fl_X_test_intf_1.trace,
-    fl_X_test_intf_2.trace,
-    fl_X_test_intf_3.trace
-  });
+    fl_X_trace
+  } );
+
+  //----------------------------------------------------------------------
+  // Keep track of whether we're done
+  //----------------------------------------------------------------------
+  // Must use intermediate with a generate statement to have constant
+  // indexing into interface array
+
+  logic [p_num_pipes-1:0] pipe_done;
+
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      always_ff @( posedge clk ) begin
+        if( rst )
+          pipe_done[i] <= 1'b0;
+        else
+          pipe_done[i] <= fl_X[i].fl_test_intf.done();
+      end
+    end
+  endgenerate
 
   function logic done;
-    return fl_X_test_intf_1.done() && fl_X_test_intf_2.done() && fl_X_test_intf_3.done();
+    return &pipe_done;
   endfunction
 
   //----------------------------------------------------------------------
@@ -122,9 +181,9 @@ module DecodeBasicTestSuite #(
     fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 0), "mul x1, x0, x0" );
     fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 4), "addi x1, x0, 10" );
 
-    // Pipe 1                 pc                        op1    op2    uop     sq br_tar
-    fl_X_test_intf_1.add_msg( p_addr_bits'(p_rst_addr + 0), 32'h0, 32'h0, OP_MUL, 0, 'x );
-    fl_X_test_intf_1.add_msg( p_addr_bits'(p_rst_addr + 4), 32'h0, 32'hA, OP_ADD, 0, 'x );
+    // Pipe 1                     pc                            op1    op2    uop     sq br_tar
+    fl_X[0].fl_test_intf.add_msg( p_addr_bits'(p_rst_addr + 0), 32'h0, 32'h0, OP_MUL, 0, 'x );
+    fl_X[0].fl_test_intf.add_msg( p_addr_bits'(p_rst_addr + 4), 32'h0, 32'hA, OP_ADD, 0, 'x );
 
     while( !done() ) begin
       #10;
@@ -150,6 +209,7 @@ endmodule
 
 module DecodeBasic_test;
   DecodeBasicTestSuite #(1) suite_1;
+  DecodeBasicTestSuite #(1, 2) suite_2;
 
   int s;
 
@@ -158,6 +218,7 @@ module DecodeBasic_test;
     s = get_test_suite();
 
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
+    if ((s <= 0) || (s == 1)) suite_2.run_test_suite();
 
     test_bench_end();
   end
