@@ -178,7 +178,7 @@ module RegfileTestSuite #(
 
     //    rst raddr0              rdata0            raddr1              rdata1            waddr               waddr            wen
     check( 0, p_addr_bits'('h00), t_entry'('h0000), p_addr_bits'('h00), t_entry'('h0000), p_addr_bits'('h06), t_entry'('h1234), 1 );
-    check( 1, p_addr_bits'('h06), t_entry'('h1234), p_addr_bits'('h00), t_entry'('h0000), p_addr_bits'('h07), t_entry'('h5678), 1 );
+    check( 0, p_addr_bits'('h06), t_entry'('h1234), p_addr_bits'('h00), t_entry'('h0000), p_addr_bits'('h07), t_entry'('h5678), 1 );
     check( 0, p_addr_bits'('h06), t_entry'('h1234), p_addr_bits'('h07), t_entry'('h5678), p_addr_bits'('h00), t_entry'('h0000), 0 );
     check( 0, p_addr_bits'('h07), t_entry'('h5678), p_addr_bits'('h06), t_entry'('h1234), p_addr_bits'('h00), t_entry'('h0000), 0 );
   endtask
@@ -216,7 +216,7 @@ module RegfileTestSuite #(
       check( 0, rand_raddr0, exp_rdata0, rand_raddr1, exp_rdata1,
              rand_waddr, rand_wdata, rand_wen );
 
-      if ( rand_wen ) rand_regs[rand_waddr] = rand_wdata;
+      if ( rand_wen & ( rand_waddr != '0 ) ) rand_regs[rand_waddr] = rand_wdata;
     end
   endtask
 
@@ -242,10 +242,10 @@ endmodule
 //========================================================================
 
 module Regfile_test;
-  RegfileTestSuite #(1)                  suite_1;
-  RegfileTestSuite #(2, logic[15:0], 32) suite_2;
-  RegfileTestSuite #(3, logic[31:0], 8 ) suite_3;
-  RegfileTestSuite #(4, logic[ 7:0], 64) suite_4;
+  RegfileTestSuite #(1)                  suite_1();
+  RegfileTestSuite #(2, logic[15:0], 32) suite_2();
+  RegfileTestSuite #(3, logic[31:0], 8 ) suite_3();
+  RegfileTestSuite #(4, logic[ 7:0], 64) suite_4();
 
   int s;
 

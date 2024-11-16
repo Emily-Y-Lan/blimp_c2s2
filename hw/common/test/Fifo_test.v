@@ -197,9 +197,9 @@ endmodule
 //========================================================================
 
 module Fifo_test;
-  FifoTestSuite #(1)                  suite_1;
-  FifoTestSuite #(2, logic,       32) suite_2;
-  FifoTestSuite #(3, logic [7:0], 2 ) suite_3;
+  FifoTestSuite #(1)                  suite_1();
+  FifoTestSuite #(2, logic,       32) suite_2();
+  FifoTestSuite #(3, logic [7:0], 2 ) suite_3();
 
   int s;
 

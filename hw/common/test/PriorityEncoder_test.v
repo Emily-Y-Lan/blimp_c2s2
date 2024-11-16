@@ -161,10 +161,10 @@ endmodule
 //========================================================================
 
 module PriorityEncoder_test;
-  PriorityEncoderTestSuite #(1)     suite_1;
-  PriorityEncoderTestSuite #(2,  8) suite_2;
-  PriorityEncoderTestSuite #(3, 32) suite_3;
-  PriorityEncoderTestSuite #(3,  1) suite_4;
+  PriorityEncoderTestSuite #(1)     suite_1();
+  PriorityEncoderTestSuite #(2,  8) suite_2();
+  PriorityEncoderTestSuite #(3, 32) suite_3();
+  PriorityEncoderTestSuite #(3,  1) suite_4();
 
   int s;
 

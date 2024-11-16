@@ -51,12 +51,12 @@ module FetchTestSuite #(
   MemIntf #(
     .t_req_msg  (`MEM_REQ ( p_inst_bits, p_addr_bits, p_opaq_bits )),
     .t_resp_msg (`MEM_RESP( p_inst_bits, p_addr_bits, p_opaq_bits ))
-  ) mem_intf;
+  ) mem_intf();
 
   F__DIntf #(
     .p_addr_bits (p_addr_bits),
     .p_inst_bits (p_inst_bits)
-  ) F__D_intf;
+  ) F__D_intf();
 
   Fetch #(
     .p_rst_addr  (p_rst_addr ),
@@ -206,14 +206,14 @@ endmodule
 //========================================================================
 
 module Fetch_test;
-  FetchTestSuite #(1)                                   suite_1;
-  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2;
-  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3;
-  FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4;
-  FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5;
-  FetchTestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6;
-  FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7;
-  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8;
+  FetchTestSuite #(1)                                   suite_1();
+  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2();
+  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3();
+  FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4();
+  FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5();
+  FetchTestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6();
+  FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7();
+  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8();
 
   int s;
 

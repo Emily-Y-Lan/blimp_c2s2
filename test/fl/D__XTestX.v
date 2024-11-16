@@ -42,6 +42,11 @@ module D__XTestX #(
 
   transaction transaction_queue [$];
 
+  always_ff @( posedge clk ) begin
+    if( rst )
+      transaction_queue.delete();
+  end
+
   transaction new_transaction;
 
   // verilator lint_off BLKSEQ

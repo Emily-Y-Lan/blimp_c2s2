@@ -50,7 +50,7 @@ success() {
 
 if command -v verilator 2>&1 >/dev/null; then
   info "Linting with Verilator..."
-  verilator --lint-only -Wall --timing -sv verilator_waivers.vlt $VERILOG_TESTS
+  verilator --lint-only -Wall --timing -sv --quiet-stats verilator_waivers.vlt $VERILOG_TESTS
   if [ $? == 0 ]; then
       success "Lint clean!"
   else

@@ -209,10 +209,10 @@ endmodule
 //========================================================================
 
 module RRArb_test;
-  RRArbTestSuite #(1)     suite_1;
-  RRArbTestSuite #(2,  8) suite_2;
-  RRArbTestSuite #(3, 32) suite_3;
-  RRArbTestSuite #(4,  1) suite_4;
+  RRArbTestSuite #(1)     suite_1();
+  RRArbTestSuite #(2,  8) suite_2();
+  RRArbTestSuite #(3, 32) suite_3();
+  RRArbTestSuite #(4,  1) suite_4();
 
   int s;
 

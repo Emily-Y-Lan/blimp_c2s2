@@ -39,7 +39,7 @@ module F__DTestF #(
     input logic [p_addr_bits-1:0] addr,
     input string                  inst
   );
-    if ( p_addr_bits == 32 ) begin
+    if ( p_inst_bits == 32 ) begin
       insts[addr] = assemble32( inst );
     end else begin
       $error(

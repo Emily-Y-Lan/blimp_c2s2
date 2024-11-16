@@ -158,7 +158,7 @@ endmodule
 //========================================================================
 
 module ImmGen_test;
-  ImmGenTestSuite #(1) suite_1;
+  ImmGenTestSuite #(1) suite_1();
 
   int s;
 

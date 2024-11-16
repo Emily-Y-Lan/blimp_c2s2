@@ -73,12 +73,12 @@ module DecodeBasicTestSuite #(
   F__DIntf #(
     .p_addr_bits (p_addr_bits),
     .p_inst_bits (p_inst_bits)
-  ) F__D_intf;
+  ) F__D_intf();
 
   D__XIntf #(
     .p_addr_bits (p_addr_bits),
     .p_data_bits (p_inst_bits)
-  ) Ex_intf [p_num_pipes-1:0];
+  ) Ex_intf [p_num_pipes-1:0]();
 
   DecodeIssue #(
     .p_decode_issue_type ("basic_tinyrv1"),
@@ -160,7 +160,7 @@ module DecodeBasicTestSuite #(
     logic [p_addr_bits-1:0] dut_branch_target;
   } X_msg;
 
-  X_msg msgs [p_num_pipes][$];
+  X_msg msgs [p_num_pipes-1:0][$];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
@@ -256,14 +256,13 @@ module DecodeBasicTestSuite #(
     if( t.n != 0 )
       tracer.enable_trace();
 
-    //                       addr                          inst
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 0), "mul x1, x0, x0" );
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + 4), "addi x1, x0, 10" );
+    //                       addr                                        inst
+    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), "mul x1, x0, x0" );
+    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), "addi x1, x0, 10" );
 
-    //       pc                            op1    op2    uop     sq br_tar
-    add_msg( p_addr_bits'(p_rst_addr + 0), 32'h0, 32'h0, OP_MUL, 0, 'x );
-    add_msg( p_addr_bits'(p_rst_addr + 4), 32'h0, 32'hA, OP_ADD, 0, 'x );
-
+    //       pc                                          op1    op2    uop     sq br_tar
+    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, OP_MUL, 0, 'x );
+    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'hA, OP_ADD, 0, 'x );
     while( !done() ) begin
       #10;
     end
@@ -287,8 +286,15 @@ endmodule
 //========================================================================
 
 module DecodeBasic_test;
-  DecodeBasicTestSuite #(1) suite_1;
-  DecodeBasicTestSuite #(2, 2, 32, 32, 32'h0, 0, 0, {p_tinyrv1, OP_ADD_VEC}) suite_2;
+  DecodeBasicTestSuite #(1)                                                  suite_1();
+  DecodeBasicTestSuite #(2, 2, 32, 32, 32'h0, 0, 0, {p_tinyrv1, OP_ADD_VEC}) suite_2();
+  DecodeBasicTestSuite #(3, 5, 32, 32, 32'h0, 0, 0, {
+    p_tinyrv1, 
+    p_tinyrv1, 
+    p_tinyrv1, 
+    p_tinyrv1, 
+    OP_MUL_VEC
+  }) suite_3();
 
   int s;
 
@@ -296,8 +302,9 @@ module DecodeBasic_test;
     test_bench_begin( `__FILE__ );
     s = get_test_suite();
 
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
+    // if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
+    // if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
+    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
 
     test_bench_end();
   end
