@@ -35,7 +35,9 @@ module DecodeIssue #(
 );
 
 `ifndef SYNTHESIS
+  // verilator lint_off UNUSEDSIGNAL
   string trace;
+  // verilator lint_on UNUSEDSIGNAL
 `endif
 
   generate
@@ -52,7 +54,9 @@ module DecodeIssue #(
         .*
       );
 
+`ifndef SYNTHESIS
       assign trace = decode.trace;
+`endif
     end
     
     else begin

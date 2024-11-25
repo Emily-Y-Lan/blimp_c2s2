@@ -81,8 +81,13 @@ module DecodeBasic #(
   rv_uop      decoder_uop;
   logic [4:0] decoder_raddr0;
   logic [4:0] decoder_raddr1;
+  logic [4:0] decoder_waddr;
   rv_imm_type decoder_imm_sel;
   logic       decoder_op2_sel;
+
+  // verilator lint_off UNUSEDSIGNAL
+  logic       decoder_wen;
+  // verilator lint_on UNUSEDSIGNAL
   
   Decoder #(
     .p_isa_subset (p_isa_subset),
@@ -92,6 +97,8 @@ module DecodeBasic #(
     .uop     (decoder_uop),
     .raddr0  (decoder_raddr0),
     .raddr1  (decoder_raddr1),
+    .waddr   (decoder_waddr),
+    .wen     (decoder_wen),
     .imm_sel (decoder_imm_sel),
     .op2_sel (decoder_op2_sel)
   );
@@ -147,10 +154,11 @@ module DecodeBasic #(
   genvar k;
   generate
     for( k = 0; k < p_num_pipes; k = k + 1 ) begin: pipe_signals
-      assign Ex[k].pc  = F_reg.pc;
-      assign Ex[k].op1 = op1;
-      assign Ex[k].op2 = op2;
-      assign Ex[k].uop = decoder_uop;
+      assign Ex[k].pc    = F_reg.pc;
+      assign Ex[k].op1   = op1;
+      assign Ex[k].op2   = op2;
+      assign Ex[k].uop   = decoder_uop;
+      assign Ex[k].waddr = decoder_waddr;
       
       logic unused_squash;
       logic [p_addr_bits-1:0] unused_branch_target;
@@ -165,10 +173,13 @@ module DecodeBasic #(
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  // verilator lint_off UNUSEDSIGNAL
   string trace;
+  // verilator lint_on UNUSEDSIGNAL
+  
   always_comb begin
     if( F_reg.val & F.rdy )
-      trace = $sformatf("%20s", disassemble32(F_reg.inst) );
+      trace = $sformatf("%-20s", disassemble32(F_reg.inst) );
     else
       trace = {20{" "}};
   end

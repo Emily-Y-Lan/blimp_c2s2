@@ -17,6 +17,8 @@ module Decoder #(
   output rv_uop                  uop,
   output logic [4:0]             raddr0,
   output logic [4:0]             raddr1,
+  output logic [4:0]             waddr,
+  output logic                   wen,
   output rv_imm_type             imm_sel,
   output logic                   op2_sel
 );

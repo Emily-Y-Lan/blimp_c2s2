@@ -8,7 +8,6 @@
 #define INST32_H
 
 #include <cstdint>
-#include <list>
 #include <string>
 #include <vector>
 
@@ -22,14 +21,14 @@ typedef struct {
 // Instruction Specifications
 //------------------------------------------------------------------------
 
-const std::list<inst_spec> inst_specs = {
+const inst_spec inst_specs[] = {
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Register-Register Arithmetic
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    { "add rd, rs1, rs2", 0x00000033, 0xFE00707F },
-    { "mul rd, rs1, rs2", 0x02000033, 0xFE00707F },
+    { "add  rd, rs1, rs2", 0x00000033, 0xFE00707F },
+    { "mul  rd, rs1, rs2", 0x02000033, 0xFE00707F },
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Register-Immediate Arithmetic
@@ -41,8 +40,8 @@ const std::list<inst_spec> inst_specs = {
     // Memory
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    { "lw rd, imm_i(rs1)", 0x00002003, 0x0000707F },
-    { "sw rs2, imm_s(rs1)", 0x00002023, 0x0000707F },
+    { "lw   rd, imm_i(rs1)", 0x00002003, 0x0000707F },
+    { "sw   rs2, imm_s(rs1)", 0x00002023, 0x0000707F },
 };
 
 //------------------------------------------------------------------------

@@ -35,6 +35,7 @@ module D__XTestX #(
     logic [p_addr_bits-1:0] exp_pc;
     logic [p_data_bits-1:0] exp_op1;
     logic [p_data_bits-1:0] exp_op2;
+    logic             [4:0] exp_waddr;
     rv_uop                  exp_uop;
     logic                   dut_squash;
     logic [p_addr_bits-1:0] dut_branch_target;
@@ -54,6 +55,7 @@ module D__XTestX #(
     input logic [p_addr_bits-1:0] exp_pc,
     input logic [p_data_bits-1:0] exp_op1,
     input logic [p_data_bits-1:0] exp_op2,
+    input logic             [4:0] exp_waddr,
     input rv_uop                  exp_uop,
     input logic                   dut_squash,
     input logic [p_addr_bits-1:0] dut_branch_target
@@ -62,6 +64,7 @@ module D__XTestX #(
     new_transaction.exp_op1           = exp_op1;
     new_transaction.exp_op2           = exp_op2;
     new_transaction.exp_uop           = exp_uop;
+    new_transaction.exp_waddr         = exp_waddr;
     new_transaction.dut_squash        = dut_squash;
     new_transaction.dut_branch_target = dut_branch_target;
 
@@ -81,14 +84,16 @@ module D__XTestX #(
     logic [p_addr_bits-1:0] pc;
     logic [p_data_bits-1:0] op1;
     logic [p_data_bits-1:0] op2;
+    logic             [4:0] waddr;
     rv_uop                  uop;
   } dut_input;
 
   dut_input curr_input;
-  assign curr_input.pc   = dut.pc;
-  assign curr_input.op1  = dut.op1;
-  assign curr_input.op2  = dut.op2;
-  assign curr_input.uop  = dut.uop;
+  assign curr_input.pc    = dut.pc;
+  assign curr_input.op1   = dut.op1;
+  assign curr_input.op2   = dut.op2;
+  assign curr_input.waddr = dut.waddr;
+  assign curr_input.uop   = dut.uop;
 
   // verilator lint_off PINCONNECTEMPTY
 
@@ -114,12 +119,14 @@ module D__XTestX #(
   // Check messages, assign squash/target
   //----------------------------------------------------------------------
 
-  dut_input actual_msg;
+  dut_input   actual_msg;
   transaction exp_msg;
+  logic       processing_msg;
 
   initial begin
     dut.squash        = 1'b0;
     dut.branch_target = 'x;
+    processing_msg    = 1'b0;
   end
   
   // verilator lint_off BLKSEQ
@@ -132,8 +139,9 @@ module D__XTestX #(
     end
     else begin
       if( !done() & (dut_queue.num_msgs() > 0) ) begin
-        actual_msg = dut_queue.dequeue();
-        exp_msg    = transaction_queue.pop_front();
+        actual_msg     = dut_queue.dequeue();
+        exp_msg        = transaction_queue.pop_front();
+        processing_msg = 1'b1;
 
         // Set squash/branch target
         dut.squash        = exp_msg.dut_squash;
@@ -142,10 +150,13 @@ module D__XTestX #(
         #2;
 
         // Check the actual vs expectation
-        `CHECK_EQ( actual_msg.pc,   exp_msg.exp_pc  );
-        `CHECK_EQ( actual_msg.op1,  exp_msg.exp_op1 );
-        `CHECK_EQ( actual_msg.op2,  exp_msg.exp_op2 );
-        `CHECK_EQ( actual_msg.uop,  exp_msg.exp_uop );
+        `CHECK_EQ( actual_msg.pc,    exp_msg.exp_pc    );
+        `CHECK_EQ( actual_msg.op1,   exp_msg.exp_op1   );
+        `CHECK_EQ( actual_msg.op2,   exp_msg.exp_op2   );
+        `CHECK_EQ( actual_msg.waddr, exp_msg.exp_waddr );
+        `CHECK_EQ( actual_msg.uop,   exp_msg.exp_uop   );
+        
+        processing_msg = 1'b0;
       end else begin
         dut.squash        = 1'b0;
         dut.branch_target = 'x;
@@ -169,15 +180,15 @@ module D__XTestX #(
 
   // verilator lint_off BLKSEQ
   always_comb begin
-    if( dut.val & dut.rdy )
-      trace = $sformatf("%11s", dut.uop.name());
+    if( processing_msg )
+      trace = $sformatf("%-11s", actual_msg.uop.name());
     else
       trace = {11{" "}};
 
     trace = {trace, " "};
 
-    if( dut.squash )
-      trace = {trace, $sformatf("(%h)", dut.branch_target)};
+    if( processing_msg & exp_msg.dut_squash )
+      trace = {trace, $sformatf("(%h)", exp_msg.dut_branch_target)};
     else
       trace = {trace, $sformatf("(%s)", {ceil_div_4(p_addr_bits){" "}})};
   end

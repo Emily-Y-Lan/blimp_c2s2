@@ -180,7 +180,10 @@ module Fetch
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  // verilator lint_off UNUSEDSIGNAL
   string trace;
+  // verilator lint_on UNUSEDSIGNAL
+  
   always_comb
     trace = $sformatf("(%h)", req_opaque);
 `endif

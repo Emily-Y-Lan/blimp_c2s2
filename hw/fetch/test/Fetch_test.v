@@ -213,7 +213,7 @@ module Fetch_test;
   FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5();
   FetchTestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6();
   FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7();
-  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8();
+  FetchTestSuite #(8, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8();
 
   int s;
 
@@ -228,7 +228,7 @@ module Fetch_test;
     if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
     if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
     if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
-    if ((s <= 0) || (s == 7)) suite_8.run_test_suite();
+    if ((s <= 0) || (s == 8)) suite_8.run_test_suite();
 
     test_bench_end();
   end
