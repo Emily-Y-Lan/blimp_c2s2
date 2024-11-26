@@ -7,6 +7,7 @@
 `define TEST_FL_D__X_TEST_D_V
 
 `include "intf/D__XIntf.v"
+`include "test/FLTestUtils.v"
 
 module D__XTestD #(
   parameter p_send_intv_delay = 0
@@ -78,14 +79,37 @@ module D__XTestD #(
   endtask
 
   //----------------------------------------------------------------------
-  // Currently ignore branch redirection
+  // Check any expected redirection
   //----------------------------------------------------------------------
 
-  logic                   unused_squash;
-  logic [p_addr_bits-1:0] unused_branch_target;
+  typedef logic [p_addr_bits-1:0] target;
 
-  assign unused_squash        = dut.squash;
-  assign unused_branch_target = dut.branch_target;
+  target target_queue [$];
+
+  task add_target(
+    input target new_target
+  );
+    target_queue.push_back( new_target );
+  endtask
+
+  target exp_target;
+
+  // verilator lint_off BLKSEQ
+
+  always_ff @( posedge clk ) begin
+    #3;
+    if( dut.squash ) begin
+      if( target_queue.size() > 0 ) begin
+        exp_target = target_queue.pop_front();
+        `CHECK_EQ( dut.branch_target, exp_target );
+      end else begin
+        // Unexpected branch - fail
+        `CHECK_EQ( dut.branch_target, dut.branch_target + 1 );
+      end
+    end
+  end
+
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // Linetracing

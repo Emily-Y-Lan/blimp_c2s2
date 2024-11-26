@@ -168,8 +168,8 @@ module ALU_test;
     if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
     if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
-    if ((s <= 0) || (s == 4)) suite_5.run_test_suite();
-    if ((s <= 0) || (s == 4)) suite_6.run_test_suite();
+    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
+    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
 
     test_bench_end();
   end
