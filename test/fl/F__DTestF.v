@@ -6,9 +6,8 @@
 `ifndef TEST_FL_F__D_TEST_F_V
 `define TEST_FL_F__D_TEST_F_V
 
-import "DPI-C" function bit [31:0] assemble32( string assembly );
-
 `include "intf/F__DIntf.v"
+`include "test/asm/rv32/assemble32.v"
 
 module F__DTestF #(
   parameter p_send_intv_delay = 0,

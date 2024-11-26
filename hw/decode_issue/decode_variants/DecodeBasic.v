@@ -13,12 +13,9 @@
 `include "hw/decode_issue/Regfile.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
+`include "test/asm/rv32/disassemble32.v"
 
 import ISA::*;
-
-`ifndef SYNTHESIS
-import "DPI-C" function string disassemble32( bit [31:0] binary );
-`endif
 
 module DecodeBasic #(
   parameter p_isa_subset                               = p_tinyrv1,
