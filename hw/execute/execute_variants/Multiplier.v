@@ -6,11 +6,11 @@
 `ifndef HW_EXECUTE_EXECUTE_VARIANTS_MULTIPLIER_V
 `define HW_EXECUTE_EXECUTE_VARIANTS_MULTIPLIER_V
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 `include "intf/D__XIntf.v"
 `include "intf/X__WIntf.v"
 
-import ISA::*;
+import UArch::*;
 
 module Multiplier (
   input  logic clk,

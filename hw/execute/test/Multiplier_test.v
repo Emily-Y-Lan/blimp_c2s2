@@ -3,13 +3,13 @@
 //========================================================================
 // A testbench for our Multiplier
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 `include "hw/execute/Execute.v"
 `include "test/TraceUtils.v"
 `include "test/fl/D__XTestD.v"
 `include "test/fl/X__WTestW.v"
 
-import ISA::*;
+import UArch::*;
 import TestEnv::*;
 
 //========================================================================

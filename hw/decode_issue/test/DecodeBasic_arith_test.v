@@ -3,13 +3,13 @@
 //========================================================================
 // A testbench for our basic decoder
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 `include "hw/decode_issue/DecodeIssue.v"
 `include "test/TraceUtils.v"
 `include "test/fl/F__DTestF.v"
 `include "test/fl/D__XTestX.v"
 
-import ISA::*;
+import UArch::*;
 import TestEnv::*;
 
 //========================================================================

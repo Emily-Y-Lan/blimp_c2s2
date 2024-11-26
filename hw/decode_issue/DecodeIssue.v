@@ -6,12 +6,12 @@
 `ifndef HW_DECODE_DECODE_V
 `define HW_DECODE_DECODE_V
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 `include "hw/decode_issue/decode_variants/DecodeBasic.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 
-import ISA::*;
+import UArch::*;
 
 module DecodeIssue #(
   parameter p_decode_issue_type                        = "basic_tinyrv1",

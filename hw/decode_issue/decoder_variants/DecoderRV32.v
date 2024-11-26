@@ -7,8 +7,10 @@
 `define HW_DECODE_DECODER_VARIANTS_DECODERRV32_V
 
 `include "defs/ISA.v"
+`include "defs/UArch.v"
 
 import ISA::*;
+import UArch::*;
 
 module DecoderRV32 #(
   parameter p_isa_subset = p_tinyrv1

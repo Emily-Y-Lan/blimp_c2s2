@@ -6,9 +6,9 @@
 `ifndef INTF_X__W_INTF_V
 `define INTF_X__W_INTF_V
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 
-import ISA::*;
+import UArch::*;
 
 //------------------------------------------------------------------------
 // X__WIntf

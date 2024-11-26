@@ -6,12 +6,12 @@
 `ifndef TEST_FL_D__X_TEST_X_V
 `define TEST_FL_D__X_TEST_X_V
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 `include "hw/util/DelayStream.v"
 `include "intf/D__XIntf.v"
 `include "test/FLTestUtils.v"
 
-import ISA::*;
+import UArch::*;
 
 module D__XTestX #(
   parameter p_dut_intv_delay = 0

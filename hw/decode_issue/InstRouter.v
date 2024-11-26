@@ -7,9 +7,9 @@
 `ifndef HW_DECODE_INSTROUTER_V
 `define HW_DECODE_INSTROUTER_V
 
-`include "defs/ISA.v"
+`include "defs/UArch.v"
 
-import ISA::*;
+import UArch::*;
 
 //------------------------------------------------------------------------
 // InstRouterUnit
