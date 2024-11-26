@@ -98,8 +98,9 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   get_leaf(V_TEST_FILE ${V_TEST_FILE_PATH})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
-  add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp" ${RV32_ASM_FILES})
-  # target_link_libraries(${V_TEST_BIN} PRIVATE RV32_ASM_LIB) 
+  add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
+  target_link_libraries(${V_TEST_BIN} PRIVATE RV32_ASM_LIB) 
+  set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
 
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
     VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
@@ -119,3 +120,18 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(TEST_NAME ${TEST_PATH})
   add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
 endforeach(V_TEST_FILE_REL_PATH)
+
+#------------------------------------------------------------------------
+# List tests
+#------------------------------------------------------------------------
+
+set(KNOWN_TESTS_TEXT "Available test targets:")
+foreach(VTEST ${CMAKE_VTESTS})
+  set(KNOWN_TESTS_TEXT "${KNOWN_TESTS_TEXT}\\n - ${VTEST}")
+endforeach(VTEST)
+
+add_custom_target(
+  list
+  COMMAND echo ${KNOWN_TESTS_TEXT}
+  VERBATIM
+)
