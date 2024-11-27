@@ -15,12 +15,12 @@ import TestEnv::*;
 
 module SeqNumCompareTestSuite #(
   parameter p_suite_num  = 0,
-  parameter p_inter_spec_bits = 2,
-  parameter p_intra_spec_bits = 6
+  parameter p_inter_seq_bits = 2,
+  parameter p_intra_seq_bits = 6
 );
   string suite_name = $sformatf("%0d: SeqNumCompareTestSuite_%0d_%0d", 
-                                p_suite_num, p_inter_spec_bits,
-                                p_intra_spec_bits);
+                                p_suite_num, p_inter_seq_bits,
+                                p_intra_seq_bits);
 
   //----------------------------------------------------------------------
   // Setup
@@ -36,7 +36,7 @@ module SeqNumCompareTestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  localparam p_seq_num_bits = p_inter_spec_bits + p_intra_spec_bits;
+  localparam p_seq_num_bits = p_inter_seq_bits + p_intra_seq_bits;
 
   logic [p_seq_num_bits-1:0] dut_num1;
   logic [p_seq_num_bits-1:0] dut_num2;
@@ -45,8 +45,8 @@ module SeqNumCompareTestSuite #(
   logic                      dut_num1_is_older;
 
   SeqNumCompare #(
-    .p_inter_spec_bits (p_inter_spec_bits),
-    .p_intra_spec_bits (p_intra_spec_bits)
+    .p_inter_seq_bits (p_inter_seq_bits),
+    .p_intra_seq_bits (p_intra_seq_bits)
   ) DUT (
     .num1             (dut_num1),
     .num2             (dut_num2),
@@ -95,7 +95,7 @@ module SeqNumCompareTestSuite #(
   // seq_num
   //----------------------------------------------------------------------
   // A helper function to create sequence numbers from inter and intra
-  // spec bits
+  // seq bits
 
   logic [31:0] unused_inter_bits;
   logic [31:0] unused_intra_bits;
@@ -107,8 +107,8 @@ module SeqNumCompareTestSuite #(
     unused_inter_bits = inter_bits;
     unused_intra_bits = intra_bits;
 
-    return {p_inter_spec_bits'(inter_bits), 
-            p_intra_spec_bits'(intra_bits)};
+    return {p_inter_seq_bits'(inter_bits), 
+            p_intra_seq_bits'(intra_bits)};
   endfunction
 
   //----------------------------------------------------------------------
@@ -225,10 +225,10 @@ module SeqNumCompareTestSuite #(
   // test_case_8_random
   //----------------------------------------------------------------------
 
-  logic [p_inter_spec_bits-1:0] rand_num1_inter_bits;
-  logic [p_intra_spec_bits-1:0] rand_num1_intra_bits;
-  logic [p_inter_spec_bits-1:0] rand_num2_inter_bits;
-  logic [p_intra_spec_bits-1:0] rand_num2_intra_bits;
+  logic [p_inter_seq_bits-1:0] rand_num1_inter_bits;
+  logic [p_intra_seq_bits-1:0] rand_num1_intra_bits;
+  logic [p_inter_seq_bits-1:0] rand_num2_inter_bits;
+  logic [p_intra_seq_bits-1:0] rand_num2_intra_bits;
   logic                         rand_inter_par;
   logic                         rand_intra_par;
   logic                         exp_num1_older;
@@ -237,10 +237,10 @@ module SeqNumCompareTestSuite #(
     t.test_case_begin( "test_case_8_random" );
 
     for( int i = 0; i < 20; i = i + 1 ) begin
-      rand_num1_inter_bits = p_inter_spec_bits'($urandom());
-      rand_num2_inter_bits = p_inter_spec_bits'($urandom());
-      rand_num1_intra_bits = p_intra_spec_bits'($urandom());
-      rand_num2_intra_bits = p_intra_spec_bits'($urandom());
+      rand_num1_inter_bits = p_inter_seq_bits'($urandom());
+      rand_num2_inter_bits = p_inter_seq_bits'($urandom());
+      rand_num1_intra_bits = p_intra_seq_bits'($urandom());
+      rand_num2_intra_bits = p_intra_seq_bits'($urandom());
       rand_inter_par       =                 1'($urandom());
       rand_intra_par       =                 1'($urandom());
 
@@ -248,44 +248,44 @@ module SeqNumCompareTestSuite #(
       // Check upper inter bits
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if( rand_num1_inter_bits[p_inter_spec_bits-1] > 
-          rand_num2_inter_bits[p_inter_spec_bits-1])
+      if( rand_num1_inter_bits[p_inter_seq_bits-1] > 
+          rand_num2_inter_bits[p_inter_seq_bits-1])
         exp_num1_older = rand_inter_par;
-      else if( rand_num1_inter_bits[p_inter_spec_bits-1] < 
-               rand_num2_inter_bits[p_inter_spec_bits-1])
+      else if( rand_num1_inter_bits[p_inter_seq_bits-1] < 
+               rand_num2_inter_bits[p_inter_seq_bits-1])
         exp_num1_older = !rand_inter_par;
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Check lower inter bits
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      else if( rand_num1_inter_bits[p_inter_spec_bits-2:0] > 
-               rand_num2_inter_bits[p_inter_spec_bits-2:0])
+      else if( rand_num1_inter_bits[p_inter_seq_bits-2:0] > 
+               rand_num2_inter_bits[p_inter_seq_bits-2:0])
         exp_num1_older = 0;
-      else if( rand_num1_inter_bits[p_inter_spec_bits-2:0] < 
-               rand_num2_inter_bits[p_inter_spec_bits-2:0])
+      else if( rand_num1_inter_bits[p_inter_seq_bits-2:0] < 
+               rand_num2_inter_bits[p_inter_seq_bits-2:0])
         exp_num1_older = 1;
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Check upper intra bits
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      else if( rand_num1_intra_bits[p_intra_spec_bits-1] > 
-          rand_num2_intra_bits[p_intra_spec_bits-1])
+      else if( rand_num1_intra_bits[p_intra_seq_bits-1] > 
+          rand_num2_intra_bits[p_intra_seq_bits-1])
         exp_num1_older = rand_intra_par;
-      else if( rand_num1_intra_bits[p_intra_spec_bits-1] < 
-               rand_num2_intra_bits[p_intra_spec_bits-1])
+      else if( rand_num1_intra_bits[p_intra_seq_bits-1] < 
+               rand_num2_intra_bits[p_intra_seq_bits-1])
         exp_num1_older = !rand_intra_par;
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Check lower intra bits
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      else if( rand_num1_intra_bits[p_intra_spec_bits-2:0] > 
-               rand_num2_intra_bits[p_intra_spec_bits-2:0])
+      else if( rand_num1_intra_bits[p_intra_seq_bits-2:0] > 
+               rand_num2_intra_bits[p_intra_seq_bits-2:0])
         exp_num1_older = 0;
-      else if( rand_num1_intra_bits[p_intra_spec_bits-2:0] < 
-               rand_num2_intra_bits[p_intra_spec_bits-2:0])
+      else if( rand_num1_intra_bits[p_intra_seq_bits-2:0] < 
+               rand_num2_intra_bits[p_intra_seq_bits-2:0])
         exp_num1_older = 1;
 
       else

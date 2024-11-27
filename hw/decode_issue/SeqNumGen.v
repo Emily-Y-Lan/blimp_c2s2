@@ -9,10 +9,10 @@
 module SeqNumGen #(
   // Both of these must be >1, as we only ever use half of the available
   // values in order to compare age
-  parameter p_inter_spec_bits = 2,
-  parameter p_intra_spec_bits = 6,
+  parameter p_inter_seq_bits = 2,
+  parameter p_intra_seq_bits = 6,
 
-  parameter p_seq_num_bits = p_inter_spec_bits + p_intra_spec_bits
+  parameter p_seq_num_bits = p_inter_seq_bits + p_intra_seq_bits
 ) (
   input  logic clk,
   input  logic rst,
@@ -49,6 +49,62 @@ module SeqNumGen #(
   output logic                      inter_age_parity,
   output logic                      intra_age_parity,
 );
+
+  //----------------------------------------------------------------------
+  // Break apart input sequence numbers
+  //----------------------------------------------------------------------
+
+  logic [p_inter_seq_bits-1:0] commit_inter_seq_num;
+  logic [p_intra_seq_bits-1:0] commit_intra_seq_num;
+
+  assign commit_inter_seq_num = commit_seq_num[p_inter_seq_bits-1:p_intra_seq_bits];
+  assign commit_intra_seq_num = commit_seq_num[p_intra_seq_bits-1:0];
+  
+  //----------------------------------------------------------------------
+  // Intra-sequence numbers
+  //----------------------------------------------------------------------
+  // Keep track of the current one to allocate, as well as the last one
+  // committed
+
+  logic [p_intra_seq_bits-1:0] curr_intra_seq_num;
+  logic [p_intra_seq_bits-1:0] curr_commit_intra_seq_num;
+  logic [p_intra_seq_bits-1:0] next_intra_seq_num;
+  logic                        can_advance_intra_seq;
+
+  always_ff @( posedge clk ) begin
+    if( rst )
+      curr_intra_seq_num <= '0;
+    else if( squash )
+      curr_intra_seq_num <= '0;
+    else if( seq_num_alloc & can_advance_intra_seq )
+      curr_intra_seq_num <= next_intra_seq_num;
+  end
+
+  always_ff @( posedge clk ) begin
+    if( rst )
+      curr_commit_intra_seq_num <= '0;
+    else if( squash )
+      curr_commit_intra_seq_num <= '0;
+    else if( commit )
+      curr_commit_intra_seq_num <= commit_intra_seq_num + 1;
+  end
+
+  always_comb begin
+    can_advance_intra_seq = 1'b1;
+
+    // Can't advance if the MSB would overlap with instructions yet to commit
+    if( &(curr_intra_seq_num[p_intra_seq_bits-2:0]) & 
+        (curr_intra_seq_num[p_intra_seq_bits-1] != 
+        curr_commit_intra_seq_num[p_intra_seq_bits-1] ) )
+      can_advance_intra_seq = 1'b0;
+  end
+
+  assign next_intra_seq_num = curr_intra_seq_num + 1;
+  assign intra_age_parity = curr_commit_intra_seq_num[p_intra_seq_bits-1];
+
+  //----------------------------------------------------------------------
+  // Inter-sequence numbers
+  //----------------------------------------------------------------------
 
 endmodule
 
