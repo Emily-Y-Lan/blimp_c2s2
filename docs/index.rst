@@ -10,7 +10,7 @@ This is the home for Blimp's documentation, including installation, the
 overall framework, and how users can use and/or modify implementations.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Microarchitectural Details
 
    uarch/seq_nums.md
