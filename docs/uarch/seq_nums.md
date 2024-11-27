@@ -11,7 +11,7 @@ Representation
 --------------------------------------------------------------------------
 
 Sequence numbers are represented using two fields; the _intra_-sequence
-bits, and the _inter_-speculation bits. 
+bits, and the _inter_-sequence bits. 
 
  - __Intra-sequence bits__ are used for counting instructions within a
    speculation sequence (a.k.a. between branches)
@@ -25,10 +25,10 @@ previous one. When a squash is encountered, the intra-sequence bits are
 reset to zero, and the inter-sequence bits being issued to instruction are
 incremented.
 
-We assume that intra-speculation instructions are more frequent, and
+We assume that intra-sequence instructions are more frequent, and
 accordingly use more bits to represent them (although both sizes are
-parametrizable). The default is to use 2 inter-speculation bits, and
-6 intra-speculation bits
+parametrizable). The default is to use 2 inter-sequence bits, and
+6 intra-sequence bits
 
 ```{wavedrom}
 {reg: [
