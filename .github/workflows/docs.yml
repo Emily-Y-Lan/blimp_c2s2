@@ -3,7 +3,7 @@
 # ========================================================================
 # GitHub Action to update Blimp's documentation
 
-name: CI
+name: docs
 
 permissions:
   contents: write
