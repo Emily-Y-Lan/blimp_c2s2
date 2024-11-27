@@ -1,9 +1,9 @@
 # BLIMP
 BRG’s Luculently Interfaced Modular Processor
 
-<center>
-  <img src="./docs/img/blimp_no_border.png" alt="A tech-inspired blimp" style="width:50%;"/>
-</center>
+<p align="center">
+  <img src="./docs/img/blimp_no_border.png" alt="A tech-inspired blimp" width="50%"/>
+</p>
 
 ## Testing
 
