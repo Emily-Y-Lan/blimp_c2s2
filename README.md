@@ -2,7 +2,7 @@
 BRG’s Luculently Interfaced Modular Processor
 
 <p align="center">
-  <img src="./docs/img/blimp_no_border.png" alt="A tech-inspired blimp" width="50%"/>
+  <img src="docs/_static/img/blimp_no_border.png" alt="A tech-inspired blimp" width="50%"/>
 </p>
 
 ## Documentation
