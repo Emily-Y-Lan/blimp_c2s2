@@ -25,4 +25,5 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_logo = "_static/img/blimp_no_border.png"
+html_favicon = "_static/img/blimp_favicon.png"
 html_css_files = ["css/logo.css", "css/wavedrom.css"]
