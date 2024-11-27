@@ -5,6 +5,10 @@ BRG’s Luculently Interfaced Modular Processor
   <img src="./docs/img/blimp_no_border.png" alt="A tech-inspired blimp" width="50%"/>
 </p>
 
+## Documentation
+
+The main documentation for Blimp can be found on the [GitHub Pages](https://cornell-brg.github.io/blimp/)
+
 ## Testing
 
 Blimp uses Verilator to simulate and run tests. Users should first create a build directory and generate a build system with CMake:
