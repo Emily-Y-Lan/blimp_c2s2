@@ -22,8 +22,17 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+html_context = {
+    "display_github": True,  # Integrate GitHub
+    "github_user": "cornell-brg",  # Username/Organization
+    "github_repo": "blimp",  # Repo name
+    "github_version": "main",  # Version
+    "conf_py_path": "/docs/",  # Path in the checkout to the docs root
+}
+
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_logo = "_static/img/blimp_no_border.png"
 html_favicon = "_static/img/blimp_favicon.png"
+
 html_css_files = ["css/logo.css", "css/wavedrom.css"]
