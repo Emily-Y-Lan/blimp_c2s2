@@ -72,10 +72,17 @@ module SeqNumGen #(
   // Keep track of the current one to allocate, as well as the last one
   // committed
 
+  // TODO: Only update commit intra sequence number if in same inter spec regime
+  // TODO: Fix inter update logic based on branches
+
   logic [p_intra_seq_bits-1:0] curr_intra_seq_num;
   logic [p_intra_seq_bits-1:0] curr_commit_intra_seq_num;
   logic [p_intra_seq_bits-1:0] next_intra_seq_num;
-  logic                        can_advance_intra_seq;
+  logic [p_intra_seq_bits-1:0] next_commit_intra_seq_num;
+  logic                        next_intra_overlap;
+  logic                        next_intra_no_overlap;
+  logic                        is_intra_overlap;
+  logic                        can_issue_intra_seq;
   logic                        can_issue_inter_seq;
 
   always_ff @( posedge clk ) begin
@@ -83,7 +90,7 @@ module SeqNumGen #(
       curr_intra_seq_num <= '0;
     else if( squash )
       curr_intra_seq_num <= '0;
-    else if( seq_num_alloc & can_advance_intra_seq )
+    else if( seq_num_alloc & can_issue_intra_seq )
       curr_intra_seq_num <= next_intra_seq_num;
   end
 
@@ -93,25 +100,45 @@ module SeqNumGen #(
     else if( squash )
       curr_commit_intra_seq_num <= '0;
     else if( commit )
-      curr_commit_intra_seq_num <= commit_intra_seq_num + 1;
+      curr_commit_intra_seq_num <= next_commit_intra_seq_num;
+  end
+
+  assign next_intra_overlap = ( 
+    ( curr_intra_seq_num       [p_intra_seq_bits-1] != 
+      curr_commit_intra_seq_num[p_intra_seq_bits-1]) &
+    ( curr_intra_seq_num       [p_intra_seq_bits-1] != 
+      next_intra_seq_num       [p_intra_seq_bits-1]));
+
+  assign next_intra_no_overlap = (
+    next_commit_inter_seq_num[p_intra_seq_bits-1] !=
+    curr_intra_seq_num       [p_intra_seq_bits-1]);
+
+  always_ff @( posedge clk ) begin
+    if( rst )
+      is_intra_overlap <= 1'b0;
+    else if( squash )
+      is_intra_overlap <= 1'b0;
+    else if( seq_num_alloc & can_issue_intra_seq )
+      is_intra_overlap <= next_intra_overlap;
+    else if( is_intra_overlap & commit )
+      is_intra_overlap <= next_intra_no_overlap;
   end
 
   always_comb begin
-    can_advance_intra_seq = 1'b1;
+    can_issue_intra_seq = 1'b1;
 
-    // Can't advance if the MSB would overlap with instructions yet to commit
-    if( &(curr_intra_seq_num[p_intra_seq_bits-2:0]) & 
-        (curr_intra_seq_num[p_intra_seq_bits-1] != 
-        curr_commit_intra_seq_num[p_intra_seq_bits-1] ) )
-      can_advance_intra_seq = 1'b0;
+    // Can't issue if the MSB would overlap with instructions yet to commit
+    if( is_intra_overlap )
+      can_issue_intra_seq = 1'b0;
 
     // Don't advance if we can't issue based on inter bits
     if( !can_issue_inter_seq )
-      can_advance_intra_seq = 1'b0;
+      can_issue_intra_seq = 1'b0;
   end
 
-  assign next_intra_seq_num = curr_intra_seq_num + 1;
-  assign intra_age_parity = curr_commit_intra_seq_num[p_intra_seq_bits-1];
+  assign next_intra_seq_num        = curr_intra_seq_num + 1;
+  assign next_commit_intra_seq_num = commit_intra_seq_num + 1;
+  assign intra_age_parity          = curr_commit_intra_seq_num[p_intra_seq_bits-1];
 
   //----------------------------------------------------------------------
   // Inter-sequence numbers
@@ -181,7 +208,7 @@ module SeqNumGen #(
   //----------------------------------------------------------------------
 
   assign next_seq_num = { curr_inter_seq_num, curr_intra_seq_num };
-  assign next_seq_num_val = can_advance_intra_seq;
+  assign next_seq_num_val = can_issue_intra_seq;
 
 endmodule
 

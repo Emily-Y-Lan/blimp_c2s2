@@ -15,6 +15,7 @@ set(V_TEST_FILES
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/Regfile_test.v
   hw/decode_issue/test/SeqNumCompare_test.v
+  hw/decode_issue/test/SeqNumGen_test.v
   hw/execute/test/ALU_test.v
   hw/execute/test/Multiplier_test.v
   hw/fetch/test/Fetch_test.v
