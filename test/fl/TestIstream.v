@@ -35,10 +35,8 @@ module TestIstream #(
     // Delay for the send interval
     for( int i = 0; i < p_send_intv_delay; i = i + 1 ) begin
       @( posedge clk );
+      #1;
     end
-
-    // Offset from the clock edge
-    #1;
 
     val = 1'b1;
     msg = dut_msg;

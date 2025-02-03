@@ -40,10 +40,8 @@ module TestOstream #(
     // Delay for the send interval
     for( int i = 0; i < p_recv_intv_delay; i = i + 1 ) begin
       @( posedge clk );
+      #1;
     end
-
-    // Offset from the clock edge
-    #1;
 
     rdy = 1'b1;
 

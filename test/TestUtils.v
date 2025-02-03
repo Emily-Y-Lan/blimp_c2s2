@@ -157,6 +157,7 @@ module TestUtils
     @( posedge clk );
     @( posedge clk );
     @( posedge clk );
+    #1;
     rst = 0;
   endtask
 
