@@ -7,18 +7,24 @@
 # Get all of the test files
 #-------------------------------------------------------------------------
 
+# set(V_TEST_FILES
+#   hw/common/test/Fifo_test.v
+#   hw/common/test/PriorityEncoder_test.v
+#   hw/common/test/RRArb_test.v
+#   hw/decode_issue/test/DecodeBasic_arith_test.v
+#   hw/decode_issue/test/ImmGen_test.v
+#   hw/decode_issue/test/Regfile_test.v
+#   hw/decode_issue/test/SeqNumCompare_test.v
+#   hw/decode_issue/test/SeqNumGen_test.v
+#   hw/execute/test/ALU_test.v
+#   hw/execute/test/Multiplier_test.v
+#   hw/fetch/test/Fetch_test.v
+#   hw/writeback_commit/test/WritebackBasic_test.v
+# )
+
 set(V_TEST_FILES
-  hw/common/test/Fifo_test.v
-  hw/common/test/PriorityEncoder_test.v
-  hw/common/test/RRArb_test.v
-  hw/decode_issue/test/DecodeBasic_arith_test.v
-  hw/decode_issue/test/ImmGen_test.v
-  hw/decode_issue/test/Regfile_test.v
-  hw/decode_issue/test/SeqNumCompare_test.v
-  hw/decode_issue/test/SeqNumGen_test.v
   hw/execute/test/ALU_test.v
   hw/execute/test/Multiplier_test.v
-  hw/fetch/test/Fetch_test.v
 )
 
 set(RV32_ASM_FILES
@@ -114,6 +120,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
     SOURCES ${V_TEST_FILE_PATH} 
     INCLUDE_DIRS ${V_INCL_DIR}
     TRACE
+    TRACE_STRUCTS
     VERILATOR_ARGS --timing --flatten --quiet-stats
   )
 

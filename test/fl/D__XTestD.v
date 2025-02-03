@@ -63,11 +63,11 @@ module D__XTestD #(
   msg new_msg;
 
   task add_msg(
-    logic [p_addr_bits-1:0] pc,
-    logic [p_data_bits-1:0] op1,
-    logic [p_data_bits-1:0] op2,
-    logic             [4:0] waddr,
-    rv_uop                  uop
+    input logic [p_addr_bits-1:0] pc,
+    input logic [p_data_bits-1:0] op1,
+    input logic [p_data_bits-1:0] op2,
+    input logic             [4:0] waddr,
+    input rv_uop                  uop
   );
     new_msg.pc    = pc;
     new_msg.op1   = op1;
@@ -114,10 +114,6 @@ module D__XTestD #(
   //----------------------------------------------------------------------
   // Linetracing
   //----------------------------------------------------------------------
-
-  function int ceil_div_4( int val );
-    return (val / 4) + (val % 4);
-  endfunction
 
   // verilator lint_off UNUSEDSIGNAL
   string trace;

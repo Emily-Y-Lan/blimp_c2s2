@@ -1,61 +1,46 @@
 //========================================================================
-// D__XIntf.v
+// WritebackNotif.v
 //========================================================================
-// The interface definition going between D and X
+// The notification interface for writing back values
 
-`ifndef INTF_D__X_INTF_V
-`define INTF_D__X_INTF_V
-
-`include "defs/UArch.v"
-
-import UArch::*;
+`ifndef INTF_WRITEBACK_NOTIF_V
+`define INTF_WRITEBACK_NOTIF_V
 
 //------------------------------------------------------------------------
-// D__XIntf
+// WritebackNotif
 //------------------------------------------------------------------------
 
-interface D__XIntf
+interface WritebackNotif
 #(
-  parameter p_addr_bits  = 32,
-  parameter p_data_bits  = 32
+  parameter p_data_bits = 32
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [p_addr_bits-1:0] pc;
-  logic [p_data_bits-1:0] op1;
-  logic [p_data_bits-1:0] op2;
   logic             [4:0] waddr;
-  rv_uop                  uop;
-  logic                   val;
-  logic                   rdy;
+  logic [p_data_bits-1:0] wdata;
+  logic                   wen;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  modport D_intf (
-    output pc,
-    output op1,
-    output op2,
-    output uop,
+  // Publish
+  modport pub (
     output waddr,
-    output val,
-    input  rdy
+    output wdata,
+    output wen
   );
 
-  modport X_intf (
-    input  pc,
-    input  op1,
-    input  op2,
-    input  uop,
+  // Subscribe
+  modport sub (
     input  waddr,
-    input  val,
-    output rdy
+    input  wdata,
+    input  wen
   );
 
 endinterface
 
-`endif // INTF_D__X_INTF_V
+`endif // INTF_WRITEBACK_Notif_V

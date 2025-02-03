@@ -3,8 +3,8 @@
 //========================================================================
 // A modular decode unit for decoding and issuing instructions
 
-`ifndef HW_DECODE_DECODE_V
-`define HW_DECODE_DECODE_V
+`ifndef HW_DECODE_DECODEISSUE_V
+`define HW_DECODE_DECODEISSUE_V
 
 `include "defs/UArch.v"
 `include "hw/decode_issue/decode_variants/DecodeBasic.v"
@@ -60,10 +60,10 @@ module DecodeIssue #(
     end
     
     else begin
-      $error("Unknown decode type: '%s'", p_decode_issue_type);
+      $error("Unknown decode-issue type: '%s'", p_decode_issue_type);
     end
   endgenerate
 
 endmodule
 
-`endif // HW_DECODE_DECODE_V
+`endif // HW_DECODE_DECODEISSUE_V

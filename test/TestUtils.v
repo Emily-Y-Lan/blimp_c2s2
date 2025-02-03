@@ -127,6 +127,7 @@ module TestUtils
 
     if ( cycles > 10000 ) begin
       $display( "\nERROR (cycles=%0d): timeout!", cycles );
+      TestStatus::test_fail();
       $finish;
     end
 
@@ -153,7 +154,9 @@ module TestUtils
     failed = 0;
 
     rst = 1;
-    #30;
+    @( posedge clk );
+    @( posedge clk );
+    @( posedge clk );
     rst = 0;
   endtask
 

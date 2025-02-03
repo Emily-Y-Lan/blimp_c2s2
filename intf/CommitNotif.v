@@ -1,50 +1,53 @@
 //========================================================================
-// X__WIntf.v
+// CommitNotif.v
 //========================================================================
-// The interface definition going between X and W
+// The notification interface for committing instructions
 
-`ifndef INTF_X__W_INTF_V
-`define INTF_X__W_INTF_V
+`ifndef INTF_COMMIT_INTF_V
+`define INTF_COMMIT_INTF_V
 
 //------------------------------------------------------------------------
-// X__WIntf
+// CommitNotif
 //------------------------------------------------------------------------
 
-interface X__WIntf
+interface CommitNotif
 #(
-  parameter p_data_bits = 32
+  parameter p_seq_num_bits = 8,
+  parameter p_data_bits    = 32
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic             [4:0] waddr;
-  logic [p_data_bits-1:0] wdata;
-  logic                   wen;
-  logic                   val;
-  logic                   rdy;
+  logic [p_seq_num_bits-1:0] seq_num;
+  logic                [4:0] waddr;
+  logic    [p_data_bits-1:0] wdata;
+  logic                      wen;
+  logic                      val;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  modport X_intf (
+  // Publish
+  modport pub (
+    output seq_num,
     output waddr,
     output wdata,
     output wen,
-    output val,
-    input  rdy
+    output val
   );
 
-  modport W_intf (
-    input  waddr,
-    input  wdata,
-    input  wen,
-    input  val,
-    output rdy
+  // Subscribe
+  modport sub (
+    input seq_num,
+    input waddr,
+    input wdata,
+    input wen,
+    input val
   );
 
 endinterface
 
-`endif // INTF_X__W_INTF_V
+`endif // INTF_COMMIT_NOTIF_V

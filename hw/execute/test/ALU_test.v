@@ -4,10 +4,10 @@
 // A testbench for our ALU
 
 `include "defs/UArch.v"
-`include "hw/execute/Execute.v"
+`include "hw/execute/execute_variants/ALU.v"
 `include "test/TraceUtils.v"
-`include "test/fl/D__XTestD.v"
-`include "test/fl/X__WTestW.v"
+`include "test/fl/TestIstream.v"
+`include "test/fl/TestOstream.v"
 
 import UArch::*;
 import TestEnv::*;
@@ -15,7 +15,7 @@ import TestEnv::*;
 //========================================================================
 // ALUTestSuite
 //========================================================================
-// A test suite for the alu
+// A test suite for the ALU
 
 module ALUTestSuite #(
   parameter p_suite_num  = 0,
@@ -52,35 +52,101 @@ module ALUTestSuite #(
     .p_data_bits (p_data_bits)
   ) X__W_intf();
 
-  Execute #(
-    .p_execute_type ("alu")
-  ) dut (
+  ALU dut (
     .D (D__X_intf),
     .W (X__W_intf),
     .*
   );
 
-  D__XTestD #(
-    .p_send_intv_delay (p_D_send_intv_delay)
-  ) fl_D_test_intf (
-    .dut (D__X_intf),
+  //----------------------------------------------------------------------
+  // FL D Interface
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [p_addr_bits-1:0] pc;
+    logic [p_data_bits-1:0] op1;
+    logic [p_data_bits-1:0] op2;
+    logic             [4:0] waddr;
+    rv_uop                  uop;
+  } t_d__x_msg;
+
+  t_d__x_msg d__x_msg;
+
+  assign D__X_intf.pc    = d__x_msg.pc;
+  assign D__X_intf.op1   = d__x_msg.op1;
+  assign D__X_intf.op2   = d__x_msg.op2;
+  assign D__X_intf.waddr = d__x_msg.waddr;
+  assign D__X_intf.uop   = d__x_msg.uop;
+
+  TestIstream #( t_d__x_msg, p_D_send_intv_delay ) D_Istream (
+    .msg (d__x_msg),
+    .val (D__X_intf.val),
+    .rdy (D__X_intf.rdy),
     .*
   );
 
-  X__WTestW #(
-    .p_dut_intv_delay (p_W_recv_intv_delay)
-  ) fl_W_test_intf (
-    .dut (X__W_intf),
+  t_d__x_msg msg_to_send;
+
+  task send(
+    input logic [p_addr_bits-1:0] pc,
+    input logic [p_data_bits-1:0] op1,
+    input logic [p_data_bits-1:0] op2,
+    input logic             [4:0] waddr,
+    input rv_uop                  uop
+  );
+    msg_to_send.pc    = pc;
+    msg_to_send.op1   = op1;
+    msg_to_send.op2   = op2;
+    msg_to_send.waddr = waddr;
+    msg_to_send.uop   = uop;
+
+    D_Istream.send(msg_to_send);
+  endtask
+
+  //----------------------------------------------------------------------
+  // FL W Interface
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic             [4:0] waddr;
+    logic [p_data_bits-1:0] wdata;
+    logic                   wen;
+  } t_x__w_msg;
+
+  t_x__w_msg x__w_msg;
+
+  assign x__w_msg.waddr = X__W_intf.waddr;
+  assign x__w_msg.wdata = X__W_intf.wdata;
+  assign x__w_msg.wen   = X__W_intf.wen;
+
+  TestOstream #( t_x__w_msg, p_W_recv_intv_delay ) W_Ostream (
+    .msg (x__w_msg),
+    .val (X__W_intf.val),
+    .rdy (X__W_intf.rdy),
     .*
   );
 
   Tracer tracer ( clk, {
-    fl_D_test_intf.trace,
+    D_Istream.trace,
     " | ",
     dut.trace,
     " | ",
-    fl_W_test_intf.trace
+    W_Ostream.trace
   } );
+
+  t_x__w_msg msg_to_recv;
+
+  task recv(
+    input logic             [4:0] waddr,
+    input logic [p_data_bits-1:0] wdata,
+    input logic                   wen
+  );
+    msg_to_recv.waddr = waddr;
+    msg_to_recv.wdata = wdata;
+    msg_to_recv.wen   = wen;
+
+    W_Ostream.recv(msg_to_recv);
+  endtask
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -91,15 +157,14 @@ module ALUTestSuite #(
     if( t.n != 0 )
       tracer.enable_trace();
 
-    //                      pc  op1                op2                waddr uop
-    fl_D_test_intf.add_msg( 'x, p_data_bits'('d1), p_data_bits'('d2), 5'h1, OP_ADD  );
+    fork
+      //   pc  op1 op2 waddr uop
+      send('x, 1,  2,  5'h1, OP_ADD);
 
-    //                      waddr wdata              wen
-    fl_W_test_intf.add_msg( 5'h1, p_data_bits'('d3), 1 );
+      //   waddr wdata wen
+      recv(5'h1, 3,    1);
+    join
 
-    while( !fl_W_test_intf.done() ) begin
-      #10;
-    end
     tracer.disable_trace();
   endtask
 
@@ -112,23 +177,26 @@ module ALUTestSuite #(
     if( t.n != 0 )
       tracer.enable_trace();
 
-    //                      pc  op1              op2              waddr uop
-    fl_D_test_intf.add_msg( 'x, p_data_bits'( 4), p_data_bits'( 3), 5'h1, OP_ADD  );
-    fl_D_test_intf.add_msg( 'x, p_data_bits'(-1), p_data_bits'( 1), 5'h4, OP_ADD  );
-    fl_D_test_intf.add_msg( 'x, p_data_bits'( 4), p_data_bits'(-6), 5'h2, OP_ADD  );
-    fl_D_test_intf.add_msg( 'x, p_data_bits'( 2), p_data_bits'( 0), 5'h5, OP_ADD  );
-    fl_D_test_intf.add_msg( 'x, p_data_bits'( 0), p_data_bits'(-7), 5'h3, OP_ADD  );
+    fork
+      begin
+        //   pc   op1 op2  waddr uop
+        send('x,  4,  3, 5'h1, OP_ADD);
+        send('x, -1,  1, 5'h4, OP_ADD);
+        send('x,  4, -6, 5'h2, OP_ADD);
+        send('x,  2,  0, 5'h5, OP_ADD);
+        send('x,  0, -7, 5'h3, OP_ADD);
+      end
 
-    //                      waddr wdata            wen
-    fl_W_test_intf.add_msg( 5'h1, p_data_bits'( 7), 1 );
-    fl_W_test_intf.add_msg( 5'h4, p_data_bits'( 0), 1 );
-    fl_W_test_intf.add_msg( 5'h2, p_data_bits'(-2), 1 );
-    fl_W_test_intf.add_msg( 5'h5, p_data_bits'( 2), 1 );
-    fl_W_test_intf.add_msg( 5'h3, p_data_bits'(-7), 1 );
+      begin
+        //   waddr wdata wen
+        recv(5'h1,  7,   1);
+        recv(5'h4,  0,   1);
+        recv(5'h2, -2,   1);
+        recv(5'h5,  2,   1);
+        recv(5'h3, -7,   1);
+      end
+    join
 
-    while( !fl_W_test_intf.done() ) begin
-      #10;
-    end
     tracer.disable_trace();
   endtask
 

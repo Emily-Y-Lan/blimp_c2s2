@@ -21,12 +21,6 @@ interface F__DIntf
   logic                   val;
   logic                   rdy;
 
-  // Control Flow Signals
-  logic                   squash;
-
-  // Redirection Signals
-  logic [p_addr_bits-1:0] branch_target;
-
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,22 +29,14 @@ interface F__DIntf
     output inst,
     output pc,
     output val,
-    input  rdy,
-
-    input  squash,
-
-    input  branch_target
+    input  rdy
   );
 
   modport D_intf (
     input  inst,
     input  pc,
     input  val,
-    output rdy,
-
-    output squash,
-
-    output branch_target
+    output rdy
   );
 
 endinterface

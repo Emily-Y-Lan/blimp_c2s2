@@ -121,9 +121,6 @@ module Multiplier (
   assign W.wen   = 1'b1;
   assign W.waddr = D_reg.waddr;
 
-  assign D.squash        = 1'b0;
-  assign D.branch_target = 'x;
-
   //----------------------------------------------------------------------
   // Linetracing
   //----------------------------------------------------------------------
