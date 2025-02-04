@@ -11,7 +11,7 @@ set(V_TEST_FILES
   hw/common/test/Fifo_test.v
   hw/common/test/PriorityEncoder_test.v
   hw/common/test/RRArb_test.v
-  # hw/decode_issue/test/DecodeBasic_arith_test.v
+  hw/decode_issue/test/DecodeBasic_arith_test.v
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/Regfile_test.v
   hw/decode_issue/test/SeqNumCompare_test.v

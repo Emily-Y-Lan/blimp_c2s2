@@ -4,10 +4,11 @@
 // A testbench for our basic decoder
 
 `include "defs/UArch.v"
-`include "hw/decode_issue/DecodeIssue.v"
+`include "hw/decode_issue/decode_issue_variants/DecodeBasic.v"
+`include "test/asm/rv32/assemble32.v"
 `include "test/TraceUtils.v"
-`include "test/fl/F__DTestF.v"
-`include "test/fl/D__XTestX.v"
+`include "test/fl/TestIstream.v"
+`include "test/fl/TestOstream.v"
 
 import UArch::*;
 import TestEnv::*;
@@ -62,64 +63,86 @@ module DecodeBasicTestSuite #(
   D__XIntf #(
     .p_addr_bits (p_addr_bits),
     .p_data_bits (p_inst_bits)
-  ) Ex_intf [p_num_pipes-1:0]();
+  ) D__X_intfs [p_num_pipes-1:0]();
 
-  DecodeIssue #(
-    .p_decode_issue_type ("basic_tinyrv1"),
-    .p_num_pipes         (p_num_pipes),
-    .p_pipe_subsets      (p_pipe_subsets)
+  DecodeBasic #(
+    .p_isa_subset   (p_tinyrv1),
+    .p_num_pipes    (p_num_pipes),
+    .p_pipe_subsets (p_pipe_subsets)
   ) dut (
     .F  (F__D_intf),
-    .Ex (Ex_intf),
+    .Ex (D__X_intfs),
     .*
   );
 
-  F__DTestF #(
-    .p_send_intv_delay (p_F_send_intv_delay),
-    .p_rst_addr        (p_rst_addr)
-  ) fl_F_test_intf (
-    .dut (F__D_intf),
+  //----------------------------------------------------------------------
+  // FL D Interface
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [p_inst_bits-1:0] inst;
+    logic [p_addr_bits-1:0] pc;
+  } t_f__d_msg;
+
+  t_f__d_msg f__d_msg;
+
+  assign F__D_intf.inst  = f__d_msg.inst;
+  assign F__D_intf.pc    = f__d_msg.pc;
+
+  TestIstream #( t_f__d_msg, p_F_send_intv_delay ) F_Istream (
+    .msg (f__d_msg),
+    .val (F__D_intf.val),
+    .rdy (F__D_intf.rdy),
     .*
   );
+
+  t_f__d_msg msg_to_send;
+
+  task send(
+    input logic [p_addr_bits-1:0] pc,
+    input logic [p_inst_bits-1:0] inst
+  );
+    msg_to_send.inst  = inst;
+    msg_to_send.pc    = pc;
+
+    F_Istream.send(msg_to_send);
+  endtask
+
+  //----------------------------------------------------------------------
+  // FL X Interfaces
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [p_addr_bits-1:0] pc;
+    logic [p_inst_bits-1:0] op1;
+    logic [p_inst_bits-1:0] op2;
+    logic             [4:0] waddr;
+    rv_uop                  uop;
+  } t_d__x_msg;
+
+  t_d__x_msg d__x_msgs[p_num_pipes];
 
   genvar i;
   generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: fl_X
-      D__XTestX #(
-        .p_dut_intv_delay (p_X_recv_intv_delay)
-      ) fl_test_intf (
-        .dut (Ex_intf[i]),
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      assign d__x_msgs[i].pc    = D__X_intfs[i].pc;
+      assign d__x_msgs[i].op1   = D__X_intfs[i].op1;
+      assign d__x_msgs[i].op2   = D__X_intfs[i].op2;
+      assign d__x_msgs[i].waddr = D__X_intfs[i].waddr;
+      assign d__x_msgs[i].uop   = D__X_intfs[i].uop;
+    end
+  endgenerate
+
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: X_Ostreams
+      TestOstream #( t_d__x_msg, p_X_recv_intv_delay ) X_Ostream (
+        .msg (d__x_msgs[i]),
+        .val (D__X_intfs[i].val),
+        .rdy (D__X_intfs[i].rdy),
         .*
       );
     end
   endgenerate
-
-  //----------------------------------------------------------------------
-  // Trace the design
-  //----------------------------------------------------------------------
-
-  string fl_X_traces [p_num_pipes-1:0];
-  generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign fl_X_traces[i] = fl_X[i].fl_test_intf.trace;
-    end
-  endgenerate
-
-  string fl_X_trace;
-  always_comb begin
-    fl_X_trace = "";
-    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
-      fl_X_trace = { fl_X_trace, fl_X_traces[j], " " };
-    end
-  end
-
-  Tracer tracer ( clk, {
-    fl_F_test_intf.trace,
-    " | ",
-    dut.trace,
-    " | ",
-    fl_X_trace
-  } );
 
   //----------------------------------------------------------------------
   // Handle giving messages to the correct pipe
@@ -135,40 +158,31 @@ module DecodeBasicTestSuite #(
     if( uop == OP_BNE  ) return OP_BNE_VEC;
   endfunction
 
-  typedef struct {
-    logic [p_addr_bits-1:0] exp_pc;
-    logic [p_inst_bits-1:0] exp_op1;
-    logic [p_inst_bits-1:0] exp_op2;
-    logic             [4:0] exp_waddr;
-    rv_uop                  exp_uop;
-    logic                   dut_squash;
-    logic [p_addr_bits-1:0] dut_branch_target;
-  } X_msg;
-
-  X_msg msgs [p_num_pipes-1:0][$];
+  t_d__x_msg msgs_to_add [p_num_pipes-1:0][$];
+  logic      msgs_done   [p_num_pipes];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
-        foreach (msgs[i][j])
-          fl_X[i].fl_test_intf.add_msg(
-            msgs[i][j].exp_pc,
-            msgs[i][j].exp_op1,
-            msgs[i][j].exp_op2,
-            msgs[i][j].exp_waddr,
-            msgs[i][j].exp_uop,
-            msgs[i][j].dut_squash,
-            msgs[i][j].dut_branch_target
+        #1;
+        foreach (msgs_to_add[i][j]) begin
+          X_Ostreams[i].X_Ostream.recv(
+            msgs_to_add[i][j]
           );
-        
-        msgs[i].delete();
+        end
+        msgs_to_add[i].delete();
+        msgs_done[i] = 1'b1;
+      end
+
+      initial begin
+        msgs_done[i] = 1'b1;
       end
     end
   endgenerate
 
-  int   pipe_delays [p_num_pipes];
-  int   pipe_found, first_iter;
-  X_msg pipe_msg;
+  int        pipe_delays [p_num_pipes];
+  int        pipe_found, first_iter;
+  t_d__x_msg pipe_msg;
 
   always_ff @( posedge clk ) begin
     if( rst ) begin
@@ -176,23 +190,24 @@ module DecodeBasicTestSuite #(
     end
   end
 
-  task add_msg(
-    input logic [p_addr_bits-1:0] exp_pc,
-    input logic [p_inst_bits-1:0] exp_op1,
-    input logic [p_inst_bits-1:0] exp_op2,
-    input logic             [4:0] exp_waddr,
-    input rv_uop                  exp_uop,
-    input logic                   dut_squash,
-    input logic [p_addr_bits-1:0] dut_branch_target
+  task recv(
+    input logic [p_addr_bits-1:0] pc,
+    input logic [p_inst_bits-1:0] op1,
+    input logic [p_inst_bits-1:0] op2,
+    input logic             [4:0] waddr,
+    input rv_uop                  uop,
   );
+    // No messages have been received
+    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
+      msgs_done[j] = 1'b0;
+    end
+
     // Set message correctly
-    pipe_msg.exp_pc            = exp_pc;
-    pipe_msg.exp_op1           = exp_op1;
-    pipe_msg.exp_op2           = exp_op2;
-    pipe_msg.exp_waddr         = exp_waddr;
-    pipe_msg.exp_uop           = exp_uop;
-    pipe_msg.dut_squash        = dut_squash;
-    pipe_msg.dut_branch_target = dut_branch_target;
+    pipe_msg.pc    = pc;
+    pipe_msg.op1   = op1;
+    pipe_msg.op2   = op2;
+    pipe_msg.waddr = waddr;
+    pipe_msg.uop   = uop;
 
     pipe_found = 0;
     first_iter = 1;
@@ -202,7 +217,6 @@ module DecodeBasicTestSuite #(
         if( pipe_delays[j] > 0 ) begin
           if(( first_iter == 1 ) & (p_F_send_intv_delay > 1)) begin
             pipe_delays[j] = pipe_delays[j] - p_F_send_intv_delay;
-            first_iter = 0;
           end else begin
             pipe_delays[j] = pipe_delays[j] - 1;
           end
@@ -210,40 +224,50 @@ module DecodeBasicTestSuite #(
         end
       end
 
+      if( first_iter == 1 ) first_iter = 0;
+
       // Find correct pipe
       for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
-        if(( (p_pipe_subsets[j] & vec_of_uop(exp_uop)) > 0 ) & ( pipe_delays[j] == 0 )) begin
-          msgs[j].push_back( pipe_msg );
+        if(( (p_pipe_subsets[j] & vec_of_uop(uop)) > 0 ) & ( pipe_delays[j] == 0 )) begin
+          msgs_to_add[j].push_back( pipe_msg );
           pipe_delays[j] = p_X_recv_intv_delay;
           pipe_found = 1;
           break;
         end
       end
     end
+
+    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
+      while(msgs_done[j] != 1'b1) #1;
+    end
   endtask
 
   //----------------------------------------------------------------------
-  // Keep track of whether we're done
+  // Trace the design
   //----------------------------------------------------------------------
-  // Must use intermediate with a generate statement to have constant
-  // indexing into interface array
 
-  logic [p_num_pipes-1:0] pipe_done;
-
+  string X_traces [p_num_pipes-1:0];
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      always_ff @( posedge clk ) begin
-        if( rst )
-          pipe_done[i] <= 1'b0;
-        else
-          pipe_done[i] <= fl_X[i].fl_test_intf.done();
-      end
+      assign X_traces[i] = X_Ostreams[i].X_Ostream.trace;
     end
   endgenerate
 
-  function logic done;
-    return &pipe_done;
-  endfunction
+  string X_trace;
+  always_comb begin
+    X_trace = "";
+    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
+      X_trace = { X_trace, X_traces[j], " " };
+    end
+  end
+
+  Tracer tracer ( clk, {
+    F_Istream.trace,
+    " | ",
+    dut.trace,
+    " | ",
+    X_trace
+  } );
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -254,16 +278,20 @@ module DecodeBasicTestSuite #(
     if( t.n != 0 )
       tracer.enable_trace();
 
-    //                       addr                                        inst
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), "mul x1, x0, x0" );
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), "addi x1, x0, 10" );
+    fork
+      begin
+        //   addr                                        inst
+        send(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), assemble32("mul x1, x0, x0"));
+        send(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), assemble32("addi x1, x0, 10"));
+      end
 
-    //       pc                                          op1    op2    waddr  uop     sq br_tar
-    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, 5'h1,  OP_MUL, 0, 'x );
-    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'hA, 5'h1,  OP_ADD, 0, 'x );
-    while( !done() ) begin
-      #10;
-    end
+      begin
+        //   pc                                          op1    op2    waddr  uop
+        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, 5'h1,  OP_MUL );
+        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'hA, 5'h1,  OP_ADD );
+      end
+    join
+
     tracer.disable_trace();
   endtask
 
@@ -275,17 +303,21 @@ module DecodeBasicTestSuite #(
     t.test_case_begin( "test_case_2_add" );
     if( t.n != 0 )
       tracer.enable_trace();
-  
-    //                       addr                                        inst
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), "add x3, x1, x2" );
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), "add x2, x5, x4" );
-  
-    //       pc                                          op1    op2    waddr  uop     sq br_tar
-    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, 5'h3,  OP_ADD, 0, 'x );
-    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'h0, 5'h2,  OP_ADD, 0, 'x );
-    while( !done() ) begin
-      #10;
-    end
+
+    fork
+      begin
+        //   addr                                        inst
+        send(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), assemble32("add x3, x1, x2") );
+        send(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), assemble32("add x2, x5, x4") );
+      end
+
+      begin
+        //   pc                                          op1    op2    waddr  uop
+        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, 5'h3,  OP_ADD );
+        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'h0, 5'h2,  OP_ADD );
+      end
+    join
+
     tracer.disable_trace();
   endtask
 
@@ -297,17 +329,21 @@ module DecodeBasicTestSuite #(
     t.test_case_begin( "test_case_3_addi" );
     if( t.n != 0 )
       tracer.enable_trace();
+
+    fork
+      begin
+        //   addr                                        inst
+        send(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), assemble32("addi x3, x1, 10" ));
+        send(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), assemble32("addi x2, x5, 2047" ));
+      end
+
+      begin
+        //   pc                                          op1    op2      waddr  uop
+        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'hA,   5'h3,  OP_ADD );
+        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'h7FF, 5'h2,  OP_ADD );
+      end
+    join
   
-    //                       addr                                        inst
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), "addi x3, x1, 10" );
-    fl_F_test_intf.add_inst( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), "addi x2, x5, 2047" );
-  
-    //       pc                                          op1    op2      waddr  uop     sq br_tar
-    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'hA,   5'h3,  OP_ADD, 0, 'x );
-    add_msg( p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'h7FF, 5'h2,  OP_ADD, 0, 'x );
-    while( !done() ) begin
-      #10;
-    end
     tracer.disable_trace();
   endtask
 

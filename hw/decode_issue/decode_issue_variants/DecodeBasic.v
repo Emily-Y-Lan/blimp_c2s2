@@ -67,8 +67,10 @@ module DecodeBasic #(
 
     if ( F_xfer )
       F_reg_next = '{ val: 1'b1, inst: F.inst, pc: F.pc };
-    else
+    else if ( F.rdy ) // The receiver is ready
       F_reg_next = '{ val: 1'b0, inst: 'x, pc: 'x };
+    else
+      F_reg_next = F_reg;
   end
 
   //----------------------------------------------------------------------
@@ -157,11 +159,11 @@ module DecodeBasic #(
       assign Ex[k].uop   = decoder_uop;
       assign Ex[k].waddr = decoder_waddr;
       
-      logic unused_squash;
-      logic [p_addr_bits-1:0] unused_branch_target;
+      // logic unused_squash;
+      // logic [p_addr_bits-1:0] unused_branch_target;
 
-      assign unused_squash = Ex[k].squash;
-      assign unused_branch_target = Ex[k].branch_target;
+      // assign unused_squash = Ex[k].squash;
+      // assign unused_branch_target = Ex[k].branch_target;
     end
   endgenerate
 
