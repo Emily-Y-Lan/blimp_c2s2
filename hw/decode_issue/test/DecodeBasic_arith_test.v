@@ -19,11 +19,12 @@ import TestEnv::*;
 // A test suite for the basic decoder
 
 module DecodeBasicTestSuite #(
-  parameter p_suite_num  = 0,
-  parameter p_num_pipes  = 3,
-  parameter p_addr_bits  = 32,
-  parameter p_inst_bits  = 32,
-  parameter p_rst_addr   = 32'h0,
+  parameter p_suite_num   = 0,
+  parameter p_num_pipes   = 3,
+  parameter p_addr_bits   = 32,
+  parameter p_inst_bits   = 32,
+  parameter p_rob_entries = 32,
+  parameter p_rst_addr    = 32'h0,
 
   parameter p_F_send_intv_delay = 0,
   parameter p_X_recv_intv_delay = 0,
@@ -41,6 +42,8 @@ module DecodeBasicTestSuite #(
       suite_name = $sformatf("%s_%h", suite_name, p_pipe_subsets[i]);
     end
   end
+
+  localparam p_seq_num_bits = $clog2( p_rob_entries );
 
   //----------------------------------------------------------------------
   // Setup
@@ -61,8 +64,9 @@ module DecodeBasicTestSuite #(
   ) F__D_intf();
 
   D__XIntf #(
-    .p_addr_bits (p_addr_bits),
-    .p_data_bits (p_inst_bits)
+    .p_addr_bits    (p_addr_bits),
+    .p_data_bits    (p_inst_bits),
+    .p_seq_num_bits (p_seq_num_bits)
   ) D__X_intfs [p_num_pipes-1:0]();
 
   DecodeBasic #(
@@ -120,7 +124,8 @@ module DecodeBasicTestSuite #(
     rv_uop                  uop;
   } t_d__x_msg;
 
-  t_d__x_msg d__x_msgs[p_num_pipes];
+  t_d__x_msg                 d__x_msgs       [p_num_pipes];
+  logic [p_seq_num_bits-1:0] unused_seq_nums [p_num_pipes];
 
   genvar i;
   generate
@@ -130,6 +135,7 @@ module DecodeBasicTestSuite #(
       assign d__x_msgs[i].op2   = D__X_intfs[i].op2;
       assign d__x_msgs[i].waddr = D__X_intfs[i].waddr;
       assign d__x_msgs[i].uop   = D__X_intfs[i].uop;
+      assign unused_seq_nums[i] = D__X_intfs[i].seq_num;
     end
   endgenerate
 
@@ -158,19 +164,19 @@ module DecodeBasicTestSuite #(
     if( uop == OP_BNE  ) return OP_BNE_VEC;
   endfunction
 
-  t_d__x_msg msgs_to_add [p_num_pipes-1:0][$];
-  logic      msgs_done   [p_num_pipes];
+  t_d__x_msg msgs_to_recv [p_num_pipes-1:0][$];
+  logic      msgs_done    [p_num_pipes];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
         #1;
-        foreach (msgs_to_add[i][j]) begin
+        foreach (msgs_to_recv[i][j]) begin
           X_Ostreams[i].X_Ostream.recv(
-            msgs_to_add[i][j]
+            msgs_to_recv[i][j]
           );
         end
-        msgs_to_add[i].delete();
+        msgs_to_recv[i].delete();
         msgs_done[i] = 1'b1;
       end
 
@@ -229,7 +235,7 @@ module DecodeBasicTestSuite #(
       // Find correct pipe
       for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
         if(( (p_pipe_subsets[j] & vec_of_uop(uop)) > 0 ) & ( pipe_delays[j] == 0 )) begin
-          msgs_to_add[j].push_back( pipe_msg );
+          msgs_to_recv[j].push_back( pipe_msg );
           pipe_delays[j] = p_X_recv_intv_delay;
           pipe_found = 1;
           break;
@@ -366,31 +372,90 @@ endmodule
 //========================================================================
 
 module DecodeBasic_test;
-  DecodeBasicTestSuite #(1)                                                  suite_1();
-  DecodeBasicTestSuite #(2, 2, 32, 32, 32'h0, 0, 0, {p_tinyrv1, OP_ADD_VEC}) suite_2();
-  DecodeBasicTestSuite #(3, 5, 32, 32, 32'h0, 0, 0, {
-    p_tinyrv1, 
-    p_tinyrv1, 
-    p_tinyrv1, 
-    p_tinyrv1, 
-    OP_MUL_VEC
-  }) suite_3();
-  DecodeBasicTestSuite #(4, 1, 32, 32, 32'h0, 0, 0, {p_tinyrv1}            ) suite_4();
-  DecodeBasicTestSuite #(5, 3, 32, 32, 32'h0, 3, 0, {
-    p_tinyrv1, 
-    p_tinyrv1, 
-    p_tinyrv1
-  }) suite_5();
-  DecodeBasicTestSuite #(6, 3, 32, 32, 32'h0, 0, 3, {
-    p_tinyrv1, 
-    p_tinyrv1, 
-    p_tinyrv1
-  }) suite_6();
-  DecodeBasicTestSuite #(7, 3, 32, 32, 32'h0, 3, 3, {
-    p_tinyrv1, 
-    p_tinyrv1, 
-    p_tinyrv1
-  }) suite_7();
+  DecodeBasicTestSuite #(1) suite_1();
+  DecodeBasicTestSuite #(
+    2, 
+    2, 
+    32, 
+    32, 
+    16, 
+    32'h0, 
+    0, 
+    0, 
+    {p_tinyrv1, OP_ADD_VEC}) 
+  suite_2();
+  DecodeBasicTestSuite #(3, 
+    5, 
+    32, 
+    32, 
+    256, 
+    32'h0, 
+    0, 
+    0, 
+    {
+      p_tinyrv1, 
+      p_tinyrv1, 
+      p_tinyrv1, 
+      p_tinyrv1, 
+      OP_MUL_VEC
+    }
+  ) suite_3();
+  DecodeBasicTestSuite #(
+    4, 
+    1, 
+    32, 
+    32, 
+    8, 
+    32'h0, 
+    0, 
+    0, 
+    {p_tinyrv1}
+  ) suite_4();
+  DecodeBasicTestSuite #(
+    5, 
+    3, 
+    32, 
+    32, 
+    64, 
+    32'h0, 
+    3, 
+    0, 
+    {
+      p_tinyrv1, 
+      p_tinyrv1, 
+      p_tinyrv1
+    }
+  ) suite_5();
+  DecodeBasicTestSuite #(
+    6, 
+    3, 
+    32, 
+    32, 
+    128, 
+    32'h0, 
+    0, 
+    3, 
+    {
+      p_tinyrv1, 
+      p_tinyrv1, 
+      p_tinyrv1
+    }
+  ) suite_6();
+  DecodeBasicTestSuite #(
+    7, 
+    3, 
+    32, 
+    32, 
+    8, 
+    32'h0, 
+    3, 
+    3, 
+    {
+      p_tinyrv1, 
+      p_tinyrv1, 
+      p_tinyrv1
+    }
+  ) suite_7();
 
   int s;
 

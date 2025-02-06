@@ -29,19 +29,21 @@ module Multiplier (
   X__WIntf.X_intf W
 );
 
-  localparam p_addr_bits  = D.p_addr_bits;
-  localparam p_data_bits  = D.p_data_bits;
+  localparam p_addr_bits    = D.p_addr_bits;
+  localparam p_data_bits    = D.p_data_bits;
+  localparam p_seq_num_bits = D.p_seq_num_bits;
   
   //----------------------------------------------------------------------
   // Register inputs
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic                   val;
-    logic [p_data_bits-1:0] op1;
-    logic [p_data_bits-1:0] op2;
-    logic             [4:0] waddr;
-    rv_uop                  uop;
+    logic                      val;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic [p_data_bits-1:0]    op1;
+    logic [p_data_bits-1:0]    op2;
+    logic             [4:0]    waddr;
+    rv_uop                     uop;
   } D_input;
 
   D_input D_reg;
@@ -54,11 +56,12 @@ module Multiplier (
   always_ff @( posedge clk ) begin
     if ( rst )
       D_reg <= '{ 
-        val:   1'b0, 
-        op1:   'x, 
-        op2:   'x,
-        waddr: 'x,
-        uop:   'x
+        val:     1'b0, 
+        seq_num: 'x,
+        op1:     'x, 
+        op2:     'x,
+        waddr:   'x,
+        uop:     'x
       };
     else
       D_reg <= D_reg_next;
@@ -70,19 +73,21 @@ module Multiplier (
 
     if ( D_xfer )
       D_reg_next = '{ 
-        val:   1'b1, 
-        op1:   D.op1, 
-        op2:   D.op2,
-        waddr: D.waddr,
-        uop:   D.uop
+        val:     1'b1, 
+        seq_num: D.seq_num,
+        op1:     D.op1, 
+        op2:     D.op2,
+        waddr:   D.waddr,
+        uop:     D.uop
       };
     else if ( W_xfer )
       D_reg_next = '{ 
-        val:   1'b0, 
-        op1:   'x, 
-        op2:   'x,
-        waddr: 'x,
-        uop:   'x
+        val:     1'b0, 
+        seq_num: 'x,
+        op1:     'x, 
+        op2:     'x,
+        waddr:   'x,
+        uop:     'x
       };
     else
       D_reg_next = D_reg;
@@ -118,8 +123,9 @@ module Multiplier (
   logic [p_addr_bits-1:0] unused_pc;
   assign unused_pc = D.pc;
 
-  assign W.wen   = 1'b1;
-  assign W.waddr = D_reg.waddr;
+  assign W.wen     = 1'b1;
+  assign W.seq_num = D_reg.seq_num;
+  assign W.waddr   = D_reg.waddr;
 
   //----------------------------------------------------------------------
   // Linetracing

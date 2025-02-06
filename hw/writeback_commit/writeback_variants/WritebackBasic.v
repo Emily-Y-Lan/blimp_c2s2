@@ -8,8 +8,7 @@
 `define HW_WRITEBACK_WRITEBACK_VARIANTS_BASIC_V
 
 `include "hw/common/RRArb.v"
-`include "intf/CommitNotif.v"
-`include "intf/WritebackNotif.v"
+`include "intf/CompleteNotif.v"
 `include "intf/X__WIntf.v"
 
 module WritebackBasic #(
@@ -25,38 +24,35 @@ module WritebackBasic #(
   X__WIntf.W_intf Ex [p_num_pipes-1:0],
 
   //----------------------------------------------------------------------
-  // Writeback Interface
+  // Completion Interface
   //----------------------------------------------------------------------
 
-  WritebackNotif.pub writeback,
-
-  //----------------------------------------------------------------------
-  // Commit Interface
-  //----------------------------------------------------------------------
-
-  CommitNotif.pub commit
+  CompleteNotif.pub complete,
 );
 
-  localparam p_data_bits = writeback.p_data_bits;
+  localparam p_data_bits    = complete.p_data_bits;
+  localparam p_seq_num_bits = complete.p_seq_num_bits;
 
   //----------------------------------------------------------------------
   // Select which pipe to get from
   //----------------------------------------------------------------------
 
-  logic             [4:0] Ex_waddr [p_num_pipes-1:0];
-  logic [p_data_bits-1:0] Ex_wdata [p_num_pipes-1:0];
-  logic                   Ex_wen   [p_num_pipes-1:0];
-  logic                   Ex_val   [p_num_pipes-1:0];
-  logic                   Ex_rdy   [p_num_pipes-1:0];
+  logic [p_seq_num_bits-1:0] Ex_seq_num [p_num_pipes-1:0];
+  logic                [4:0] Ex_waddr [p_num_pipes-1:0];
+  logic    [p_data_bits-1:0] Ex_wdata [p_num_pipes-1:0];
+  logic                      Ex_wen   [p_num_pipes-1:0];
+  logic                      Ex_val   [p_num_pipes-1:0];
+  logic                      Ex_rdy   [p_num_pipes-1:0];
 
   genvar i;
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign Ex_waddr[i] = Ex[i].waddr;
-      assign Ex_wdata[i] = Ex[i].wdata;
-      assign Ex_wen[i]   = Ex[i].wen;
-      assign Ex_val[i]   = Ex[i].val;
-      assign Ex[i].rdy   = Ex_rdy[i];
+      assign Ex_seq_num[i] = Ex[i].seq_num;
+      assign Ex_waddr[i]   = Ex[i].waddr;
+      assign Ex_wdata[i]   = Ex[i].wdata;
+      assign Ex_wen[i]     = Ex[i].wen;
+      assign Ex_val[i]     = Ex[i].val;
+      assign Ex[i].rdy     = Ex_rdy[i];
     end
   endgenerate
 
@@ -78,29 +74,33 @@ module WritebackBasic #(
     .gnt (Ex_gnt_packed)
   );
 
-  logic             [4:0] Ex_waddr_masked [p_num_pipes-1:0];
-  logic [p_data_bits-1:0] Ex_wdata_masked [p_num_pipes-1:0];
-  logic                   Ex_wen_masked   [p_num_pipes-1:0];
-  logic                   Ex_val_masked   [p_num_pipes-1:0];
+  logic [p_seq_num_bits-1:0] Ex_seq_num_masked [p_num_pipes-1:0];
+  logic             [4:0]    Ex_waddr_masked   [p_num_pipes-1:0];
+  logic [p_data_bits-1:0]    Ex_wdata_masked   [p_num_pipes-1:0];
+  logic                      Ex_wen_masked     [p_num_pipes-1:0];
+  logic                      Ex_val_masked     [p_num_pipes-1:0];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign Ex_waddr_masked[i] = Ex_waddr[i] & {5{Ex_gnt[i]}};
-      assign Ex_wdata_masked[i] = Ex_wdata[i] & {p_data_bits{Ex_gnt[i]}};
-      assign Ex_wen_masked[i]   = Ex_wen[i]   & Ex_gnt[i];
-      assign Ex_val_masked[i]   = Ex_val[i]   & Ex_gnt[i];
+      assign Ex_seq_num_masked[i] = Ex_seq_num[i] & {p_seq_num_bits{Ex_gnt[i]}};
+      assign Ex_waddr_masked[i]   = Ex_waddr[i] & {5{Ex_gnt[i]}};
+      assign Ex_wdata_masked[i]   = Ex_wdata[i] & {p_data_bits{Ex_gnt[i]}};
+      assign Ex_wen_masked[i]     = Ex_wen[i]   & Ex_gnt[i];
+      assign Ex_val_masked[i]     = Ex_val[i]   & Ex_gnt[i];
     end
   endgenerate
 
-  logic             [4:0] Ex_waddr_sel;
-  logic [p_data_bits-1:0] Ex_wdata_sel;
-  logic                   Ex_wen_sel;
-  logic                   Ex_val_sel;
+  logic [p_seq_num_bits-1:0] Ex_waddr_sel;
+  logic             [4:0]    Ex_waddr_sel;
+  logic [p_data_bits-1:0]    Ex_wdata_sel;
+  logic                      Ex_wen_sel;
+  logic                      Ex_val_sel;
 
-  assign Ex_waddr_sel = Ex_waddr_masked.or();
-  assign Ex_wdata_sel = Ex_wdata_masked.or();
-  assign Ex_wen_sel   = Ex_wen_masked.or();
-  assign Ex_val_sel   = Ex_val_masked.or();
+  assign Ex_seq_num_sel = Ex_seq_num_masked.or();
+  assign Ex_waddr_sel   = Ex_waddr_masked.or();
+  assign Ex_wdata_sel   = Ex_wdata_masked.or();
+  assign Ex_wen_sel     = Ex_wen_masked.or();
+  assign Ex_val_sel     = Ex_val_masked.or();
 
   // No backpressure - always ready
   generate
@@ -114,9 +114,10 @@ module WritebackBasic #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic             [4:0] waddr;
-    logic [p_data_bits-1:0] wdata;
-    logic                   wen;
+    logic [p_seq_num_bits-1:0] waddr;
+    logic             [4:0]    waddr;
+    logic [p_data_bits-1:0]    wdata;
+    logic                      wen;
   } X_input;
 
   X_input X_reg;
@@ -124,31 +125,27 @@ module WritebackBasic #(
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      X_reg <= '{ waddr: 'x, wdata: 'x, wen: 1'b0 };
+      X_reg <= '{ seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
     else
       X_reg <= X_reg_next;
   end
 
   always_comb begin
     if ( Ex_val_sel )
-      X_reg_next = '{ waddr: Ex_waddr_sel, wdata: Ex_wdata_sel, wen: Ex_wen_sel };
+      X_reg_next = '{
+        seq_num: Ex_waddr_sel,
+        waddr: Ex_waddr_sel,
+        wdata: Ex_wdata_sel,
+        wen: Ex_wen_sel
+      };
     else
-      X_reg_next = '{ waddr: 'x, wdata: 'x, wen: 1'b0 };
+      X_reg_next = '{ seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
   end
 
-  assign writeback.waddr = X_reg.waddr;
-  assign writeback.wdata = X_reg.wdata;
-  assign writeback.wen   = X_reg.wen;
-
-  //----------------------------------------------------------------------
-  // Unused commit interface
-  //----------------------------------------------------------------------
-
-  assign commit.seq_num = 'x;
-  assign commit.waddr   = 'x;
-  assign commit.wdata   = 'x;
-  assign commit.wen     = 'x;
-  assign commit.val     = 1'b0;
+  assign complete.seq_num = X_reg.seq_num;
+  assign complete.waddr   = X_reg.waddr;
+  assign complete.wdata   = X_reg.wdata;
+  assign complete.wen     = X_reg.wen;
 
   //----------------------------------------------------------------------
   // Linetracing
@@ -164,12 +161,13 @@ module WritebackBasic #(
   int str_len;
   // verilator lint_on UNUSEDSIGNAL
 
-  assign str_len = ceil_div_4( 5 )     + 1 +  // addr
-                   ceil_div_4( p_data_bits ); // data
+  assign str_len = ceil_div_4( p_seq_num_bits ) + 1 + // seq_num
+                   ceil_div_4( 5 )              + 1 + // addr
+                   ceil_div_4( p_data_bits );         // data
   
   always_comb begin
     if( X_reg.wen )
-      trace = $sformatf("%h:%h", X_reg.waddr, X_reg.wdata );
+      trace = $sformatf("%h:%h:%h", X_reg.seq_num, X_reg.waddr, X_reg.wdata );
     else
       trace = {str_len{" "}};
   end

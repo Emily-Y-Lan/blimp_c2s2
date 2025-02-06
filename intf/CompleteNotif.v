@@ -1,27 +1,30 @@
 //========================================================================
-// WritebackNotif.v
+// CompleteNotif.v
 //========================================================================
 // The notification interface for writing back values
 
-`ifndef INTF_WRITEBACK_NOTIF_V
-`define INTF_WRITEBACK_NOTIF_V
+`ifndef INTF_COMPLETE_NOTIF_V
+`define INTF_COMPLETE_NOTIF_V
 
 //------------------------------------------------------------------------
-// WritebackNotif
+// CompleteNotif
 //------------------------------------------------------------------------
 
-interface WritebackNotif
+interface CompleteNotif
 #(
-  parameter p_data_bits = 32
+  parameter p_seq_num_bits = 5,
+  parameter p_data_bits    = 32
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic             [4:0] waddr;
-  logic [p_data_bits-1:0] wdata;
-  logic                   wen;
+  logic [p_seq_num_bits-1:0] seq_num;
+  logic                [4:0] waddr;
+  logic    [p_data_bits-1:0] wdata;
+  logic                      wen;
+  logic                      val;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -29,18 +32,22 @@ interface WritebackNotif
 
   // Publish
   modport pub (
+    output seq_num,
     output waddr,
     output wdata,
-    output wen
+    output wen,
+    output val
   );
 
   // Subscribe
   modport sub (
-    input  waddr,
-    input  wdata,
-    input  wen
+    input seq_num,
+    input waddr,
+    input wdata,
+    input wen,
+    input val
   );
 
 endinterface
 
-`endif // INTF_WRITEBACK_Notif_V
+`endif // INTF_COMPLETE_NOTIF_V

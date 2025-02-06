@@ -7,7 +7,7 @@
 `define HW_WRITEBACK_WRITEBACK_COMMIT_V
 
 `include "hw/writeback_commit/writeback_variants/WritebackBasic.v"
-`include "intf/CommitNotif.v"
+`include "intf/CompleteNotif.v"
 `include "intf/WritebackNotif.v"
 `include "intf/X__WIntf.v"
 
@@ -31,10 +31,10 @@ module WritebackCommit #(
   WritebackNotif.pub writeback,
 
   //----------------------------------------------------------------------
-  // Commit Interface
+  // Completion Interface
   //----------------------------------------------------------------------
 
-  CommitNotif.pub commit
+  CompleteNotif.pub complete
 );
 
 `ifndef SYNTHESIS

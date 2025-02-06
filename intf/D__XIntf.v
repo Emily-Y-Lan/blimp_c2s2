@@ -16,21 +16,23 @@ import UArch::*;
 
 interface D__XIntf
 #(
-  parameter p_addr_bits  = 32,
-  parameter p_data_bits  = 32
+  parameter p_addr_bits    = 32,
+  parameter p_data_bits    = 32,
+  parameter p_seq_num_bits = 5
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [p_addr_bits-1:0] pc;
-  logic [p_data_bits-1:0] op1;
-  logic [p_data_bits-1:0] op2;
-  logic             [4:0] waddr;
-  rv_uop                  uop;
-  logic                   val;
-  logic                   rdy;
+  logic    [p_addr_bits-1:0] pc;
+  logic [p_seq_num_bits-1:0] seq_num;
+  logic    [p_data_bits-1:0] op1;
+  logic    [p_data_bits-1:0] op2;
+  logic                [4:0] waddr;
+  rv_uop                     uop;
+  logic                      val;
+  logic                      rdy;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -38,6 +40,7 @@ interface D__XIntf
 
   modport D_intf (
     output pc,
+    output seq_num,
     output op1,
     output op2,
     output uop,
@@ -48,6 +51,7 @@ interface D__XIntf
 
   modport X_intf (
     input  pc,
+    input  seq_num,
     input  op1,
     input  op2,
     input  uop,

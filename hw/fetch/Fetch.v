@@ -93,8 +93,8 @@ module Fetch
   always_ff @( posedge clk ) begin
     if ( rst )
       curr_addr <= p_rst_addr;
-    else if ( D.squash & !memreq_xfer )
-      curr_addr <= D.branch_target;
+    // else if ( D.squash & !memreq_xfer )
+    //   curr_addr <= D.branch_target;
     else if ( memreq_xfer )
       curr_addr <= curr_addr_next;
   end
@@ -108,9 +108,9 @@ module Fetch
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   always_comb begin
-    if ( D.squash )
-      mem.req_msg.addr = D.branch_target;
-    else
+    // if ( D.squash )
+    //   mem.req_msg.addr = D.branch_target;
+    // else
       mem.req_msg.addr = curr_addr;
   end
 
@@ -126,14 +126,15 @@ module Fetch
   always_ff @( posedge clk ) begin
     if ( rst )
       req_opaque <= '0;
-    else if ( D.squash )
-      req_opaque <= req_opaque_next;
+    // else if ( D.squash )
+    //   req_opaque <= req_opaque_next;
   end
 
   always_comb begin
     mem.req_val        = (num_in_flight < p_max_in_flight);
     mem.req_msg.op     = MEM_MSG_READ;
-    mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
+    // mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
+    mem.req_msg.opaque = req_opaque;
     mem.req_msg.len    = '0;
     mem.req_msg.data   = 'x;
   end
@@ -147,8 +148,9 @@ module Fetch
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   logic should_drop;
-  assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque)
-                     | D.squash;
+  // assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque)
+  //                    | D.squash;
+  assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Other response signals

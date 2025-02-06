@@ -1,60 +1,52 @@
 //========================================================================
-// TestIstream.v
+// TestSub.v
 //========================================================================
-// A FL input stream for providing stimulus to DUTs
+// A FL subscriber for receiving notifications from DUTs
 
-`ifndef TEST_FL_TESTISTREAM_V
-`define TEST_FL_TESTISTREAM_V
+`ifndef TEST_FL_TESTSUB_V
+`define TEST_FL_TESTSUB_V
 
-module TestIstream #(
-  parameter type t_msg        = logic[31:0],
-  parameter p_send_intv_delay = 0
+`include "test/FLTestUtils.v"
+
+module TestSub #(
+  parameter type t_msg = logic[31:0],
 )(
-  input  logic clk,
+  input logic clk,
   
-  output t_msg msg,
-  output logic val,
-  input  logic rdy
+  input t_msg msg,
+  input logic val,
 );
 
-  initial begin
-    msg = 'x;
-    val = 1'b0;
-  end
-  
-  //----------------------------------------------------------------------
-  // send
-  //----------------------------------------------------------------------
-  // A function to send a stimulus across a stream interface
+  FLTestUtils t( .* );
 
-  logic msg_sent;
+  //----------------------------------------------------------------------
+  // sub
+  //----------------------------------------------------------------------
+  // A function to receive a notification
 
-  task send (
-    input t_msg dut_msg
+  t_msg dut_msg;
+  logic msg_recv;
+  logic waiting;
+
+  initial waiting = 1'b0;
+
+  task sub (
+    input t_msg exp_msg
   );
 
-    val      = 1'b0;
-    msg      = 'x;
-    msg_sent = 1'b0;
-    
-    // Delay for the send interval
-    for( int i = 0; i < p_send_intv_delay; i = i + 1 ) begin
-      @( posedge clk );
-      #1;
-    end
-
-    val = 1'b1;
-    msg = dut_msg;
+    waiting = 1'b1;
 
     do begin
       #2
-      msg_sent = rdy;
+      msg_recv = val;
+      dut_msg  = msg;
       @( posedge clk );
       #1;
-    end while( !msg_sent );
+    end while( !msg_recv );
 
-    val = 1'b0;
-    msg = 'x;
+    waiting = 1'b0;
+    
+    `CHECK_EQ( dut_msg, exp_msg );
 
   endtask
 
@@ -75,12 +67,12 @@ module TestIstream #(
 
   // verilator lint_off BLKSEQ
   always_comb begin
-    if( val & rdy )
+    if( val & waiting )
       trace = $sformatf("%x", msg);
-    else if( rdy )
-      trace = {(trace_len){" "}};
     else if( val )
-      trace = {{(trace_len-1){" "}}, "#"};
+      trace = {{(trace_len-1){" "}}, "X"};
+    else if( waiting )
+      trace = trace = {(trace_len){" "}};
     else
       trace = {{(trace_len-1){" "}}, "."};
   end
@@ -88,4 +80,4 @@ module TestIstream #(
 
 endmodule
 
-`endif // TEST_FL_TESTISTREAM_V
+`endif // TEST_FL_TESTSUB_V

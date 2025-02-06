@@ -158,6 +158,9 @@ module DecodeBasic #(
       assign Ex[k].op2   = op2;
       assign Ex[k].uop   = decoder_uop;
       assign Ex[k].waddr = decoder_waddr;
+
+      // Unimplemented seq_num signal;
+      assign Ex[k].seq_num = '0;
       
       // logic unused_squash;
       // logic [p_addr_bits-1:0] unused_branch_target;
