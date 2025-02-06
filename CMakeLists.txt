@@ -19,7 +19,7 @@ set(V_TEST_FILES
   hw/execute/test/ALU_test.v
   hw/execute/test/Multiplier_test.v
   hw/fetch/test/Fetch_test.v
-  # hw/writeback_commit/test/WritebackBasic_test.v
+  hw/writeback_commit/test/WritebackBasic_test.v
 )
 
 set(RV32_ASM_FILES

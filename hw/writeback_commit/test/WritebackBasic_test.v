@@ -47,7 +47,8 @@ module WritebackBasicTestSuite #(
   //----------------------------------------------------------------------
 
   X__WIntf #(
-    .p_data_bits (p_data_bits)
+    .p_data_bits    (p_data_bits),
+    .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intfs [p_num_pipes-1:0]();
 
   CompleteNotif #(
@@ -58,8 +59,7 @@ module WritebackBasicTestSuite #(
   WritebackBasic #(
     .p_num_pipes (p_num_pipes)
   ) dut (
-    .Ex        (Ex_intf),
-    .writeback (writeback_notif),
+    .Ex        (X__W_intfs),
     .complete  (complete_notif),
     .*
   );
@@ -69,9 +69,10 @@ module WritebackBasicTestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic             [4:0] waddr;
-    logic [p_data_bits-1:0] wdata;
-    logic                   wen;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic    [p_data_bits-1:0] wdata;
+    logic                      wen;
   } t_x__w_msg;
 
   t_x__w_msg x__w_msgs[p_num_pipes];
@@ -79,17 +80,16 @@ module WritebackBasicTestSuite #(
   genvar i;
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign X__W_intfs[i].waddr = x__w_msgs[i].waddr;
-      assign X__W_intfs[i].wdata = x__w_msgs[i].wdata;
-      assign X__W_intfs[i].wen   = x__w_msgs[i].wen;
+      assign X__W_intfs[i].seq_num = x__w_msgs[i].seq_num;
+      assign X__W_intfs[i].waddr   = x__w_msgs[i].waddr;
+      assign X__W_intfs[i].wdata   = x__w_msgs[i].wdata;
+      assign X__W_intfs[i].wen     = x__w_msgs[i].wen;
     end
   endgenerate
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin: X_Istreams
-      TestIstream #(
-        .p_send_intv_delay (p_X_send_intv_delay)
-      ) X_Istream (
+      TestIstream #( t_x__w_msg, p_X_send_intv_delay ) X_Istream (
         .msg (x__w_msgs[i]),
         .val (X__W_intfs[i].val),
         .rdy (X__W_intfs[i].rdy),
@@ -99,23 +99,18 @@ module WritebackBasicTestSuite #(
   endgenerate
 
   t_x__w_msg msgs_to_send [p_num_pipes-1:0][$];
-  logic      msgs_done    [p_num_pipes];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
+        #1;
         foreach (msgs_to_send[i][j]) begin
           X_Istreams[i].X_Istream.send(
-            msgs[i][j]
+            msgs_to_send[i][j]
           );
         end
         
         msgs_to_send[i].delete();
-        msgs_done[i] = 1'b1;
-      end
-
-      initial begin
-        msgs_done[i] = 1'b1;
       end
     end
   endgenerate
@@ -123,16 +118,21 @@ module WritebackBasicTestSuite #(
   t_x__w_msg pipe_msg;
 
   task send(
-    input int                     pipe_num,
-    input logic             [4:0] waddr,
-    input logic [p_data_bits-1:0] wdata,
-    input logic                   wen
-  );
-    pipe_msg.waddr = waddr;
-    pipe_msg.wdata = wdata;
-    pipe_msg.wen   = wen;
+    // verilator lint_off UNUSEDSIGNAL
+    input int                        pipe_num,
+    // verilator lint_on UNUSEDSIGNAL
 
-    msgs[pipe_num].push_back( pipe_msg );
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic                [4:0] waddr,
+    input logic    [p_data_bits-1:0] wdata,
+    input logic                      wen
+  );
+    pipe_msg.seq_num = seq_num;
+    pipe_msg.waddr   = waddr;
+    pipe_msg.wdata   = wdata;
+    pipe_msg.wen     = wen;
+
+    msgs_to_send[pipe_num].push_back( pipe_msg );
   endtask
 
   string X_traces [p_num_pipes-1:0];
@@ -171,7 +171,7 @@ module WritebackBasicTestSuite #(
   TestSub #(
     t_complete_msg
   ) CommitSub (
-    .msg (t_complete_msg),
+    .msg (complete_msg),
     .val (complete_notif.val),
     .*
   );
@@ -197,13 +197,11 @@ module WritebackBasicTestSuite #(
   //----------------------------------------------------------------------
 
   Tracer tracer ( clk, {
-    fl_X_trace,
+    X_trace,
     " | ",
     dut.trace,
     " | ",
-    fl_writeback_test_sub.trace,
-    " - ",
-    fl_commit_test_sub.trace
+    CommitSub.trace
   } );
 
   //----------------------------------------------------------------------
@@ -217,26 +215,18 @@ module WritebackBasicTestSuite #(
 
     fork
       begin
-        //    pipe addr  data          wen
-        send( 0,   5'h1, 32'hdeadbeef, 1'b1 );
-        send( 0,   5'h2, 32'hcafecafe, 1'b1 );
+        //   pipe seq_num addr  data          wen
+        send(0,   0,      5'h1, 32'hdeadbeef, 1'b1);
+        send(0,   1,      5'h2, 32'hcafecafe, 1'b1);
       end
 
       begin
-        
+        //  seq_num addr  data          wen
+        sub(0,      5'h1, 32'hdeadbeef, 1'b1);
+        sub(1,      5'h2, 32'hcafecafe, 1'b1);
       end
     join
 
-    //       pipe addr  data          wen
-    add_msg( 0,   5'h1, 32'hdeadbeef, 1'b1 );
-    add_msg( 0,   5'h2, 32'hcafecafe, 1'b1 );
-
-    //                             addr, data
-    fl_writeback_test_sub.add_msg( 5'h1, 32'hdeadbeef );
-    fl_writeback_test_sub.add_msg( 5'h2, 32'hcafecafe );
-    while( !fl_writeback_test_sub.done() | !fl_commit_test_sub.done() ) begin
-      #10;
-    end
     tracer.disable_trace();
   endtask
 

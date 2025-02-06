@@ -97,7 +97,9 @@ module TestUtils
 
   // Error count
 
+  // verilator lint_off UNUSEDSIGNAL
   logic failed = 0;
+  //verilator lint_on UNUSEDSIGNAL
 
   // This variable holds the +test-case command line argument indicating
   // which test cases to run.

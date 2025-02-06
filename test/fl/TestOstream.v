@@ -34,6 +34,8 @@ module TestOstream #(
   t_msg dut_msg;
   logic msg_recv;
 
+  // verilator lint_off BLKSEQ
+  
   task recv (
     input t_msg exp_msg
   );
@@ -62,6 +64,8 @@ module TestOstream #(
     `CHECK_EQ( dut_msg, exp_msg );
 
   endtask
+
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // Linetracing

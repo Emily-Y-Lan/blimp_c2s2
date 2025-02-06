@@ -118,10 +118,10 @@ module Fetch
   // Other request signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [p_opaq_bits-1:0] req_opaque_next;
+  // logic [p_opaq_bits-1:0] req_opaque_next;
   logic [p_opaq_bits-1:0] req_opaque;
 
-  assign req_opaque_next = req_opaque + 1;
+  // assign req_opaque_next = req_opaque + 1;
 
   always_ff @( posedge clk ) begin
     if ( rst )

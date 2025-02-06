@@ -177,7 +177,7 @@ module DecodeBasicTestSuite #(
           );
         end
         msgs_to_recv[i].delete();
-        msgs_done[i] = 1'b1;
+        msgs_done[i] <= 1'b1;
       end
 
       initial begin

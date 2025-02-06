@@ -13,7 +13,7 @@
 
 module WritebackBasic #(
   parameter p_num_pipes = 1
-) (
+)(
   input  logic clk,
   input  logic rst,
 
@@ -27,7 +27,7 @@ module WritebackBasic #(
   // Completion Interface
   //----------------------------------------------------------------------
 
-  CompleteNotif.pub complete,
+  CompleteNotif.pub complete
 );
 
   localparam p_data_bits    = complete.p_data_bits;
@@ -38,11 +38,11 @@ module WritebackBasic #(
   //----------------------------------------------------------------------
 
   logic [p_seq_num_bits-1:0] Ex_seq_num [p_num_pipes-1:0];
-  logic                [4:0] Ex_waddr [p_num_pipes-1:0];
-  logic    [p_data_bits-1:0] Ex_wdata [p_num_pipes-1:0];
-  logic                      Ex_wen   [p_num_pipes-1:0];
-  logic                      Ex_val   [p_num_pipes-1:0];
-  logic                      Ex_rdy   [p_num_pipes-1:0];
+  logic                [4:0] Ex_waddr   [p_num_pipes-1:0];
+  logic    [p_data_bits-1:0] Ex_wdata   [p_num_pipes-1:0];
+  logic                      Ex_wen     [p_num_pipes-1:0];
+  logic                      Ex_val     [p_num_pipes-1:0];
+  logic                      Ex_rdy     [p_num_pipes-1:0];
 
   genvar i;
   generate
@@ -75,22 +75,22 @@ module WritebackBasic #(
   );
 
   logic [p_seq_num_bits-1:0] Ex_seq_num_masked [p_num_pipes-1:0];
-  logic             [4:0]    Ex_waddr_masked   [p_num_pipes-1:0];
-  logic [p_data_bits-1:0]    Ex_wdata_masked   [p_num_pipes-1:0];
+  logic                [4:0] Ex_waddr_masked   [p_num_pipes-1:0];
+  logic    [p_data_bits-1:0] Ex_wdata_masked   [p_num_pipes-1:0];
   logic                      Ex_wen_masked     [p_num_pipes-1:0];
   logic                      Ex_val_masked     [p_num_pipes-1:0];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       assign Ex_seq_num_masked[i] = Ex_seq_num[i] & {p_seq_num_bits{Ex_gnt[i]}};
-      assign Ex_waddr_masked[i]   = Ex_waddr[i] & {5{Ex_gnt[i]}};
-      assign Ex_wdata_masked[i]   = Ex_wdata[i] & {p_data_bits{Ex_gnt[i]}};
-      assign Ex_wen_masked[i]     = Ex_wen[i]   & Ex_gnt[i];
-      assign Ex_val_masked[i]     = Ex_val[i]   & Ex_gnt[i];
+      assign Ex_waddr_masked[i]   = Ex_waddr[i]   & {5{Ex_gnt[i]}};
+      assign Ex_wdata_masked[i]   = Ex_wdata[i]   & {p_data_bits{Ex_gnt[i]}};
+      assign Ex_wen_masked[i]     = Ex_wen[i]     & Ex_gnt[i];
+      assign Ex_val_masked[i]     = Ex_val[i]     & Ex_gnt[i];
     end
   endgenerate
 
-  logic [p_seq_num_bits-1:0] Ex_waddr_sel;
+  logic [p_seq_num_bits-1:0] Ex_seq_num_sel;
   logic             [4:0]    Ex_waddr_sel;
   logic [p_data_bits-1:0]    Ex_wdata_sel;
   logic                      Ex_wen_sel;
@@ -114,9 +114,10 @@ module WritebackBasic #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [p_seq_num_bits-1:0] waddr;
-    logic             [4:0]    waddr;
-    logic [p_data_bits-1:0]    wdata;
+    logic                      val;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic    [p_data_bits-1:0] wdata;
     logic                      wen;
   } X_input;
 
@@ -125,7 +126,7 @@ module WritebackBasic #(
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      X_reg <= '{ seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
+      X_reg <= '{ val: 1'b0, seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
     else
       X_reg <= X_reg_next;
   end
@@ -133,15 +134,17 @@ module WritebackBasic #(
   always_comb begin
     if ( Ex_val_sel )
       X_reg_next = '{
-        seq_num: Ex_waddr_sel,
-        waddr: Ex_waddr_sel,
-        wdata: Ex_wdata_sel,
-        wen: Ex_wen_sel
+        val:     1'b1,
+        seq_num: Ex_seq_num_sel,
+        waddr:   Ex_waddr_sel,
+        wdata:   Ex_wdata_sel,
+        wen:     Ex_wen_sel
       };
     else
-      X_reg_next = '{ seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
+      X_reg_next = '{ val: 1'b0, seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
   end
 
+  assign complete.val     = X_reg.val;
   assign complete.seq_num = X_reg.seq_num;
   assign complete.waddr   = X_reg.waddr;
   assign complete.wdata   = X_reg.wdata;

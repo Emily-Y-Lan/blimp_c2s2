@@ -5,7 +5,7 @@
 # A helper script for linting Blimp's components
 
 # VERILOG_TESTS=$(find . -name "*_test.v")
-VERILOG_TESTS=$(find . -name "ALU_test.v")
+VERILOG_TESTS=$(find . -name "*_test.v")
 
 RED='\033[1;31m'
 GREEN='\033[1;32m'

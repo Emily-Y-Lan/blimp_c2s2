@@ -143,15 +143,16 @@ module Multiplier (
   always_comb begin
     int str_len;
 
-    str_len = 11                      + 1 + // uop
-              ceil_div_4(5)           + 1 + // waddr
-              ceil_div_4(p_data_bits) + 1 + // op1
-              ceil_div_4(p_data_bits) + 1 + // op2
-              ceil_div_4(p_data_bits);      // wdata
+    str_len = 11                         + 1 + // uop
+              ceil_div_4(p_seq_num_bits) + 1 + // seq_num
+              ceil_div_4(5)              + 1 + // waddr
+              ceil_div_4(p_data_bits)    + 1 + // op1
+              ceil_div_4(p_data_bits)    + 1 + // op2
+              ceil_div_4(p_data_bits);         // wdata
 
     if( W.val & W.rdy )
-      trace = $sformatf("%11s:%h:%h:%h:%h", D_reg.uop.name(), 
-                        W.waddr, op1, op2, W.wdata );
+      trace = $sformatf("%11s:%h:%h:%h:%h:%h", D_reg.uop.name(), 
+                        W.seq_num, W.waddr, op1, op2, W.wdata );
     else
       trace = {str_len{" "}};
   end

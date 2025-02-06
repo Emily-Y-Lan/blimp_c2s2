@@ -29,6 +29,8 @@ module TestIstream #(
 
   logic msg_sent;
 
+  // verilator lint_off BLKSEQ
+  
   task send (
     input t_msg dut_msg
   );
@@ -57,6 +59,8 @@ module TestIstream #(
     msg = 'x;
 
   endtask
+
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // Linetracing

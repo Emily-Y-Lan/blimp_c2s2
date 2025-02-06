@@ -9,15 +9,15 @@
 `include "test/FLTestUtils.v"
 
 module TestSub #(
-  parameter type t_msg = logic[31:0],
+  parameter type t_msg = logic[31:0]
 )(
   input logic clk,
   
   input t_msg msg,
-  input logic val,
+  input logic val
 );
-
-  FLTestUtils t( .* );
+  
+  FLTestUtils t( .rst( 1'b0), .* );
 
   //----------------------------------------------------------------------
   // sub
@@ -72,7 +72,7 @@ module TestSub #(
     else if( val )
       trace = {{(trace_len-1){" "}}, "X"};
     else if( waiting )
-      trace = trace = {(trace_len){" "}};
+      trace = {(trace_len){" "}};
     else
       trace = {{(trace_len-1){" "}}, "."};
   end
