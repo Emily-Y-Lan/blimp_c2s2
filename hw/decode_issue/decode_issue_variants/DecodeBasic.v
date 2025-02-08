@@ -103,18 +103,22 @@ module DecodeBasic #(
   );
 
   logic [p_inst_bits-1:0] rdata0, rdata1;
+  logic unused_pending [1:0];
 
   Regfile #(
     .t_entry (logic [p_inst_bits-1:0]),
     .p_num_regs (32)
   ) regfile (
-    .clk   (clk),
-    .rst   (rst),
-    .raddr ({decoder_raddr1, decoder_raddr0}),
-    .rdata ({rdata1, rdata0}),
-    .waddr ('0),
-    .wdata ('0),
-    .wen   ('0)
+    .clk     (clk),
+    .rst     (rst),
+    .raddr   ({decoder_raddr1, decoder_raddr0}),
+    .rdata   ({rdata1, rdata0}),
+    .waddr   ('0),
+    .wdata   ('0),
+    .wen     ('0),
+    .pending_set_addr ('0),
+    .pending_set_val  ('0),
+    .pending          (unused_pending)
   );
 
   logic [31:0] imm;

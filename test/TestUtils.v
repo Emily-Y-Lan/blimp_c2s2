@@ -176,7 +176,7 @@ endmodule
   if ( __ref !== ( __ref ^ __dut ^ __ref ) ) begin                      \
     if ( t.n != 0 )                                                     \
       $display( "\n%sERROR%s (cycle=%0d): %s != %s (%b != %b)",         \
-                `RED, `RESET, t.cycles, "__dut", "__ref",               \
+                `RED, `RESET, t.cycles, ``__dut``, ``__ref``,           \
                 __dut, __ref );                                         \
     else                                                                \
       $write( "%sF%s", `RED, `RESET );                                  \

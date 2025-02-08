@@ -176,7 +176,7 @@ module DecodeBasicTestSuite #(
             msgs_to_recv[i]
           );
         end
-        msgs_to_recv_val[i] = 1'b0;
+        msgs_to_recv_val[i] <= 1'b0;
       end
 
       initial begin
