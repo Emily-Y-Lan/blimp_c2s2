@@ -13,6 +13,7 @@
 `include "hw/decode_issue/Regfile.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
+`include "intf/CompleteNotif.v"
 `include "test/asm/rv32/disassemble32.v"
 
 import ISA::*;
@@ -35,11 +36,18 @@ module DecodeBasic #(
   // D <-> X Interface
   //----------------------------------------------------------------------
 
-  D__XIntf.D_intf Ex [p_num_pipes-1:0]
+  D__XIntf.D_intf Ex [p_num_pipes-1:0],
+
+  //----------------------------------------------------------------------
+  // Completion Notification
+  //----------------------------------------------------------------------
+
+  CompleteNotif.sub complete
 );
 
-  localparam p_addr_bits = F.p_addr_bits;
-  localparam p_inst_bits = F.p_inst_bits;
+  localparam p_addr_bits    = F.p_addr_bits;
+  localparam p_inst_bits    = F.p_inst_bits;
+  localparam p_seq_num_bits = Ex.p_seq_num_bits;
   
   //----------------------------------------------------------------------
   // Pipeline registers for F interface
@@ -103,23 +111,26 @@ module DecodeBasic #(
   );
 
   logic [p_inst_bits-1:0] rdata0, rdata1;
-  logic unused_pending [1:0];
+  logic pending [1:0];
 
   Regfile #(
     .t_entry (logic [p_inst_bits-1:0]),
     .p_num_regs (32)
   ) regfile (
-    .clk     (clk),
-    .rst     (rst),
-    .raddr   ({decoder_raddr1, decoder_raddr0}),
-    .rdata   ({rdata1, rdata0}),
-    .waddr   ('0),
-    .wdata   ('0),
-    .wen     ('0),
-    .pending_set_addr ('0),
-    .pending_set_val  ('0),
-    .pending          (unused_pending)
+    .clk              (clk),
+    .rst              (rst),
+    .raddr            ({decoder_raddr1, decoder_raddr0}),
+    .rdata            ({rdata1, rdata0}),
+    .waddr            (complete.waddr),
+    .wdata            (complete.wdata),
+    .wen              (complete.wen & complete.val),
+    .pending_set_addr (decoder_waddr),
+    .pending_set_val  (decoder_wen),
+    .pending          (pending)
   );
+
+  logic stall_pending;
+  assign stall_pending = pending[0] | pending[1];
 
   logic [31:0] imm;
 
@@ -133,12 +144,16 @@ module DecodeBasic #(
   // Route the instruction (set val/rdy for pipes) based on uop
   //----------------------------------------------------------------------
 
+  logic X_rdy;
+
   InstRouter #(p_num_pipes, p_pipe_subsets) inst_router (
     .uop   (decoder_uop),
-    .val   (F_reg.val),
+    .val   (F_reg.val & !stall_pending),
     .Ex    (Ex),
-    .F_rdy (F.rdy)
+    .rdy   (X_rdy)
   );
+
+  assign F.rdy = X_rdy & !stall_pending;
 
   //----------------------------------------------------------------------
   // Pass remaining signals to pipes
@@ -173,6 +188,9 @@ module DecodeBasic #(
       // assign unused_branch_target = Ex[k].branch_target;
     end
   endgenerate
+
+  logic [p_seq_num_bits-1:0] unused_seq_num_bits;
+  assign unused_seq_num_bits = complete.seq_num;
 
   //----------------------------------------------------------------------
   // Linetracing

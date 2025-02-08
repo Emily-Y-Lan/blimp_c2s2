@@ -7,12 +7,12 @@
 `define TEST_FL_TESTPUB_V
 
 module TestPub #(
-  parameter type t_msg = logic[31:0],
+  parameter type t_msg = logic[31:0]
 )(
   input  logic clk,
   
   output t_msg msg,
-  output logic val,
+  output logic val
 );
 
   initial begin

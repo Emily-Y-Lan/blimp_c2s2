@@ -7,6 +7,7 @@
 `include "hw/decode_issue/decode_issue_variants/DecodeBasic.v"
 `include "test/asm/rv32/assemble32.v"
 `include "test/TraceUtils.v"
+`include "test/fl/TestPub.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
 
@@ -69,13 +70,19 @@ module DecodeBasicTestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) D__X_intfs [p_num_pipes-1:0]();
 
+  CompleteNotif #(
+    .p_seq_num_bits (p_seq_num_bits),
+    .p_data_bits    (p_inst_bits)
+  ) complete_notif();
+
   DecodeBasic #(
     .p_isa_subset   (p_tinyrv1),
     .p_num_pipes    (p_num_pipes),
     .p_pipe_subsets (p_pipe_subsets)
   ) dut (
-    .F  (F__D_intf),
-    .Ex (D__X_intfs),
+    .F        (F__D_intf),
+    .Ex       (D__X_intfs),
+    .complete (complete_notif),
     .*
   );
 
@@ -151,6 +158,48 @@ module DecodeBasicTestSuite #(
   endgenerate
 
   //----------------------------------------------------------------------
+  // Completion Interface
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic    [p_inst_bits-1:0] wdata;
+    logic                      wen;
+  } t_complete_msg;
+
+  t_complete_msg complete_msg;
+
+  assign complete_notif.seq_num = complete_msg.seq_num;
+  assign complete_notif.waddr   = complete_msg.waddr;
+  assign complete_notif.wdata   = complete_msg.wdata;
+  assign complete_notif.wen     = complete_msg.wen;
+
+  TestPub #(
+    t_complete_msg
+  ) CommitPub (
+    .msg (complete_msg),
+    .val (complete_notif.val),
+    .*
+  );
+
+  t_complete_msg msg_to_pub;
+
+  task pub(
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic                [4:0] waddr,
+    input logic    [p_inst_bits-1:0] wdata,
+    input logic                      wen
+  );
+    msg_to_pub.seq_num = seq_num;
+    msg_to_pub.waddr   = waddr;
+    msg_to_pub.wdata   = wdata;
+    msg_to_pub.wen     = wen;
+
+    CommitPub.pub( msg_to_pub );
+  endtask
+
+  //----------------------------------------------------------------------
   // Handle giving messages to the correct pipe
   //----------------------------------------------------------------------
 
@@ -176,7 +225,10 @@ module DecodeBasicTestSuite #(
             msgs_to_recv[i]
           );
         end
-        msgs_to_recv_val[i] <= 1'b0;
+
+        // verilator lint_off BLKSEQ
+        msgs_to_recv_val[i] = 1'b0;
+        // verilator lint_on BLKSEQ
       end
 
       initial begin
@@ -279,15 +331,15 @@ module DecodeBasicTestSuite #(
 
     fork
       begin
-        //   addr                                        inst
-        send(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), assemble32("mul x1, x0, x0"));
-        send(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), assemble32("addi x1, x0, 10"));
+        //   addr            inst
+        send(p_rst_addr + 0, assemble32("mul x1, x0, x0"));
+        send(p_rst_addr + 4, assemble32("addi x1, x0, 10"));
       end
 
       begin
-        //   pc                                          op1    op2    waddr  uop
-        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, 5'h1,  OP_MUL );
-        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'hA, 5'h1,  OP_ADD );
+        //   pc              op1 op2  waddr uop
+        recv(p_rst_addr + 0, 0,   0,  1,    OP_MUL);
+        recv(p_rst_addr + 4, 0,  10,  1,    OP_ADD);
       end
     join
 
@@ -302,18 +354,23 @@ module DecodeBasicTestSuite #(
     t.test_case_begin( "test_case_2_add" );
     if( t.n != 0 )
       tracer.enable_trace();
+    
+    //   seq_num waddr wdata wen
+    pub( 'x,     1,    3,    1 );
+    pub( 'x,     2,    7,    1 );
 
     fork
       begin
-        //   addr                                        inst
-        send(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), assemble32("add x3, x1, x2") );
-        send(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), assemble32("add x2, x5, x4") );
+        //   addr            inst
+        send(p_rst_addr + 0, assemble32("add x4, x1, x2"));
+        send(p_rst_addr + 4, assemble32("add x2, x5, x4"));
       end
 
       begin
-        //   pc                                          op1    op2    waddr  uop
-        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'h0, 5'h3,  OP_ADD );
-        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'h0, 5'h2,  OP_ADD );
+        //   pc              op1 op2 waddr uop
+        recv(p_rst_addr + 0, 3,  7,  4,    OP_ADD);
+        pub( 'x, 4, 10, 1 );
+        recv(p_rst_addr + 4, 0, 10,  2,    OP_ADD);
       end
     join
 
@@ -329,17 +386,21 @@ module DecodeBasicTestSuite #(
     if( t.n != 0 )
       tracer.enable_trace();
 
+    //   seq_num waddr wdata wen
+    pub( 'x,     1,    9,    1 );
+
     fork
       begin
-        //   addr                                        inst
-        send(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), assemble32("addi x3, x1, 10" ));
-        send(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), assemble32("addi x2, x5, 2047" ));
+        //   addr            inst
+        send(p_rst_addr + 0, assemble32("addi x3, x1, 10" ));
+        send(p_rst_addr + 4, assemble32("addi x2, x3, 2047"));
       end
 
       begin
-        //   pc                                          op1    op2      waddr  uop
-        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(0)), 32'h0, 32'hA,   5'h3,  OP_ADD );
-        recv(p_addr_bits'(p_rst_addr + p_addr_bits'(4)), 32'h0, 32'h7FF, 5'h2,  OP_ADD );
+        //   pc              op1 op2  waddr uop
+        recv(p_rst_addr + 0, 9,   10, 3,    OP_ADD );
+        pub( 'x, 3, 13, 1 );
+        recv(p_rst_addr + 4, 13, 2047, 2,    OP_ADD );
       end
     join
   
@@ -355,7 +416,7 @@ module DecodeBasicTestSuite #(
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
     if ((t.n <= 0) || (t.n == 2)) test_case_2_add();
-    if ((t.n <= 0) || (t.n == 2)) test_case_3_addi();
+    if ((t.n <= 0) || (t.n == 3)) test_case_3_addi();
 
   endtask
 endmodule

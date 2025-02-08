@@ -35,6 +35,8 @@ std::map<std::string, std::function<std::string( uint32_t )>>
 // Find the matching instruction for the binary, then assemble tokens
 // from it
 
+std::string instruction;
+
 extern "C" const char* disassemble32( const uint32_t* vbinary );
 
 const char* disassemble32( const uint32_t* vbinary )
@@ -56,7 +58,7 @@ const char* disassemble32( const uint32_t* vbinary )
   // Use tokens to form instruction
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  std::string instruction = spec.assembly;
+  instruction = spec.assembly;
 
   for ( int i = 0; i < spec_tokens.size(); i++ ) {
     // Skip instruction token
