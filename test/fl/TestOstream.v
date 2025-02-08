@@ -31,17 +31,18 @@ module TestOstream #(
   //----------------------------------------------------------------------
   // A function to receive a message across a stream interface
 
-  t_msg dut_msg;
+  t_msg dut_msg, exp_msg;
   logic msg_recv;
 
   // verilator lint_off BLKSEQ
   
   task recv (
-    input t_msg exp_msg
+    input t_msg test_msg
   );
 
     rdy      = 1'b0;
     msg_recv = 1'b0;
+    exp_msg  = test_msg;
     
     // Delay for the send interval
     for( int i = 0; i < p_recv_intv_delay; i = i + 1 ) begin
@@ -59,9 +60,9 @@ module TestOstream #(
       #1;
     end while( !msg_recv );
 
-    rdy = 1'b0;
-
     `CHECK_EQ( dut_msg, exp_msg );
+
+    rdy = 1'b0;
 
   endtask
 

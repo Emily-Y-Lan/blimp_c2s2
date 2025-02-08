@@ -164,24 +164,23 @@ module DecodeBasicTestSuite #(
     if( uop == OP_BNE  ) return OP_BNE_VEC;
   endfunction
 
-  t_d__x_msg msgs_to_recv [p_num_pipes-1:0][$];
-  logic      msgs_done    [p_num_pipes];
+  t_d__x_msg msgs_to_recv     [p_num_pipes];
+  logic      msgs_to_recv_val [p_num_pipes];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
         #1;
-        foreach (msgs_to_recv[i][j]) begin
+        if (msgs_to_recv_val[i]) begin
           X_Ostreams[i].X_Ostream.recv(
-            msgs_to_recv[i][j]
+            msgs_to_recv[i]
           );
         end
-        msgs_to_recv[i].delete();
-        msgs_done[i] <= 1'b1;
+        msgs_to_recv_val[i] = 1'b0;
       end
 
       initial begin
-        msgs_done[i] = 1'b1;
+        msgs_to_recv_val[i] = 1'b0;
       end
     end
   endgenerate
@@ -203,11 +202,6 @@ module DecodeBasicTestSuite #(
     input logic             [4:0] waddr,
     input rv_uop                  uop,
   );
-    // No messages have been received
-    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
-      msgs_done[j] = 1'b0;
-    end
-
     // Set message correctly
     pipe_msg.pc    = pc;
     pipe_msg.op1   = op1;
@@ -235,16 +229,15 @@ module DecodeBasicTestSuite #(
       // Find correct pipe
       for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
         if(( (p_pipe_subsets[j] & vec_of_uop(uop)) > 0 ) & ( pipe_delays[j] == 0 )) begin
-          msgs_to_recv[j].push_back( pipe_msg );
+          msgs_to_recv[j]     = pipe_msg;
+          msgs_to_recv_val[j] = 1'b1;
+
+          wait(msgs_to_recv_val[j] == 1'b0);
           pipe_delays[j] = p_X_recv_intv_delay;
           pipe_found = 1;
           break;
         end
       end
-    end
-
-    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
-      while(msgs_done[j] != 1'b1) #1;
     end
   endtask
 

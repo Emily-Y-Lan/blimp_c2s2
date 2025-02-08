@@ -43,10 +43,10 @@ module TestSub #(
       @( posedge clk );
       #1;
     end while( !msg_recv );
-
-    waiting = 1'b0;
     
     `CHECK_EQ( dut_msg, exp_msg );
+
+    waiting = 1'b0;
 
   endtask
 
