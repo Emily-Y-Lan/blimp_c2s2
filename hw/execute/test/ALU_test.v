@@ -51,6 +51,7 @@ module ALUTestSuite #(
   ) D__X_intf();
 
   X__WIntf #(
+    .p_addr_bits    (p_addr_bits),
     .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intf();
@@ -115,6 +116,7 @@ module ALUTestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
+    logic    [p_addr_bits-1:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
     logic    [p_data_bits-1:0] wdata;
@@ -123,6 +125,7 @@ module ALUTestSuite #(
 
   t_x__w_msg x__w_msg;
 
+  assign x__w_msg.pc      = X__W_intf.pc;
   assign x__w_msg.seq_num = X__W_intf.seq_num;
   assign x__w_msg.waddr   = X__W_intf.waddr;
   assign x__w_msg.wdata   = X__W_intf.wdata;
@@ -135,22 +138,16 @@ module ALUTestSuite #(
     .*
   );
 
-  Tracer tracer ( clk, {
-    D_Istream.trace,
-    " | ",
-    dut.trace,
-    " | ",
-    W_Ostream.trace
-  } );
-
   t_x__w_msg msg_to_recv;
 
   task recv(
+    input logic    [p_addr_bits-1:0] pc,
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
     input logic    [p_data_bits-1:0] wdata,
     input logic                      wen
   );
+    msg_to_recv.pc      = pc;
     msg_to_recv.seq_num = seq_num;
     msg_to_recv.waddr   = waddr;
     msg_to_recv.wdata   = wdata;
@@ -158,6 +155,14 @@ module ALUTestSuite #(
 
     W_Ostream.recv(msg_to_recv);
   endtask
+
+  Tracer tracer ( clk, {
+    D_Istream.trace,
+    " | ",
+    dut.trace,
+    " | ",
+    W_Ostream.trace
+  } );
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -170,10 +175,10 @@ module ALUTestSuite #(
 
     fork
       //   pc  seq_num op1 op2 waddr uop
-      send('x, 0,      1,  2,  5'h1, OP_ADD);
+      send('0, 0,      1,  2,  5'h1, OP_ADD);
 
-      //   seq_num waddr wdata wen
-      recv(0,      5'h1, 3,    1);
+      //   pc  seq_num waddr wdata wen
+      recv('0, 0,      5'h1, 3,    1);
     join
 
     tracer.disable_trace();
@@ -190,21 +195,21 @@ module ALUTestSuite #(
 
     fork
       begin
-        //   pc   seq_num op1 op2 waddr uop
-        send('x,  1,      4,  3,  5'h1, OP_ADD);
-        send('x,  2,     -1,  1,  5'h4, OP_ADD);
-        send('x,  3,      4, -6,  5'h2, OP_ADD);
-        send('x,  4,      2,  0,  5'h5, OP_ADD);
-        send('x,  5,      0, -7,  5'h3, OP_ADD);
+        //   pc  seq_num op1 op2 waddr uop
+        send('0, 1,      4,  3,  5'h1, OP_ADD);
+        send('1, 2,     -1,  1,  5'h4, OP_ADD);
+        send('0, 3,      4, -6,  5'h2, OP_ADD);
+        send('1, 4,      2,  0,  5'h5, OP_ADD);
+        send('0, 5,      0, -7,  5'h3, OP_ADD);
       end
 
       begin
-        //   seq_num waddr wdata wen
-        recv(1,      5'h1,  7,   1);
-        recv(2,      5'h4,  0,   1);
-        recv(3,      5'h2, -2,   1);
-        recv(4,      5'h5,  2,   1);
-        recv(5,      5'h3, -7,   1);
+        //   pc  seq_num waddr wdata wen
+        recv('0, 1,      5'h1,  7,   1);
+        recv('1, 2,      5'h4,  0,   1);
+        recv('0, 3,      5'h2, -2,   1);
+        recv('1, 4,      5'h5,  2,   1);
+        recv('0, 5,      5'h3, -7,   1);
       end
     join
 

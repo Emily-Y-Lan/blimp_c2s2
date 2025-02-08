@@ -56,11 +56,18 @@ module WritebackBasicTestSuite #(
     .p_data_bits    (p_data_bits)
   ) complete_notif();
 
+  CommitNotif #(
+    .p_addr_bits    (p_addr_bits),
+    .p_data_bits    (p_data_bits),
+    .p_seq_num_bits (p_seq_num_bits)
+  ) commit_notif();
+
   WritebackBasic #(
     .p_num_pipes (p_num_pipes)
   ) dut (
     .Ex        (X__W_intfs),
     .complete  (complete_notif),
+    .commit    (commit_notif),
     .*
   );
 
@@ -69,6 +76,7 @@ module WritebackBasicTestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
+    logic    [p_addr_bits-1:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
     logic    [p_data_bits-1:0] wdata;
@@ -80,6 +88,7 @@ module WritebackBasicTestSuite #(
   genvar i;
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      assign X__W_intfs[i].pc      = x__w_msgs[i].pc;
       assign X__W_intfs[i].seq_num = x__w_msgs[i].seq_num;
       assign X__W_intfs[i].waddr   = x__w_msgs[i].waddr;
       assign X__W_intfs[i].wdata   = x__w_msgs[i].wdata;
@@ -122,11 +131,13 @@ module WritebackBasicTestSuite #(
     input int                        pipe_num,
     // verilator lint_on UNUSEDSIGNAL
 
+    input logic    [p_addr_bits-1:0] pc,
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
     input logic    [p_data_bits-1:0] wdata,
     input logic                      wen
   );
+    pipe_msg.pc      = pc;
     pipe_msg.seq_num = seq_num;
     pipe_msg.waddr   = waddr;
     pipe_msg.wdata   = wdata;
@@ -170,26 +181,72 @@ module WritebackBasicTestSuite #(
 
   TestSub #(
     t_complete_msg
-  ) CommitSub (
+  ) CompleteSub (
     .msg (complete_msg),
     .val (complete_notif.val),
     .*
   );
 
-  t_complete_msg msg_to_sub;
+  t_complete_msg msg_to_complete_sub;
 
-  task sub(
+  task complete_sub(
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
     input logic    [p_data_bits-1:0] wdata,
     input logic                      wen
   );
-    msg_to_sub.seq_num = seq_num;
-    msg_to_sub.waddr   = waddr;
-    msg_to_sub.wdata   = wdata;
-    msg_to_sub.wen     = wen;
+    msg_to_complete_sub.seq_num = seq_num;
+    msg_to_complete_sub.waddr   = waddr;
+    msg_to_complete_sub.wdata   = wdata;
+    msg_to_complete_sub.wen     = wen;
 
-    CommitSub.sub( msg_to_sub );
+    CompleteSub.sub( msg_to_complete_sub );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Commit Test Subscriber
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic    [p_addr_bits-1:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic    [p_data_bits-1:0] wdata;
+    logic                      wen;
+  } t_commit_msg;
+
+  t_commit_msg commit_msg;
+
+  assign commit_msg.pc      = commit_notif.pc;
+  assign commit_msg.seq_num = commit_notif.seq_num;
+  assign commit_msg.waddr   = commit_notif.waddr;
+  assign commit_msg.wdata   = commit_notif.wdata;
+  assign commit_msg.wen     = commit_notif.wen;
+
+  TestSub #(
+    t_commit_msg
+  ) CommitSub (
+    .msg (commit_msg),
+    .val (commit_notif.val),
+    .*
+  );
+
+  t_commit_msg msg_to_commit_sub;
+
+  task commit_sub(
+    input logic    [p_addr_bits-1:0] pc,
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic                [4:0] waddr,
+    input logic    [p_data_bits-1:0] wdata,
+    input logic                      wen
+  );
+    msg_to_commit_sub.pc      = pc;
+    msg_to_commit_sub.seq_num = seq_num;
+    msg_to_commit_sub.waddr   = waddr;
+    msg_to_commit_sub.wdata   = wdata;
+    msg_to_commit_sub.wen     = wen;
+
+    CommitSub.sub( msg_to_commit_sub );
   endtask
 
   //----------------------------------------------------------------------
@@ -201,6 +258,8 @@ module WritebackBasicTestSuite #(
     " | ",
     dut.trace,
     " | ",
+    CompleteSub.trace,
+    " - ",
     CommitSub.trace
   } );
 
@@ -215,15 +274,21 @@ module WritebackBasicTestSuite #(
 
     fork
       begin
-        //   pipe seq_num addr  data          wen
-        send(0,   0,      5'h1, 32'hdeadbeef, 1'b1);
-        send(0,   1,      5'h2, 32'hcafecafe, 1'b1);
+        //   pipe pc  seq_num addr  data          wen
+        send(0,   '0, 0,      5'h1, 32'hdeadbeef, 1'b1);
+        send(0,   '1, 1,      5'h2, 32'hcafecafe, 1'b1);
       end
 
       begin
-        //  seq_num addr  data          wen
-        sub(0,      5'h1, 32'hdeadbeef, 1'b1);
-        sub(1,      5'h2, 32'hcafecafe, 1'b1);
+        //           seq_num addr  data          wen
+        complete_sub(0,      5'h1, 32'hdeadbeef, 1'b1);
+        complete_sub(1,      5'h2, 32'hcafecafe, 1'b1);
+      end
+
+      begin
+        //         pc  seq_num addr  data          wen
+        commit_sub('0, 0,      5'h1, 32'hdeadbeef, 1'b1);
+        commit_sub('1, 1,      5'h2, 32'hcafecafe, 1'b1);
       end
     join
 

@@ -12,8 +12,8 @@
 
 interface CompleteNotif
 #(
-  parameter p_seq_num_bits = 5,
-  parameter p_data_bits    = 32
+  parameter p_data_bits    = 32,
+  parameter p_seq_num_bits = 5
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

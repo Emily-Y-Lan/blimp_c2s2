@@ -51,6 +51,7 @@ module MultiplierTestSuite #(
   ) D__X_intf();
 
   X__WIntf #(
+    .p_addr_bits    (p_addr_bits),
     .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intf();
@@ -115,6 +116,7 @@ module MultiplierTestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
+    logic    [p_addr_bits-1:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
     logic    [p_data_bits-1:0] wdata;
@@ -123,6 +125,7 @@ module MultiplierTestSuite #(
 
   t_x__w_msg x__w_msg;
 
+  assign x__w_msg.pc      = X__W_intf.pc;
   assign x__w_msg.seq_num = X__W_intf.seq_num;
   assign x__w_msg.waddr   = X__W_intf.waddr;
   assign x__w_msg.wdata   = X__W_intf.wdata;
@@ -138,11 +141,13 @@ module MultiplierTestSuite #(
   t_x__w_msg msg_to_recv;
 
   task recv(
+    input logic    [p_addr_bits-1:0] pc,
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
     input logic    [p_data_bits-1:0] wdata,
     input logic                      wen
   );
+    msg_to_recv.pc      = pc;
     msg_to_recv.seq_num = seq_num;
     msg_to_recv.waddr   = waddr;
     msg_to_recv.wdata   = wdata;
@@ -170,10 +175,10 @@ module MultiplierTestSuite #(
 
     fork
       //   pc  seq_num op1 op2 waddr uop
-      send('x, 0,      1,  2,  5'h1, OP_MUL);
+      send('0, 0,      1,  2,  5'h1, OP_MUL);
 
-      //   seq_num waddr wdata wen
-      recv(0,      5'h1, 2,    1);
+      //   pc  seq_num waddr wdata wen
+      recv('0, 0,      5'h1, 2,    1);
     join
 
     tracer.disable_trace();
@@ -191,16 +196,16 @@ module MultiplierTestSuite #(
     fork
       begin
         //   pc  seq_num op1                       op2  waddr uop
-        send('x, 1,                             4,  3,  5'h1, OP_MUL);
-        send('x, 2,                            12, 12,  5'h4, OP_MUL);
-        send('x, 3,      p_data_bits'('h80000000),  2,  5'h2, OP_MUL);
+        send('0, 1,                             4,  3,  5'h1, OP_MUL);
+        send('1, 2,                            12, 12,  5'h4, OP_MUL);
+        send('0, 3,      p_data_bits'('h80000000),  2,  5'h2, OP_MUL);
       end
 
       begin
-        //   seq_num waddr wdata wen
-        recv(1,      5'h1,  12,  1);
-        recv(2,      5'h4, 144,  1);
-        recv(3,      5'h2,   0,  1);
+        //   pc  seq_num waddr wdata wen
+        recv('0, 1,      5'h1,  12,  1);
+        recv('1, 2,      5'h4, 144,  1);
+        recv('0, 3,      5'h2,   0,  1);
       end
     join
 
@@ -219,16 +224,16 @@ module MultiplierTestSuite #(
     fork
       begin
         //   pc  seq_num op1                       op2  waddr uop   
-        send('x, 1,                             4,  -3, 5'h1, OP_MUL);
-        send('x, 0,                            12, -12, 5'h4, OP_MUL);
-        send('x, 1,      p_data_bits'('h80000000),  -2, 5'h2, OP_MUL);
+        send('0, 1,                             4,  -3, 5'h1, OP_MUL);
+        send('1, 0,                            12, -12, 5'h4, OP_MUL);
+        send('0, 1,      p_data_bits'('h80000000),  -2, 5'h2, OP_MUL);
       end
 
       begin
-        //   seq_num waddr wdata wen
-        recv(1,      5'h1,  -12, 1);
-        recv(0,      5'h4, -144, 1);
-        recv(1,      5'h2,    0, 1);
+        //   pc  seq_num waddr wdata wen
+        recv('0, 1,      5'h1,  -12, 1);
+        recv('1, 0,      5'h4, -144, 1);
+        recv('0, 1,      5'h2,    0, 1);
       end
     join
 
@@ -247,14 +252,14 @@ module MultiplierTestSuite #(
     fork
       begin
         //   pc  seq_num op1  op2 waddr uop   
-        send('x, 2,       -4,  3, 5'h1, OP_MUL);
-        send('x, 2,      -12, 12, 5'h4, OP_MUL);
+        send('0, 2,       -4,  3, 5'h1, OP_MUL);
+        send('1, 2,      -12, 12, 5'h4, OP_MUL);
       end
 
       begin
-        //   seq_num waddr wdata wen
-        recv(2,      5'h1,  -12, 1 );
-        recv(2,      5'h4, -144, 1 );
+        //   pc  seq_num waddr wdata wen
+        recv('0, 2,      5'h1,  -12, 1 );
+        recv('1, 2,      5'h4, -144, 1 );
       end
     join
 
@@ -273,14 +278,14 @@ module MultiplierTestSuite #(
     fork
       begin
         //   pc  seq_num op1  op2  waddr uop    
-        send('x, 0,      -4,  -3, 5'h1, OP_MUL);
-        send('x, 0,     -12, -12, 5'h4, OP_MUL);
+        send('1, 0,      -4,  -3, 5'h1, OP_MUL);
+        send('0, 0,     -12, -12, 5'h4, OP_MUL);
       end
 
       begin
-        //   seq_num waddr wdata wen
-        recv(0,      5'h1,  12,  1 );
-        recv(0,      5'h4, 144,  1 );
+        //   pc  seq_num waddr wdata wen
+        recv('1, 0,      5'h1,  12,  1 );
+        recv('0, 0,      5'h4, 144,  1 );
       end
     join
 
@@ -299,16 +304,16 @@ module MultiplierTestSuite #(
     fork
       begin
         //   pc  seq_num op1 op2 waddr uop
-        send('x, 3,      4,   0, 5'h1, OP_MUL);
-        send('x, 2,      0,  12, 5'h4, OP_MUL);
-        send('x, 1,      0,   0, 5'h2, OP_MUL);
+        send('1, 3,      4,   0, 5'h1, OP_MUL);
+        send('0, 2,      0,  12, 5'h4, OP_MUL);
+        send('1, 1,      0,   0, 5'h2, OP_MUL);
       end
 
       begin
-        //   seq_num waddr wdata wen
-        recv(3,      5'h1, 0,    1 );
-        recv(2,      5'h4, 0,    1 );
-        recv(1,      5'h2, 0,    1 );
+        //   pc  seq_num waddr wdata wen
+        recv('1, 3,      5'h1, 0,    1 );
+        recv('0, 2,      5'h4, 0,    1 );
+        recv('1, 1,      5'h2, 0,    1 );
       end
     join
 
@@ -319,6 +324,7 @@ module MultiplierTestSuite #(
   // test_case_7_random
   //----------------------------------------------------------------------
 
+  logic    [p_addr_bits-1:0] rand_pc;
   logic [p_seq_num_bits-1:0] rand_seq_num;
   logic    [p_data_bits-1:0] rand_op1, rand_op2, exp_out;
   logic                [4:0] rand_waddr;
@@ -329,6 +335,7 @@ module MultiplierTestSuite #(
       tracer.enable_trace();
 
     for( int i = 0; i < 20; i = i + 1 ) begin
+      rand_pc      = p_addr_bits'($urandom());
       rand_seq_num = p_seq_num_bits'($urandom());
       rand_op1     = p_data_bits'($urandom());
       rand_op2     = p_data_bits'($urandom());
@@ -336,8 +343,8 @@ module MultiplierTestSuite #(
       exp_out      = rand_op1 * rand_op2;
 
       fork
-        send('x, rand_seq_num, rand_op1, rand_op2, rand_waddr, OP_MUL);
-        recv(rand_seq_num, rand_waddr, exp_out, 1);
+        send(rand_pc, rand_seq_num, rand_op1, rand_op2, rand_waddr, OP_MUL);
+        recv(rand_pc, rand_seq_num, rand_waddr, exp_out, 1);
       join
     end
 

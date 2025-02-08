@@ -39,10 +39,11 @@ module Multiplier (
 
   typedef struct packed {
     logic                      val;
+    logic    [p_addr_bits-1:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
-    logic [p_data_bits-1:0]    op1;
-    logic [p_data_bits-1:0]    op2;
-    logic             [4:0]    waddr;
+    logic    [p_data_bits-1:0] op1;
+    logic    [p_data_bits-1:0] op2;
+    logic                [4:0] waddr;
     rv_uop                     uop;
   } D_input;
 
@@ -57,6 +58,7 @@ module Multiplier (
     if ( rst )
       D_reg <= '{ 
         val:     1'b0, 
+        pc:      'x,
         seq_num: 'x,
         op1:     'x, 
         op2:     'x,
@@ -74,6 +76,7 @@ module Multiplier (
     if ( D_xfer )
       D_reg_next = '{ 
         val:     1'b1, 
+        pc:      D.pc,
         seq_num: D.seq_num,
         op1:     D.op1, 
         op2:     D.op2,
@@ -83,6 +86,7 @@ module Multiplier (
     else if ( W_xfer )
       D_reg_next = '{ 
         val:     1'b0, 
+        pc:      'x,
         seq_num: 'x,
         op1:     'x, 
         op2:     'x,
@@ -120,9 +124,7 @@ module Multiplier (
   assign D.rdy = W.rdy | (!D_reg.val);
   assign W.val = D_reg.val;
 
-  logic [p_addr_bits-1:0] unused_pc;
-  assign unused_pc = D.pc;
-
+  assign W.pc      = D_reg.pc;
   assign W.wen     = 1'b1;
   assign W.seq_num = D_reg.seq_num;
   assign W.waddr   = D_reg.waddr;

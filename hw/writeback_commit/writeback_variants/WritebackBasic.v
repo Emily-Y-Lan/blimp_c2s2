@@ -9,6 +9,7 @@
 
 `include "hw/common/RRArb.v"
 `include "intf/CompleteNotif.v"
+`include "intf/CommitNotif.v"
 `include "intf/X__WIntf.v"
 
 module WritebackBasic #(
@@ -27,9 +28,16 @@ module WritebackBasic #(
   // Completion Interface
   //----------------------------------------------------------------------
 
-  CompleteNotif.pub complete
+  CompleteNotif.pub complete,
+
+  //----------------------------------------------------------------------
+  // Commit Interface
+  //----------------------------------------------------------------------
+
+  CommitNotif.pub   commit
 );
 
+  localparam p_addr_bits    = commit.p_addr_bits;
   localparam p_data_bits    = complete.p_data_bits;
   localparam p_seq_num_bits = complete.p_seq_num_bits;
 
@@ -37,6 +45,7 @@ module WritebackBasic #(
   // Select which pipe to get from
   //----------------------------------------------------------------------
 
+  logic    [p_addr_bits-1:0] Ex_pc      [p_num_pipes-1:0];
   logic [p_seq_num_bits-1:0] Ex_seq_num [p_num_pipes-1:0];
   logic                [4:0] Ex_waddr   [p_num_pipes-1:0];
   logic    [p_data_bits-1:0] Ex_wdata   [p_num_pipes-1:0];
@@ -47,6 +56,7 @@ module WritebackBasic #(
   genvar i;
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      assign Ex_pc[i]      = Ex[i].pc;
       assign Ex_seq_num[i] = Ex[i].seq_num;
       assign Ex_waddr[i]   = Ex[i].waddr;
       assign Ex_wdata[i]   = Ex[i].wdata;
@@ -74,6 +84,7 @@ module WritebackBasic #(
     .gnt (Ex_gnt_packed)
   );
 
+  logic    [p_addr_bits-1:0] Ex_pc_masked      [p_num_pipes-1:0];
   logic [p_seq_num_bits-1:0] Ex_seq_num_masked [p_num_pipes-1:0];
   logic                [4:0] Ex_waddr_masked   [p_num_pipes-1:0];
   logic    [p_data_bits-1:0] Ex_wdata_masked   [p_num_pipes-1:0];
@@ -82,6 +93,7 @@ module WritebackBasic #(
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      assign Ex_pc_masked[i]      = Ex_pc[i]      & {p_addr_bits{Ex_gnt[i]}};
       assign Ex_seq_num_masked[i] = Ex_seq_num[i] & {p_seq_num_bits{Ex_gnt[i]}};
       assign Ex_waddr_masked[i]   = Ex_waddr[i]   & {5{Ex_gnt[i]}};
       assign Ex_wdata_masked[i]   = Ex_wdata[i]   & {p_data_bits{Ex_gnt[i]}};
@@ -90,12 +102,14 @@ module WritebackBasic #(
     end
   endgenerate
 
+  logic    [p_addr_bits-1:0] Ex_pc_sel;
   logic [p_seq_num_bits-1:0] Ex_seq_num_sel;
   logic             [4:0]    Ex_waddr_sel;
   logic [p_data_bits-1:0]    Ex_wdata_sel;
   logic                      Ex_wen_sel;
   logic                      Ex_val_sel;
 
+  assign Ex_pc_sel      = Ex_pc_masked.or();
   assign Ex_seq_num_sel = Ex_seq_num_masked.or();
   assign Ex_waddr_sel   = Ex_waddr_masked.or();
   assign Ex_wdata_sel   = Ex_wdata_masked.or();
@@ -115,6 +129,7 @@ module WritebackBasic #(
 
   typedef struct packed {
     logic                      val;
+    logic    [p_addr_bits-1:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
     logic    [p_data_bits-1:0] wdata;
@@ -126,7 +141,14 @@ module WritebackBasic #(
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      X_reg <= '{ val: 1'b0, seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
+      X_reg <= '{ 
+        val: 1'b0, 
+        pc: 'x,
+        seq_num: 'x, 
+        waddr: 'x, 
+        wdata: 'x, 
+        wen: 1'b0
+      };
     else
       X_reg <= X_reg_next;
   end
@@ -135,13 +157,21 @@ module WritebackBasic #(
     if ( Ex_val_sel )
       X_reg_next = '{
         val:     1'b1,
+        pc:      Ex_pc_sel,
         seq_num: Ex_seq_num_sel,
         waddr:   Ex_waddr_sel,
         wdata:   Ex_wdata_sel,
         wen:     Ex_wen_sel
       };
     else
-      X_reg_next = '{ val: 1'b0, seq_num: 'x, waddr: 'x, wdata: 'x, wen: 1'b0 };
+      X_reg_next = '{ 
+        val: 1'b0, 
+        pc: 'x,
+        seq_num: 'x, 
+        waddr: 'x, 
+        wdata: 'x, 
+        wen: 1'b0
+      };
   end
 
   assign complete.val     = X_reg.val;
@@ -149,6 +179,13 @@ module WritebackBasic #(
   assign complete.waddr   = X_reg.waddr;
   assign complete.wdata   = X_reg.wdata;
   assign complete.wen     = X_reg.wen;
+
+  assign commit.val     = X_reg.val;
+  assign commit.pc      = X_reg.pc;
+  assign commit.seq_num = X_reg.seq_num;
+  assign commit.waddr   = X_reg.waddr;
+  assign commit.wdata   = X_reg.wdata;
+  assign commit.wen     = X_reg.wen;
 
   //----------------------------------------------------------------------
   // Linetracing

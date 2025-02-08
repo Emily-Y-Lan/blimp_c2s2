@@ -12,6 +12,7 @@
 
 interface X__WIntf
 #(
+  parameter p_addr_bits    = 32,
   parameter p_data_bits    = 32,
   parameter p_seq_num_bits = 5
 );
@@ -20,6 +21,7 @@ interface X__WIntf
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  logic    [p_addr_bits-1:0] pc;
   logic [p_seq_num_bits-1:0] seq_num;
   logic             [4:0]    waddr;
   logic [p_data_bits-1:0]    wdata;
@@ -32,6 +34,7 @@ interface X__WIntf
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   modport X_intf (
+    output pc,
     output seq_num,
     output waddr,
     output wdata,
@@ -41,6 +44,7 @@ interface X__WIntf
   );
 
   modport W_intf (
+    input  pc,
     input  seq_num,
     input  waddr,
     input  wdata,

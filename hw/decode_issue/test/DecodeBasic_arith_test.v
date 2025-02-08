@@ -392,7 +392,7 @@ module DecodeBasicTestSuite #(
     fork
       begin
         //   addr            inst
-        send(p_rst_addr + 0, assemble32("addi x3, x1, 10" ));
+        send(p_rst_addr + 0, assemble32("addi x3, x1, 10"));
         send(p_rst_addr + 4, assemble32("addi x2, x3, 2047"));
       end
 
