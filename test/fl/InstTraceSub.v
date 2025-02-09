@@ -92,8 +92,14 @@ module InstTraceSub #(
               ceil_div_4(5)           + 1 + // waddr
               ceil_div_4(p_data_bits);      // wdata
 
-    if( val & waiting )
-      trace = $sformatf("%h:%b:%h:%h", pc, wen, waddr, wdata);
+    if( val & waiting ) begin
+      if( wen )
+        trace = $sformatf("%h:%b:%h:%h", pc, wen, waddr, wdata);
+      else
+        trace = $sformatf("%h:%b:%s:%s", pc, wen, 
+                          {ceil_div_4(5){"x"}},
+                          {ceil_div_4(p_data_bits){"x"}});
+    end
     else if( val )
       trace = {{(str_len-1){" "}}, "X"};
     else if( waiting )
