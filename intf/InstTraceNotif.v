@@ -1,44 +1,44 @@
 //========================================================================
-// StreamIntf.v
+// InstTraceNotif.v
 //========================================================================
-// A parametrized interface for latency-insensitive streaming
+// The notification interface for checking instruction traces
 
-`ifndef INTF_STREAM_INTF_V
-`define INTF_STREAM_INTF_V
+`ifndef INTF_INST_TRACE_NOTIF_V
+`define INTF_INST_TRACE_NOTIF_V
 
 //------------------------------------------------------------------------
-// Stream Interface
+// InstTraceNotif
 //------------------------------------------------------------------------
 
-interface StreamIntf
+interface InstTraceNotif
 #(
-  parameter type t_msg  = logic [31:0]
+  parameter p_addr_bits    = 32,
+  parameter p_data_bits    = 32
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic  val;
-  logic  rdy;
-  t_msg  msg;
+  logic    [p_addr_bits-1:0] pc;
+  logic                [4:0] waddr;
+  logic    [p_data_bits-1:0] wdata;
+  logic                      wen;
+  logic                      val;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // Modports
+  // Module-facing Ports
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  modport istream (
-    output val,
-    input  rdy,
-    output msg
-  );
-
-  modport ostream (
-    input  val,
-    output rdy,
-    input  msg
+  // Publish
+  modport pub (
+    output pc,
+    output waddr,
+    output wdata,
+    output wen,
+    output val
   );
 
 endinterface
 
-`endif // INTF_STREAM_INTF_V
+`endif // INTF_INST_TRACE_NOTIF_V

@@ -56,7 +56,11 @@ module ALUTestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intf();
 
-  ALU dut (
+  ALU #(
+    .p_addr_bits    (p_addr_bits),
+    .p_data_bits    (p_data_bits),
+    .p_seq_num_bits (p_seq_num_bits)
+  ) dut (
     .D (D__X_intf),
     .W (X__W_intf),
     .*

@@ -105,10 +105,13 @@ module TestUtils
   // which test cases to run.
 
   int n = 0;
+  int c = 0;
   initial begin
 
     if ( !$value$plusargs( "test-case=%d", n ) )
       n = 0;
+    if ( !$value$plusargs( "test-sub-case=%d", c ) )
+      c = 0;
 
   end
 

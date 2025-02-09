@@ -12,7 +12,11 @@
 
 import UArch::*;
 
-module Multiplier (
+module Multiplier #(
+  parameter p_addr_bits    = 32,
+  parameter p_data_bits    = 32,
+  parameter p_seq_num_bits = 5
+)(
   input  logic clk,
   input  logic rst,
 
@@ -28,10 +32,6 @@ module Multiplier (
 
   X__WIntf.X_intf W
 );
-
-  localparam p_addr_bits    = D.p_addr_bits;
-  localparam p_data_bits    = D.p_data_bits;
-  localparam p_seq_num_bits = D.p_seq_num_bits;
   
   //----------------------------------------------------------------------
   // Register inputs

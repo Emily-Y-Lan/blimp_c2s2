@@ -106,7 +106,7 @@ uint32_t imm_i_mask( std::string imm )
 {
   int imm_val = get_imm_int( imm );
 
-  if ( ( imm_val > 2047 ) || ( imm_val < -2048 ) ) {
+  if ( imm_val > 0xfff ) {
     std::cout << "Invalid I-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid I-immediate: " +
                                  std::to_string( imm_val ) );
@@ -122,7 +122,7 @@ uint32_t imm_s_mask( std::string imm )
 {
   int imm_val = get_imm_int( imm );
 
-  if ( ( imm_val > 2047 ) || ( imm_val < -2048 ) ) {
+  if ( imm_val > 0xfff ) {
     std::cout << "Invalid S-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid S-immediate: " +
                                  std::to_string( imm_val ) );
@@ -139,7 +139,7 @@ uint32_t imm_b_mask( std::string imm )
 {
   int imm_val = get_imm_int( imm );
 
-  if ( ( imm_val > 4095 ) || ( imm_val < -4096 ) ) {
+  if ( imm_val > 0x1fff ) {
     std::cout << "Invalid B-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid B-immediate: " +
                                  std::to_string( imm_val ) );
@@ -179,7 +179,7 @@ uint32_t imm_j_mask( std::string imm )
 {
   int imm_val = get_imm_int( imm );
 
-  if ( ( imm_val < 524288 ) || ( imm_val > -524288 ) ) {
+  if ( imm_val > 0xfffff ) {
     std::cout << "Invalid J-immediate: " << imm_val << std::endl;
     throw std::invalid_argument( "Invalid J-immediate: " +
                                  std::to_string( imm_val ) );

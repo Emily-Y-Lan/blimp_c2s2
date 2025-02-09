@@ -178,14 +178,14 @@ module WritebackBasic #(
   assign complete.seq_num = X_reg.seq_num;
   assign complete.waddr   = X_reg.waddr;
   assign complete.wdata   = X_reg.wdata;
-  assign complete.wen     = X_reg.wen;
+  assign complete.wen     = ( X_reg.waddr == '0 ) ? 0 : X_reg.wen;
 
   assign commit.val     = X_reg.val;
   assign commit.pc      = X_reg.pc;
   assign commit.seq_num = X_reg.seq_num;
   assign commit.waddr   = X_reg.waddr;
   assign commit.wdata   = X_reg.wdata;
-  assign commit.wen     = X_reg.wen;
+  assign commit.wen     = ( X_reg.waddr == '0 ) ? 0 : X_reg.wen;
 
   //----------------------------------------------------------------------
   // Linetracing
