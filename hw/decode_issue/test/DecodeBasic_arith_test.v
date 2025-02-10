@@ -347,11 +347,52 @@ module DecodeBasicTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // test_case_2_add
+  // test_case_2_pending
   //----------------------------------------------------------------------
 
-  task test_case_2_add();
-    t.test_case_begin( "test_case_2_add" );
+  task test_case_2_pending();
+    t.test_case_begin( "test_case_2_pending" );
+    if( t.n != 0 )
+      tracer.enable_trace();
+
+    //   seq_num waddr wdata wen
+    pub( 'x,     1,    1,    1 );
+    pub( 'x,     3,    3,    1 );
+    pub( 'x,     5,    5,    1 );
+
+    fork
+      begin
+        //   addr             inst
+        send(p_rst_addr +  0, assemble32("add  x2, x0, x1"));
+        send(p_rst_addr +  4, assemble32("add  x4, x3, x2"));
+        send(p_rst_addr +  8, assemble32("add  x5, x5, x4"));
+        send(p_rst_addr + 12, assemble32("add  x5, x5, x5"));
+        send(p_rst_addr + 16, assemble32("add  x6, x5, x4"));
+      end
+
+      begin
+        //   pc                op1 op2  waddr uop
+        recv(p_rst_addr +  0,  0,   1,  2,    OP_ADD);
+        pub( 'x, 2, 1, 1 );
+        recv(p_rst_addr +  4,  3,   1,  4,    OP_ADD);
+        pub( 'x, 4, 4, 1 );
+        recv(p_rst_addr +  8,  5,   4,  5,    OP_ADD);
+        pub( 'x, 5, 9, 1 );
+        recv(p_rst_addr + 12,  9,   9,  5,    OP_ADD);
+        pub( 'x, 5, 18, 1 );
+        recv(p_rst_addr + 16, 18,   4,  6,    OP_ADD);
+      end
+    join
+
+    tracer.disable_trace();
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_3_add
+  //----------------------------------------------------------------------
+
+  task test_case_3_add();
+    t.test_case_begin( "test_case_3_add" );
     if( t.n != 0 )
       tracer.enable_trace();
     
@@ -378,11 +419,11 @@ module DecodeBasicTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // test_case_3_addi
+  // test_case_4_addi
   //----------------------------------------------------------------------
 
-  task test_case_3_addi();
-    t.test_case_begin( "test_case_3_addi" );
+  task test_case_4_addi();
+    t.test_case_begin( "test_case_4_addi" );
     if( t.n != 0 )
       tracer.enable_trace();
 
@@ -415,8 +456,9 @@ module DecodeBasicTestSuite #(
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 2)) test_case_2_add();
-    if ((t.n <= 0) || (t.n == 3)) test_case_3_addi();
+    if ((t.n <= 0) || (t.n == 2)) test_case_2_pending();
+    if ((t.n <= 0) || (t.n == 3)) test_case_3_add();
+    if ((t.n <= 0) || (t.n == 4)) test_case_4_addi();
 
   endtask
 endmodule
