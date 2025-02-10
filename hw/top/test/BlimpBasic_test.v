@@ -89,7 +89,7 @@ module BlimpBasicTestSuite #(
     input logic [p_addr_bits-1:0] addr,
     input string                  inst
   );
-    fl_mem.init_mem( p_rst_addr + addr, assemble32( inst ) );
+    fl_mem.init_mem( p_addr_bits'(p_rst_addr) + addr, assemble32( inst ) );
   endtask
 
   //----------------------------------------------------------------------
@@ -116,7 +116,7 @@ module BlimpBasicTestSuite #(
   );
 
     inst_trace_sub.check_trace(
-      p_rst_addr + pc,
+      p_addr_bits'(p_rst_addr) + pc,
       waddr,
       wdata,
       wen
@@ -136,6 +136,7 @@ module BlimpBasicTestSuite #(
   //----------------------------------------------------------------------
 
   `include "hw/top/test/test_cases/add_test_cases.v"
+  `include "hw/top/test/test_cases/mul_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -145,6 +146,7 @@ module BlimpBasicTestSuite #(
     t.test_suite_begin( suite_name );
 
     if ((t.n <= 0) || (t.n == 1)) run_add_tests(1);
+    if ((t.n <= 0) || (t.n == 2)) run_mul_tests(2);
 
   endtask
 endmodule
@@ -157,11 +159,11 @@ module BlimpBasic_test;
   BlimpBasicTestSuite #(1)                                        suite_1();
   BlimpBasicTestSuite #(2, 'h800, 32,  8, 32, 1, 1)               suite_2();
   BlimpBasicTestSuite #(3, 'h000, 16,  8, 32, 1, 1)               suite_3();
-  // BlimpBasicTestSuite #(4, 'h000, 32,  4, 32, 1, 1)               suite_4();
-  // BlimpBasicTestSuite #(4, 'h000, 32,  4,  8, 1, 1)               suite_5();
-  // BlimpBasicTestSuite #(5, 'h400,  8, 32, 16, 3, 1)               suite_6();
-  // BlimpBasicTestSuite #(6, 'h200, 64,  2,  4, 1, 3)               suite_7();
-  // BlimpBasicTestSuite #(7, 'h100, 16,  4, 64, 3, 3)               suite_8();
+  BlimpBasicTestSuite #(4, 'h000, 32,  4, 32, 1, 1)               suite_4();
+  BlimpBasicTestSuite #(4, 'h000, 32,  4,  8, 1, 1)               suite_5();
+  BlimpBasicTestSuite #(5, 'h400,  8, 32, 16, 3, 1)               suite_6();
+  BlimpBasicTestSuite #(6, 'h200, 64,  2,  4, 1, 3)               suite_7();
+  BlimpBasicTestSuite #(7, 'h100, 16,  4, 64, 3, 3)               suite_8();
 
   int s;
 
@@ -172,11 +174,11 @@ module BlimpBasic_test;
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
     if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
-    // if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
-    // if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
-    // if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
-    // if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
-    // if ((s <= 0) || (s == 8)) suite_8.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
+    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
+    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
+    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
+    if ((s <= 0) || (s == 8)) suite_8.run_test_suite();
 
     test_bench_end();
   end

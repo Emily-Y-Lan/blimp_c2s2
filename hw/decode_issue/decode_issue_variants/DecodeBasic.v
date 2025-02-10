@@ -62,6 +62,7 @@ module DecodeBasic #(
   F_input F_reg;
   F_input F_reg_next;
   logic   F_xfer;
+  logic   X_xfer;
 
   always_ff @( posedge clk ) begin
     if ( rst )
@@ -75,7 +76,7 @@ module DecodeBasic #(
 
     if ( F_xfer )
       F_reg_next = '{ val: 1'b1, inst: F.inst, pc: F.pc };
-    else if ( F.rdy ) // The receiver is ready
+    else if ( X_xfer )
       F_reg_next = '{ val: 1'b0, inst: 'x, pc: 'x };
     else
       F_reg_next = F_reg;
@@ -125,7 +126,7 @@ module DecodeBasic #(
     .wdata            (complete.wdata),
     .wen              (complete.wen & complete.val),
     .pending_set_addr (decoder_waddr),
-    .pending_set_val  (decoder_wen),
+    .pending_set_val  (decoder_wen & X_xfer),
     .pending          (pending)
   );
 
@@ -144,16 +145,14 @@ module DecodeBasic #(
   // Route the instruction (set val/rdy for pipes) based on uop
   //----------------------------------------------------------------------
 
-  logic X_rdy;
-
   InstRouter #(p_num_pipes, p_pipe_subsets) inst_router (
     .uop   (decoder_uop),
     .val   (F_reg.val & !stall_pending),
     .Ex    (Ex),
-    .rdy   (X_rdy)
+    .xfer  (X_xfer)
   );
 
-  assign F.rdy = X_rdy & !stall_pending;
+  assign F.rdy = (X_xfer & !stall_pending) | (!F_reg.val);
 
   //----------------------------------------------------------------------
   // Pass remaining signals to pipes

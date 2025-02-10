@@ -4,10 +4,10 @@
 // Adapted from Cornell's ECE 2300
 
 //------------------------------------------------------------------------
-// test_case_1_basic
+// test_case_add_1_basic
 //------------------------------------------------------------------------
 
-task test_case_1_basic(input int test_num);
+task test_case_add_1_basic(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_1_basic", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -28,10 +28,10 @@ task test_case_1_basic(input int test_num);
 endtask
 
 //------------------------------------------------------------------------
-// test_case_2_x0
+// test_case_add_2_x0
 //------------------------------------------------------------------------
 
-task test_case_2_x0(input int test_num);
+task test_case_add_2_x0(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_2_x0", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -61,10 +61,10 @@ task test_case_2_x0(input int test_num);
 endtask
 
 //------------------------------------------------------------------------
-// test_case_3_regs
+// test_case_add_3_regs
 //------------------------------------------------------------------------
 
-task test_case_3_regs(input int test_num);
+task test_case_add_3_regs(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_3_regs", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -134,10 +134,10 @@ task test_case_3_regs(input int test_num);
 endtask
 
 //------------------------------------------------------------------------
-// test_case_4_deps
+// test_case_add_4_deps
 //------------------------------------------------------------------------
 
-task test_case_4_deps(input int test_num);
+task test_case_add_4_deps(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_4_deps", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -162,10 +162,10 @@ task test_case_4_deps(input int test_num);
 endtask
 
 //------------------------------------------------------------------------
-// test_case_5_pos
+// test_case_add_5_pos
 //------------------------------------------------------------------------
 
-task test_case_5_pos(input int test_num);
+task test_case_add_5_pos(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_5_pos", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -214,10 +214,10 @@ task test_case_5_pos(input int test_num);
 endtask
 
 //------------------------------------------------------------------------
-// test_case_6_neg
+// test_case_add_6_neg
 //------------------------------------------------------------------------
 
-task test_case_6_neg(input int test_num);
+task test_case_add_6_neg(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_6_neg", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -266,10 +266,10 @@ task test_case_6_neg(input int test_num);
 endtask
 
 //------------------------------------------------------------------------
-// test_case_7_overflow
+// test_case_add_7_overflow
 //------------------------------------------------------------------------
 
-task test_case_7_overflow(input int test_num);
+task test_case_add_7_overflow(input int test_num);
   t.test_case_begin( $sformatf("test_case_%0d_add_7_overflow", test_num) );
   if( t.n != 0 )
       tracer.enable_trace();
@@ -294,11 +294,11 @@ endtask
 //------------------------------------------------------------------------
 
 task run_add_tests(input int test_num);
-  if ((t.c <= 0) || (t.c == 1)) test_case_1_basic   ( test_num );
-  if ((t.c <= 0) || (t.c == 2)) test_case_2_x0      ( test_num );
-  if ((t.c <= 0) || (t.c == 3)) test_case_3_regs    ( test_num );
-  if ((t.c <= 0) || (t.c == 4)) test_case_4_deps    ( test_num );
-  if ((t.c <= 0) || (t.c == 5)) test_case_5_pos     ( test_num );
-  if ((t.c <= 0) || (t.c == 6)) test_case_6_neg     ( test_num );
-  if ((t.c <= 0) || (t.c == 7)) test_case_7_overflow( test_num );
+  if ((t.c <= 0) || (t.c == 1)) test_case_add_1_basic   ( test_num );
+  if ((t.c <= 0) || (t.c == 2)) test_case_add_2_x0      ( test_num );
+  if ((t.c <= 0) || (t.c == 3)) test_case_add_3_regs    ( test_num );
+  if ((t.c <= 0) || (t.c == 4)) test_case_add_4_deps    ( test_num );
+  if ((t.c <= 0) || (t.c == 5)) test_case_add_5_pos     ( test_num );
+  if ((t.c <= 0) || (t.c == 6)) test_case_add_6_neg     ( test_num );
+  if ((t.c <= 0) || (t.c == 7)) test_case_add_7_overflow( test_num );
 endtask

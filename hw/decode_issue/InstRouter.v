@@ -59,7 +59,7 @@ module InstRouter #(
 ) (
   input rv_uop    uop,
   input  logic    val,
-  output logic    rdy,
+  output logic    xfer,
 
   D__XIntf.D_intf Ex [p_num_pipes-1:0]
 );
@@ -69,7 +69,7 @@ module InstRouter #(
   // verilator lint_on UNUSEDSIGNAL
   assign found[0] = 1'b0;
   
-  logic [p_num_pipes-1:0] rdy_vec;
+  logic [p_num_pipes-1:0] xfer_vec;
   
   genvar i;
   generate
@@ -83,11 +83,11 @@ module InstRouter #(
         .been_found    (found[i+1])
       );
 
-      assign rdy_vec[i] = Ex[i].val & Ex[i].rdy;
+      assign xfer_vec[i] = Ex[i].val & Ex[i].rdy;
     end
   endgenerate
 
-  assign rdy = (|rdy_vec) | !val;
+  assign xfer = (|xfer_vec);
 
 endmodule
 

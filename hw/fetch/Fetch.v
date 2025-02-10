@@ -45,7 +45,7 @@ module Fetch
   // Local Parameters
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   
-  localparam p_max_in_flight = 2 ** p_opaq_bits;
+  localparam logic [p_opaq_bits:0] p_max_in_flight = 2 ** p_opaq_bits;
   localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
@@ -92,7 +92,7 @@ module Fetch
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      curr_addr <= p_rst_addr;
+      curr_addr <= p_addr_bits'(p_rst_addr);
     // else if ( D.squash & !memreq_xfer )
     //   curr_addr <= D.branch_target;
     else if ( memreq_xfer )
