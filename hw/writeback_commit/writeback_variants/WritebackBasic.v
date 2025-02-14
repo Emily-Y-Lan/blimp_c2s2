@@ -174,11 +174,11 @@ module WritebackBasic #(
       };
   end
 
-  assign complete.val     = X_reg.val;
-  assign complete.seq_num = X_reg.seq_num;
-  assign complete.waddr   = X_reg.waddr;
-  assign complete.wdata   = X_reg.wdata;
-  assign complete.wen     = ( X_reg.waddr == '0 ) ? 0 : X_reg.wen;
+  assign complete.val     = Ex_val_sel;
+  assign complete.seq_num = Ex_seq_num_sel;
+  assign complete.waddr   = Ex_waddr_sel;
+  assign complete.wdata   = Ex_wdata_sel;
+  assign complete.wen     = ( Ex_waddr_sel == '0 ) ? 0 : Ex_wen_sel;
 
   assign commit.val     = X_reg.val;
   assign commit.pc      = X_reg.pc;
