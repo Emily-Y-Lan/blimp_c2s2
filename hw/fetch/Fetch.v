@@ -182,12 +182,9 @@ module Fetch
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-  
-  always_comb
+  function string trace();
     trace = $sformatf("(%h)", req_opaque);
+  endfunction
 `endif
 
 endmodule

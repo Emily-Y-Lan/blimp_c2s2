@@ -72,10 +72,6 @@ module TestOstream #(
   // Linetracing
   //----------------------------------------------------------------------
 
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-
   string test_trace;
   int trace_len;
   initial begin
@@ -83,8 +79,7 @@ module TestOstream #(
     trace_len = test_trace.len();
   end
 
-  // verilator lint_off BLKSEQ
-  always_comb begin
+  function string trace();
     if( val & rdy )
       trace = $sformatf("%x", msg);
     else if( rdy )
@@ -93,8 +88,7 @@ module TestOstream #(
       trace = {{(trace_len-1){" "}}, "#"};
     else
       trace = {{(trace_len-1){" "}}, "."};
-  end
-  // verilator lint_on BLKSEQ
+  endfunction
 
 endmodule
 

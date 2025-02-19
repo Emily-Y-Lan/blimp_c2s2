@@ -80,7 +80,7 @@ module FifoTestSuite #(
 
       #8;
 
-      if ( t.n != 0 ) begin
+      if ( t.verbose ) begin
         $display( "%3d: %b %b %b %p > %b %b %p", t.cycles,
                   dut_rst, dut_push, dut_pop, dut_wdata, 
                   dut_empty, dut_full, dut_rdata );
@@ -102,6 +102,7 @@ module FifoTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
+    if( !t.run_test ) return;
 
     //     rst push pop empty full wdata                 rdata
     check( 0,  0,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
@@ -109,6 +110,8 @@ module FifoTestSuite #(
     check( 0,  0,   0,  0,    0,   t_entry'('h00000000), t_entry'('hdeadbeef) );
     check( 0,  0,   1,  0,    0,   t_entry'('h00000000), t_entry'('hdeadbeef) );
     check( 0,  0,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -117,6 +120,7 @@ module FifoTestSuite #(
 
   task test_case_2_full();
     t.test_case_begin( "test_case_2_full" );
+    if( !t.run_test ) return;
 
     //     rst push pop empty full wdata                 rdata
     check( 0,  1,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
@@ -135,6 +139,8 @@ module FifoTestSuite #(
 
     //     rst push pop empty full wdata         rdata
     check( 0,  0,   0,  1,    0,   t_entry'('x), t_entry'('h00000000) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -152,6 +158,7 @@ module FifoTestSuite #(
 
   task test_case_3_random();
     t.test_case_begin( "test_case_3_random" );
+    if( !t.run_test ) return;
 
     // Push once, to avoid having an empty queue (rdata undetermined)
     // rand_wdata = t_entry'($urandom(t.seed));
@@ -176,6 +183,8 @@ module FifoTestSuite #(
       if( rand_push ) fl_queue.push_back( rand_wdata );
       if( rand_pop  ) fl_queue.delete(0);
     end
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -185,9 +194,9 @@ module FifoTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 2)) test_case_2_full();
-    if ((t.n <= 0) || (t.n == 3)) test_case_3_random();
+    test_case_1_basic();
+    test_case_2_full();
+    test_case_3_random();
 
   endtask
 endmodule

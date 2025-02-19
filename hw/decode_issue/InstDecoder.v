@@ -1,10 +1,10 @@
 //========================================================================
-// DecoderRV32.v
+// InstDecoder.v
 //========================================================================
 // A parametrized decoder to linearize opcodes
 
-`ifndef HW_DECODE_DECODER_VARIANTS_DECODERRV32_V
-`define HW_DECODE_DECODER_VARIANTS_DECODERRV32_V
+`ifndef HW_DECODE_ISSUE_INSTDECODER_V
+`define HW_DECODE_ISSUE_INSTDECODER_V
 
 `include "defs/ISA.v"
 `include "defs/UArch.v"
@@ -12,7 +12,7 @@
 import ISA::*;
 import UArch::*;
 
-module DecoderRV32 #(
+module InstDecoder #(
   parameter p_isa_subset = p_tinyrv1
 ) (
   input  logic [31:0] inst,
@@ -100,4 +100,4 @@ module DecoderRV32 #(
 
 endmodule
 
-`endif // HW_DECODE_DECODER_VARIANTS_DECODERRV32_V
+`endif // HW_DECODE_ISSUE_INSTDECODER_V

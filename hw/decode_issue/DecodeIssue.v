@@ -1,5 +1,5 @@
 //========================================================================
-// DecodeBasic.v
+// DecodeIssue.v
 //========================================================================
 // A basic in-order, single-issue decoder that implements TinyRV1
 
@@ -7,7 +7,7 @@
 `define HW_DECODE_DECODE_VARIANTS_BASIC_V
 
 `include "defs/ISA.v"
-`include "hw/decode_issue/Decoder.v"
+`include "hw/decode_issue/InstDecoder.v"
 `include "hw/decode_issue/ImmGen.v"
 `include "hw/decode_issue/InstRouter.v"
 `include "hw/decode_issue/Regfile.v"
@@ -18,7 +18,7 @@
 
 import ISA::*;
 
-module DecodeBasic #(
+module DecodeIssue #(
   parameter p_isa_subset                               = p_tinyrv1,
   parameter p_num_pipes                                = 1,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
@@ -97,9 +97,8 @@ module DecodeBasic #(
   logic       decoder_wen;
   // verilator lint_on UNUSEDSIGNAL
   
-  Decoder #(
-    .p_isa_subset (p_isa_subset),
-    .p_inst_bits  (p_inst_bits)
+  InstDecoder #(
+    .p_isa_subset (p_isa_subset)
   ) decoder (
     .inst    (F_reg.inst),
     .uop     (decoder_uop),

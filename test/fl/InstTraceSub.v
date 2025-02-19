@@ -76,16 +76,11 @@ module InstTraceSub #(
   // Linetracing
   //----------------------------------------------------------------------
 
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-
   function int ceil_div_4( int val );
     return (val / 4) + (val % 4);
   endfunction
 
-  // verilator lint_off BLKSEQ
-  always_comb begin
+  function string trace();
     int str_len;
     str_len = ceil_div_4(p_addr_bits) + 1 + // pc
               1                       + 1 + // wen
@@ -106,8 +101,7 @@ module InstTraceSub #(
       trace = {(str_len){" "}};
     else
       trace = {{(str_len-1){" "}}, "."};
-  end
-  // verilator lint_on BLKSEQ
+  endfunction
 
 endmodule
 

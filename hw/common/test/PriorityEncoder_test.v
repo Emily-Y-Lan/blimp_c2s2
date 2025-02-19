@@ -60,7 +60,7 @@ module PriorityEncoderTestSuite #(
 
       #8;
 
-      if ( t.n != 0 ) begin
+      if ( t.verbose ) begin
         $display( "%3d: %b > %b", t.cycles,
                   dut_in, dut_out );
       end
@@ -78,12 +78,15 @@ module PriorityEncoderTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
+    if( !t.run_test ) return;
 
     //     in                    out
     check( p_width'('b0000), p_width'('b0000) );
     check( p_width'('b0001), p_width'('b0001) );
     check( p_width'('b0010), p_width'('b0010) );
     check( p_width'('b0011), p_width'('b0001) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -92,9 +95,12 @@ module PriorityEncoderTestSuite #(
 
   task test_case_2_one_hot();
     t.test_case_begin( "test_case_2_one_hot" );
+    if( !t.run_test ) return;
 
     for( int i = 0; i < p_width; i = i + 1 )
       check( p_width'(1 << i), p_width'(1 << i) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -103,6 +109,7 @@ module PriorityEncoderTestSuite #(
 
   task test_case_3_multi_bit();
     t.test_case_begin( "test_case_3_multi_bit" );
+    if( !t.run_test ) return;
 
     check( p_width'('b0011), p_width'('b0001) );
     check( p_width'('b0111), p_width'('b0001) );
@@ -110,6 +117,8 @@ module PriorityEncoderTestSuite #(
     check( p_width'('b1110), p_width'('b0010) );
     check( p_width'('b1100), p_width'('b0100) );
     check( p_width'('b1000), p_width'('b1000) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -121,6 +130,7 @@ module PriorityEncoderTestSuite #(
 
   task test_case_4_random();
     t.test_case_begin( "test_case_4_random" );
+    if( !t.run_test ) return;
 
     for( int i = 0; i < 20; i = i + 1 ) begin
       rand_in = p_width'( $urandom() );
@@ -139,6 +149,8 @@ module PriorityEncoderTestSuite #(
       check( rand_in, exp_out );
 
     end
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -148,10 +160,10 @@ module PriorityEncoderTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 2)) test_case_2_one_hot();
-    if ((t.n <= 0) || (t.n == 3)) test_case_3_multi_bit();
-    if ((t.n <= 0) || (t.n == 4)) test_case_4_random();
+    test_case_1_basic();
+    test_case_2_one_hot();
+    test_case_3_multi_bit();
+    test_case_4_random();
 
   endtask
 endmodule

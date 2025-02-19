@@ -47,10 +47,6 @@ module TestPub #(
   // Linetracing
   //----------------------------------------------------------------------
 
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-
   string test_trace;
   int trace_len;
   initial begin
@@ -58,14 +54,12 @@ module TestPub #(
     trace_len = test_trace.len();
   end
 
-  // verilator lint_off BLKSEQ
-  always_comb begin
+  function string trace();
     if( val )
       trace = $sformatf("%x", msg);
     else
       trace = {(trace_len){" "}};
-  end
-  // verilator lint_on BLKSEQ
+  endfunction
 
 endmodule
 

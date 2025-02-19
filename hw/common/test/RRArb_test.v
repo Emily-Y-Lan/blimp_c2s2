@@ -62,7 +62,7 @@ module RRArbTestSuite #(
 
       #8;
 
-      if ( t.n != 0 ) begin
+      if ( t.verbose ) begin
         $display( "%3d: %b > %b", t.cycles,
                   dut_req, dut_gnt );
       end
@@ -80,6 +80,7 @@ module RRArbTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
+    if( !t.run_test ) return;
 
     //     in                    out
     check( p_width'('b0000), p_width'('b0000) );
@@ -88,6 +89,8 @@ module RRArbTestSuite #(
     check( p_width'('b0011), p_width'('b0001) );
     if( p_width > 1 )
       check( p_width'('b0011), p_width'('b0010) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -96,6 +99,7 @@ module RRArbTestSuite #(
 
   task test_case_2_no_grant();
     t.test_case_begin( "test_case_2_no_grant" );
+    if( !t.run_test ) return;
 
     //     in                    out
     check( p_width'('b0000), p_width'('b0000) );
@@ -104,6 +108,8 @@ module RRArbTestSuite #(
     check( p_width'('b0001), p_width'('b0001) );
     check( p_width'('b0000), p_width'('b0000) );
     check( p_width'('b0000), p_width'('b0000) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -112,6 +118,7 @@ module RRArbTestSuite #(
 
   task test_case_3_oscillate();
     t.test_case_begin( "test_case_3_oscillate" );
+    if( !t.run_test ) return;
 
     //     in                    out
     check( p_width'('b0000), p_width'('b0000) );
@@ -138,6 +145,8 @@ module RRArbTestSuite #(
 
     check( p_width'('b1000), p_width'('b1000) );
     check( p_width'('b1000), p_width'('b1000) );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -150,6 +159,7 @@ module RRArbTestSuite #(
 
   task test_case_4_random();
     t.test_case_begin( "test_case_4_random" );
+    if( !t.run_test ) return;
     prev_gnt_idx = p_width;
 
     for( int i = 0; i < 20; i = i + 1 ) begin
@@ -186,6 +196,8 @@ module RRArbTestSuite #(
 
       check( rand_req, exp_gnt );
     end
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -195,11 +207,10 @@ module RRArbTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ( (t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ( (t.n <= 0) || (t.n == 2)) test_case_2_no_grant();
-    if (((t.n <= 0) || (t.n == 3)) 
-         & (p_width >= 4))         test_case_3_oscillate();
-    if ( (t.n <= 0) || (t.n == 4)) test_case_4_random();
+                      test_case_1_basic();
+                      test_case_2_no_grant();
+    if (p_width >= 4) test_case_3_oscillate();
+                      test_case_4_random();
 
   endtask
 endmodule

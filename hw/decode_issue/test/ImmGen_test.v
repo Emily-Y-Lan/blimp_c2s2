@@ -60,7 +60,7 @@ module ImmGenTestSuite #(
 
       #8;
 
-      if ( t.n != 0 ) begin
+      if ( t.verbose ) begin
         $display( "%3d: %s %h > %h", t.cycles,
                   dut_imm_sel.name(), dut_inst, dut_imm );
       end
@@ -78,11 +78,14 @@ module ImmGenTestSuite #(
 
   task test_case_1_imm_i();
     t.test_case_begin( "test_case_1_imm_i" );
+    if( !t.run_test ) return;
 
     //     inst                                        imm_sel imm
     check( 32'b0_010101_0101_0_01010101_0101_0_1010101, IMM_I, 32'b000000000000000000000_010101_0101_0 );
     check( 32'b1_000000_1111_0_01010101_0101_0_1010101, IMM_I, 32'b111111111111111111111_000000_1111_0 );
     check( 32'b0_111111_0000_1_01010101_0101_0_1010101, IMM_I, 32'b000000000000000000000_111111_0000_1 );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -91,11 +94,14 @@ module ImmGenTestSuite #(
 
   task test_case_2_imm_s();
     t.test_case_begin( "test_case_2_imm_s" );
+    if( !t.run_test ) return;
 
     //     inst                                        imm_sel imm
     check( 32'b0_010101_0101_0_01010101_0101_0_1010101, IMM_S, 32'b000000000000000000000_010101_0101_0 );
     check( 32'b1_000000_0101_0_01010101_1111_0_1010101, IMM_S, 32'b111111111111111111111_000000_1111_0 );
     check( 32'b0_111111_0101_0_01010101_0000_1_1010101, IMM_S, 32'b000000000000000000000_111111_0000_1 );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -104,11 +110,14 @@ module ImmGenTestSuite #(
 
   task test_case_3_imm_b();
     t.test_case_begin( "test_case_3_imm_b" );
+    if( !t.run_test ) return;
 
     //     inst                                        imm_sel imm
     check( 32'b0_010101_0101_0_01010101_0101_0_1010101, IMM_B, 32'b00000000000000000000_0_010101_0101_0 );
     check( 32'b1_000000_0101_0_01010101_1111_0_1010101, IMM_B, 32'b11111111111111111111_0_000000_1111_0 );
     check( 32'b0_111111_0101_0_01010101_0000_1_1010101, IMM_B, 32'b00000000000000000000_1_111111_0000_0 );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -117,11 +126,14 @@ module ImmGenTestSuite #(
 
   task test_case_4_imm_u();
     t.test_case_begin( "test_case_4_imm_u" );
+    if( !t.run_test ) return;
 
     //     inst                                        imm_sel imm
     check( 32'b0_010101_0101_0_01010101_0101_0_1010101, IMM_U, 32'b0_010101_0101_0_01010101_000000000000 );
     check( 32'b1_000000_1111_0_11111111_0101_0_1010101, IMM_U, 32'b1_000000_1111_0_11111111_000000000000 );
     check( 32'b0_111111_0000_1_00000000_0101_0_1010101, IMM_U, 32'b0_111111_0000_1_00000000_000000000000 );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -130,11 +142,14 @@ module ImmGenTestSuite #(
 
   task test_case_5_imm_j();
     t.test_case_begin( "test_case_5_imm_j" );
+    if( !t.run_test ) return;
 
     //     inst                                        imm_sel imm
     check( 32'b0_010101_0101_0_01010101_0101_0_1010101, IMM_J, 32'b000000000000_01010101_0_010101_0101_0 );
     check( 32'b1_000000_1111_0_11111111_0101_0_1010101, IMM_J, 32'b111111111111_11111111_0_000000_1111_0 );
     check( 32'b0_111111_0000_1_00000000_0101_0_1010101, IMM_J, 32'b000000000000_00000000_1_111111_0000_0 );
+
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -144,11 +159,11 @@ module ImmGenTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ( (t.n <= 0) || (t.n == 1)) test_case_1_imm_i();
-    if ( (t.n <= 0) || (t.n == 2)) test_case_2_imm_s();
-    if ( (t.n <= 0) || (t.n == 3)) test_case_3_imm_b();
-    if ( (t.n <= 0) || (t.n == 4)) test_case_4_imm_u();
-    if ( (t.n <= 0) || (t.n == 5)) test_case_5_imm_j();
+    test_case_1_imm_i();
+    test_case_2_imm_s();
+    test_case_3_imm_b();
+    test_case_4_imm_u();
+    test_case_5_imm_j();
 
   endtask
 endmodule

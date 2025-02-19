@@ -6,7 +6,6 @@
 `include "hw/fetch/Fetch.v"
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
-`include "test/TraceUtils.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/TestOstream.v"
 // `include "test/fl/TestPub.v"
@@ -118,13 +117,24 @@ module FetchTestSuite #(
     D_Ostream.recv(msg_to_recv);
   endtask
 
-  Tracer tracer ( clk, {
-    fl_mem.trace,
-    " | ",
-    dut.trace,
-    " | ",
-    D_Ostream.trace
-  });
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+  string trace;
+
+  always_ff @( posedge clk ) begin
+    #2;
+    trace = "";
+
+    trace = {trace, fl_mem.trace()};
+    trace = {trace, " | "};
+    trace = {trace, dut.trace()};
+    trace = {trace, " | "};
+    trace = {trace, D_Ostream.trace()};
+
+    t.trace( trace );
+  end
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -132,8 +142,7 @@ module FetchTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     //               addr            data
     fl_mem.init_mem( p_rst_addr,     p_inst_bits'(32'hdeadbeef) );
@@ -145,7 +154,7 @@ module FetchTestSuite #(
     recv( p_inst_bits'(32'hcafef00d), p_rst_addr + 4 );
     recv( p_inst_bits'(32'hbaadb0ba), p_rst_addr + 8 );
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -221,7 +230,7 @@ module FetchTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
+    test_case_1_basic();
     // if ((t.n <= 0) || (t.n == 2)) test_case_2_branch_basic();
     // if ((t.n <= 0) || (t.n == 3)) test_case_3_branch_forward();
 

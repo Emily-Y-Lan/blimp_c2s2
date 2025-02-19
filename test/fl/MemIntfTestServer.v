@@ -6,7 +6,6 @@
 `include "hw/util/DelayStream.v"
 `include "intf/MemIntf.v"
 `include "test/FLTestUtils.v"
-`include "test/TraceUtils.v"
 `include "types/MemMsg.v"
 
 `ifndef TEST_FL_MEM_INTF_TEST_SERVER_V
@@ -137,11 +136,7 @@ module MemIntfTestServer #(
     return (val / 4) + (val % 4);
   endfunction
 
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-
-  always_comb begin
+  function string trace();
     string req_linetrace, resp_linetrace;
     int str_len;
 
@@ -179,7 +174,7 @@ module MemIntfTestServer #(
     end
 
     trace = $sformatf("%s > %s", req_linetrace, resp_linetrace);
-  end
+  endfunction
 
 endmodule
 
