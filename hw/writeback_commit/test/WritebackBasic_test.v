@@ -240,10 +240,12 @@ module WritebackBasicTestSuite #(
   string X_traces [p_num_pipes-1:0];
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      // verilator lint_off BLKSEQ
       always_ff @( posedge clk ) begin
         #2;
         X_traces[i] = X_Istreams[i].X_Istream.trace();
       end
+      // verilator lint_on BLKSEQ
     end
   endgenerate
 
@@ -253,6 +255,7 @@ module WritebackBasicTestSuite #(
   string CompleteSub_trace;
   string CommitSub_trace;
 
+  // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     dut_trace         = dut.trace();
@@ -277,6 +280,7 @@ module WritebackBasicTestSuite #(
     
     t.trace( trace );
   end
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // test_case_1_basic

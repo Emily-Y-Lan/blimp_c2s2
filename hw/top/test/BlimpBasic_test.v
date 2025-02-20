@@ -128,6 +128,7 @@ module BlimpBasicTestSuite #(
 
   string trace;
 
+  // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     trace = "";
@@ -138,6 +139,7 @@ module BlimpBasicTestSuite #(
     trace = {trace, " || "};
     trace = {trace, inst_trace_sub.trace()};
   end
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // Include Tests

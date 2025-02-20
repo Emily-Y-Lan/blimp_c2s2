@@ -299,10 +299,12 @@ module DecodeIssueTestSuite #(
   string X_traces [p_num_pipes-1:0];
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      // verilator lint_off BLKSEQ
       always_ff @( posedge clk ) begin
         #2;
         X_traces[i] = X_Ostreams[i].X_Ostream.trace();
       end
+      // verilator lint_on BLKSEQ
     end
   endgenerate
 
@@ -311,6 +313,7 @@ module DecodeIssueTestSuite #(
   string F_Istream_trace;
   string dut_trace;
 
+  // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     F_Istream_trace = F_Istream.trace();
@@ -332,6 +335,7 @@ module DecodeIssueTestSuite #(
     
     t.trace( trace );
   end
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // test_case_1_basic

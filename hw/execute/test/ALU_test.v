@@ -165,6 +165,7 @@ module ALUTestSuite #(
 
   string trace;
 
+  // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     trace = "";
@@ -177,6 +178,7 @@ module ALUTestSuite #(
 
     t.trace( trace );
   end
+  // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
   // test_case_1_basic
