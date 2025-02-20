@@ -1,9 +1,9 @@
 //========================================================================
-// BlimpBasic_test.v
+// BlimpV1_test.v
 //========================================================================
 // The top-level testing module for a basic implementation of Blimp
 
-`include "hw/top/BlimpBasic.v"
+`include "hw/top/BlimpV1.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
 `include "test/asm/rv32/assemble32.v"
@@ -13,11 +13,11 @@
 import TestEnv::*;
 
 //========================================================================
-// BlimpBasicTestSuite
+// BlimpV1TestSuite
 //========================================================================
 // A test suite for a particular parametrization of the basic Blimp unit
 
-module BlimpBasicTestSuite #(
+module BlimpV1TestSuite #(
   parameter p_suite_num   = 0,
   parameter p_rst_addr    = 32'b0,
   parameter p_addr_bits   = 32,
@@ -28,7 +28,7 @@ module BlimpBasicTestSuite #(
   parameter p_mem_recv_intv_delay = 1
 );
 
-  string suite_name = $sformatf("%0d: BlimpBasicTestSuite_%0p_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: BlimpV1TestSuite_%0p_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_rst_addr, p_addr_bits,
                                 p_opaq_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay);
@@ -57,7 +57,7 @@ module BlimpBasicTestSuite #(
     .p_data_bits (32)
   ) inst_trace_notif();
 
-  BlimpBasic #(
+  BlimpV1 #(
     .p_rst_addr    (p_rst_addr),
     .p_opaq_bits   (p_opaq_bits),
     .p_rob_entries (p_rob_entries)
@@ -138,6 +138,8 @@ module BlimpBasicTestSuite #(
     trace = {trace, dut.trace()};
     trace = {trace, " || "};
     trace = {trace, inst_trace_sub.trace()};
+
+    t.trace( trace );
   end
   // verilator lint_on BLKSEQ
 
@@ -162,18 +164,18 @@ module BlimpBasicTestSuite #(
 endmodule
 
 //========================================================================
-// BlimpBasic_test
+// BlimpV1_test
 //========================================================================
 
-module BlimpBasic_test;
-  BlimpBasicTestSuite #(1)                                        suite_1();
-  BlimpBasicTestSuite #(2, 'h800, 32,  8, 32, 1, 1)               suite_2();
-  BlimpBasicTestSuite #(3, 'h000, 16,  8, 32, 1, 1)               suite_3();
-  BlimpBasicTestSuite #(4, 'h000, 32,  4, 32, 1, 1)               suite_4();
-  BlimpBasicTestSuite #(4, 'h000, 32,  4,  8, 1, 1)               suite_5();
-  BlimpBasicTestSuite #(5, 'h400,  8, 32, 16, 3, 1)               suite_6();
-  BlimpBasicTestSuite #(6, 'h200, 64,  2,  4, 1, 3)               suite_7();
-  BlimpBasicTestSuite #(7, 'h100, 16,  4, 64, 3, 3)               suite_8();
+module BlimpV1_test;
+  BlimpV1TestSuite #(1)                                        suite_1();
+  BlimpV1TestSuite #(2, 'h800, 32,  8, 32, 1, 1)               suite_2();
+  BlimpV1TestSuite #(3, 'h000, 16,  8, 32, 1, 1)               suite_3();
+  BlimpV1TestSuite #(4, 'h000, 32,  4, 32, 1, 1)               suite_4();
+  BlimpV1TestSuite #(4, 'h000, 32,  4,  8, 1, 1)               suite_5();
+  BlimpV1TestSuite #(5, 'h400,  8, 32, 16, 3, 1)               suite_6();
+  BlimpV1TestSuite #(6, 'h200, 64,  2,  4, 1, 3)               suite_7();
+  BlimpV1TestSuite #(7, 'h100, 16,  4, 64, 3, 3)               suite_8();
 
   int s;
 

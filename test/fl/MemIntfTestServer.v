@@ -133,7 +133,7 @@ module MemIntfTestServer #(
   //----------------------------------------------------------------------
 
   function int ceil_div_4( int val );
-    return (val / 4) + (val % 4);
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
   function string trace();

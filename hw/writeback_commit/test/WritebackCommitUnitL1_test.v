@@ -1,9 +1,9 @@
 //========================================================================
-// WritebackBasic_test.v
+// WritebackCommitUnitL1_test.v
 //========================================================================
 // A testbench for our basic writeback-commit unit
 
-`include "hw/writeback_commit/writeback_variants/WritebackBasic.v"
+`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL1.v"
 `include "test/fl/TestSub.v"
 `include "test/fl/TestIstream.v"
 `include "intf/CompleteNotif.v"
@@ -13,11 +13,11 @@
 import TestEnv::*;
 
 //========================================================================
-// WritebackBasicTestSuite
+// WritebackCommitUnitL1TestSuite
 //========================================================================
 // A test suite for the writeback-commit unit
 
-module WritebackBasicTestSuite #(
+module WritebackCommitUnitL1TestSuite #(
   parameter p_suite_num    = 0,
   parameter p_num_pipes    = 1,
   parameter p_addr_bits    = 32,
@@ -28,7 +28,7 @@ module WritebackBasicTestSuite #(
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: WritebackBasicTestSuite_%0d_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: WritebackCommitUnitL1TestSuite_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_num_pipes,
                                 p_addr_bits, p_data_bits, p_seq_num_bits,
                                 p_X_send_intv_delay);
@@ -61,7 +61,7 @@ module WritebackBasicTestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif();
 
-  WritebackBasic #(
+  WritebackCommitUnitL1 #(
     .p_num_pipes (p_num_pipes)
   ) dut (
     .Ex        (X__W_intfs),
@@ -283,35 +283,10 @@ module WritebackBasicTestSuite #(
   // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
-  // test_case_1_basic
+  // Include test cases
   //----------------------------------------------------------------------
 
-  task test_case_1_basic();
-    t.test_case_begin( "test_case_1_basic" );
-    if( !t.run_test ) return;
-
-    fork
-      begin
-        //   pipe pc  seq_num addr  data          wen
-        send(0,   '0, 0,      5'h1, 32'hdeadbeef, 1'b1);
-        send(0,   '1, 1,      5'h2, 32'hcafecafe, 1'b1);
-      end
-
-      begin
-        //           seq_num addr  data          wen
-        complete_sub(0,      5'h1, 32'hdeadbeef, 1'b1);
-        complete_sub(1,      5'h2, 32'hcafecafe, 1'b1);
-      end
-
-      begin
-        //         pc  seq_num addr  data          wen
-        commit_sub('0, 0,      5'h1, 32'hdeadbeef, 1'b1);
-        commit_sub('1, 1,      5'h2, 32'hcafecafe, 1'b1);
-      end
-    join
-
-    t.test_case_end();
-  endtask
+  `include "hw/writeback_commit/test/test_cases/basic_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -320,17 +295,16 @@ module WritebackBasicTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    test_case_1_basic();
-
+    run_basic_test_cases();
   endtask
 endmodule
 
 //========================================================================
-// WritebackBasic_test
+// WritebackCommitUnitL1_test
 //========================================================================
 
-module WritebackBasic_test;
-  WritebackBasicTestSuite #(1) suite_1();
+module WritebackCommitUnitL1_test;
+  WritebackCommitUnitL1TestSuite #(1) suite_1();
 
   int s;
 

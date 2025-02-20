@@ -4,15 +4,15 @@
 // A top-level implementation of the Blimp processor with an ALU and
 // multiplier
 
-`ifndef HW_TOP_BLIMP_BASIC_V
-`define HW_TOP_BLIMP_BASIC_V
+`ifndef HW_TOP_BLIMPV1_V
+`define HW_TOP_BLIMPV1_V
 
 `include "defs/UArch.v"
 `include "hw/fetch/fetch_unit_variants/FetchUnitL1.v"
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL1.v"
 `include "hw/execute/execute_units_l1/ALU.v"
 `include "hw/execute/execute_units_l1/Multiplier.v"
-`include "hw/writeback_commit/writeback_variants/WritebackBasic.v"
+`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL1.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
@@ -21,7 +21,7 @@
 `include "intf/CommitNotif.v"
 `include "intf/InstTraceNotif.v"
 
-module BlimpBasic #(
+module BlimpV1 #(
   parameter p_rst_addr    = 32'h0,
   parameter p_opaq_bits   = 8,
   parameter p_rob_entries = 32
@@ -131,7 +131,7 @@ module BlimpBasic #(
     .*
   );
 
-  WritebackBasic #(
+  WritebackCommitUnitL1 #(
     .p_num_pipes (2)
   ) writeback (
     .Ex       (x__w_intfs),
@@ -165,4 +165,4 @@ module BlimpBasic #(
 
 endmodule
 
-`endif // HW_TOP_BLIMP_BASIC_V
+`endif // HW_TOP_BLIMPV1_V

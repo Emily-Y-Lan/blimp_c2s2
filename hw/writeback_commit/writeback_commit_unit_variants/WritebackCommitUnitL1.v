@@ -1,18 +1,18 @@
 //========================================================================
-// WritebackBasic.v
+// WritebackCommitUnitL1.v
 //========================================================================
 // A basic writeback unit that writes back one result at a time, with
 // no separate comit
 
-`ifndef HW_WRITEBACK_WRITEBACK_VARIANTS_BASIC_V
-`define HW_WRITEBACK_WRITEBACK_VARIANTS_BASIC_V
+`ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V
+`define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V
 
 `include "hw/common/RRArb.v"
 `include "intf/CompleteNotif.v"
 `include "intf/CommitNotif.v"
 `include "intf/X__WIntf.v"
 
-module WritebackBasic #(
+module WritebackCommitUnitL1 #(
   parameter p_num_pipes = 1
 )(
   input  logic clk,
@@ -193,7 +193,7 @@ module WritebackBasic #(
 
 `ifndef SYNTHESIS
   function int ceil_div_4( int val );
-    return (val / 4) + (val % 4);
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
   int str_len;
@@ -211,4 +211,4 @@ module WritebackBasic #(
 
 endmodule
 
-`endif // HW_DECODE_DECODE_VARIANTS_BASIC_V
+`endif // HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V

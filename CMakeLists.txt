@@ -17,8 +17,8 @@ set(V_TEST_FILES
   hw/execute/test/l1/ALU_test.v
   hw/execute/test/l1/Multiplier_test.v
   hw/fetch/test/FetchUnitL1_test.v
-  hw/top/test/BlimpBasic_test.v
-  hw/writeback_commit/test/WritebackBasic_test.v
+  hw/top/test/BlimpV1_test.v
+  hw/writeback_commit/test/WritebackCommitUnitL1_test.v
 )
 
 set(RV32_ASM_FILES
