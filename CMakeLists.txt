@@ -14,8 +14,8 @@ set(V_TEST_FILES
   hw/decode_issue/test/DecodeIssueUnitL1_test.v
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/Regfile_test.v
-  hw/execute/test/ALU_test.v
-  hw/execute/test/Multiplier_test.v
+  hw/execute/test/l1/ALU_test.v
+  hw/execute/test/l1/Multiplier_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/top/test/BlimpBasic_test.v
   hw/writeback_commit/test/WritebackBasic_test.v

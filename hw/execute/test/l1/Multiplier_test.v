@@ -1,10 +1,10 @@
 //========================================================================
-// ALU_test.v
+// Multiplier_test.v
 //========================================================================
-// A testbench for our ALU
+// A testbench for our Multiplier
 
 `include "defs/UArch.v"
-`include "hw/execute/execute_variants/ALU.v"
+`include "hw/execute/execute_units_l1/Multiplier.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
 
@@ -12,11 +12,11 @@ import UArch::*;
 import TestEnv::*;
 
 //========================================================================
-// ALUTestSuite
+// MultiplierTestSuite
 //========================================================================
-// A test suite for the ALU
+// A test suite for the multiplier
 
-module ALUTestSuite #(
+module MultiplierTestSuite #(
   parameter p_suite_num    = 0,
   parameter p_addr_bits    = 32,
   parameter p_data_bits    = 32,
@@ -27,7 +27,7 @@ module ALUTestSuite #(
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: ALUTestSuite_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: MultiplierTestSuite_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_addr_bits, p_data_bits,
                                 p_D_send_intv_delay, p_W_recv_intv_delay);
   //verilator lint_on UNUSEDSIGNAL
@@ -55,7 +55,7 @@ module ALUTestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intf();
 
-  ALU #(
+  Multiplier #(
     .p_addr_bits    (p_addr_bits),
     .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
@@ -181,54 +181,10 @@ module ALUTestSuite #(
   // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
-  // test_case_1_basic
+  // Include test cases
   //----------------------------------------------------------------------
 
-  task test_case_1_basic();
-    t.test_case_begin( "test_case_1_basic" );
-    if( !t.run_test ) return;
-
-    fork
-      //   pc  seq_num op1 op2 waddr uop
-      send('0, 0,      1,  2,  5'h1, OP_ADD);
-
-      //   pc  seq_num waddr wdata wen
-      recv('0, 0,      5'h1, 3,    1);
-    join
-
-    t.test_case_end();
-  endtask
-
-  //----------------------------------------------------------------------
-  // test_case_2_add
-  //----------------------------------------------------------------------
-
-  task test_case_2_add();
-    t.test_case_begin( "test_case_2_add" );
-    if( !t.run_test ) return;
-
-    fork
-      begin
-        //   pc  seq_num op1 op2 waddr uop
-        send('0, 1,      4,  3,  5'h1, OP_ADD);
-        send('1, 2,     -1,  1,  5'h4, OP_ADD);
-        send('0, 3,      4, -6,  5'h2, OP_ADD);
-        send('1, 4,      2,  0,  5'h5, OP_ADD);
-        send('0, 5,      0, -7,  5'h3, OP_ADD);
-      end
-
-      begin
-        //   pc  seq_num waddr wdata wen
-        recv('0, 1,      5'h1,  7,   1);
-        recv('1, 2,      5'h4,  0,   1);
-        recv('0, 3,      5'h2, -2,   1);
-        recv('1, 4,      5'h5,  2,   1);
-        recv('0, 5,      5'h3, -7,   1);
-      end
-    join
-
-    t.test_case_end();
-  endtask
+  `include "hw/execute/test/test_cases/mul_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -237,24 +193,22 @@ module ALUTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    test_case_1_basic();
-    test_case_2_add();
-
+    run_mul_test_cases();
   endtask
 
 endmodule
 
 //========================================================================
-// ALU_test
+// Multiplier_test
 //========================================================================
 
-module ALU_test;
-  ALUTestSuite #(1)                  suite_1();
-  ALUTestSuite #(2, 16, 32, 6, 0, 0) suite_2();
-  ALUTestSuite #(3, 32,  8, 3, 0, 0) suite_3();
-  ALUTestSuite #(4, 32, 16, 4, 3, 0) suite_4();
-  ALUTestSuite #(5,  8, 32, 9, 0, 3) suite_5();
-  ALUTestSuite #(6,  8, 16, 5, 3, 3) suite_6();
+module Multiplier_test;
+  MultiplierTestSuite #(1)                  suite_1();
+  MultiplierTestSuite #(2, 16, 32, 6, 0, 0) suite_2();
+  MultiplierTestSuite #(3, 32,  8, 3, 0, 0) suite_3();
+  MultiplierTestSuite #(4, 32, 16, 4, 3, 0) suite_4();
+  MultiplierTestSuite #(5,  8, 32, 9, 0, 3) suite_5();
+  MultiplierTestSuite #(6,  8, 16, 5, 3, 3) suite_6();
 
   int s;
 

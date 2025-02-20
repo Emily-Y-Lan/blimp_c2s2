@@ -98,10 +98,10 @@ task test_case_mul();
 endtask
 
 //----------------------------------------------------------------------
-// run_arith_l1
+// run_arith_l1_test_cases
 //----------------------------------------------------------------------
 
-task run_arith_l1();
+task run_arith_l1_test_cases();
   test_case_add();
   test_case_addi();
   test_case_mul();

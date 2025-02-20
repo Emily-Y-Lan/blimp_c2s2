@@ -351,8 +351,8 @@ module DecodeIssueUnitL1TestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    run_basic();
-    run_arith_l1();
+    run_basic_test_cases();
+    run_arith_l1_test_cases();
 
   endtask
 endmodule

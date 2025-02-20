@@ -217,7 +217,7 @@ module FetchUnitL1TestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    run_basic();
+    run_basic_test_cases();
     // if ((t.n <= 0) || (t.n == 2)) test_case_2_branch_basic();
     // if ((t.n <= 0) || (t.n == 3)) test_case_3_branch_forward();
 

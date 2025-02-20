@@ -25,9 +25,9 @@ task test_case_1_basic();
 endtask
 
 //----------------------------------------------------------------------
-// run_basic
+// run_basic_test_cases
 //----------------------------------------------------------------------
 
-task run_basic();
+task run_basic_test_cases();
   test_case_1_basic();
 endtask
