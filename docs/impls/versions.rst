@@ -39,3 +39,28 @@ details the level of each unit that each processor version requires:
      - 1
      -
      -
+
+Version 1
+--------------------------------------------------------------------------
+
+The Version 1 processor is the simplest version, and aims to be the
+baseline needed for assembly execution with modular units. Only three
+instructions are supported (``add``, ``addi``, and ``mul``). The processor
+is single-issue with in-order issue and completion, and assumes that
+Execute Units are single-cycle to maintain instruction ordering.
+
+.. image:: img/versions-v1.png
+   :align: center
+   :width: 70%
+   :alt: A picture of the Version 1 processor composition
+   :class: bottompadding
+
+.. admonition:: Instruction Routing/Arbitration
+   :class: note
+
+   To prepare for out-of-order implementations, the Level 1 DIU
+   dynamically routes instructions to XUs based on availability, and the
+   Level 1 WCU implements Round-Robin arbitration to select which XU to
+   receive an instruction from. However, this isn't relevant based on
+   the single-cycle guarantee of XUs, and could be replaced if needed
+   for area.
