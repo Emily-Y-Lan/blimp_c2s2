@@ -1,10 +1,10 @@
 //========================================================================
-// DecodeIssue.v
+// DecodeIssueUnitL1.v
 //========================================================================
 // A basic in-order, single-issue decoder that implements TinyRV1
 
-`ifndef HW_DECODE_DECODE_VARIANTS_BASIC_V
-`define HW_DECODE_DECODE_VARIANTS_BASIC_V
+`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V
+`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V
 
 `include "defs/ISA.v"
 `include "hw/decode_issue/InstDecoder.v"
@@ -18,7 +18,7 @@
 
 import ISA::*;
 
-module DecodeIssue #(
+module DecodeIssueUnitL1 #(
   parameter p_isa_subset                               = p_tinyrv1,
   parameter p_num_pipes                                = 1,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
@@ -205,4 +205,4 @@ module DecodeIssue #(
 
 endmodule
 
-`endif // HW_DECODE_DECODE_VARIANTS_BASIC_V
+`endif // HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V

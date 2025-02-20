@@ -11,12 +11,12 @@ set(V_TEST_FILES
   hw/common/test/Fifo_test.v
   hw/common/test/PriorityEncoder_test.v
   hw/common/test/RRArb_test.v
-  hw/decode_issue/test/DecodeIssue_arith_test.v
+  hw/decode_issue/test/DecodeIssueUnitL1_test.v
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/Regfile_test.v
   hw/execute/test/ALU_test.v
   hw/execute/test/Multiplier_test.v
-  hw/fetch/test/Fetch_test.v
+  hw/fetch/test/FetchUnitL1_test.v
   hw/top/test/BlimpBasic_test.v
   hw/writeback_commit/test/WritebackBasic_test.v
 )

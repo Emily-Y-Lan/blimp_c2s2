@@ -8,8 +8,8 @@
 `define HW_TOP_BLIMP_BASIC_V
 
 `include "defs/UArch.v"
-`include "hw/fetch/Fetch.v"
-`include "hw/decode_issue/DecodeIssue.v"
+`include "hw/fetch/fetch_unit_variants/FetchUnitL1.v"
+`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL1.v"
 `include "hw/execute/execute_variants/ALU.v"
 `include "hw/execute/execute_variants/Multiplier.v"
 `include "hw/execute/execute_variants/ALU.v"
@@ -89,7 +89,7 @@ module BlimpBasic #(
   // Units
   //----------------------------------------------------------------------
 
-  Fetch #(
+  FetchUnitL1 #(
     .p_rst_addr  (p_rst_addr),
     .p_opaq_bits (p_opaq_bits)
   ) fetch (
@@ -98,7 +98,7 @@ module BlimpBasic #(
     .*
   );
 
-  DecodeIssue #(
+  DecodeIssueUnitL1 #(
     .p_isa_subset   (OP_ADD_VEC | OP_MUL_VEC),
     .p_num_pipes    (2),
     .p_pipe_subsets ({

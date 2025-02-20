@@ -1,15 +1,15 @@
 //========================================================================
-// Fetch.v
+// FetchUnitL1.v
 //========================================================================
-// A modular fetch unit for fetching instructions
+// A basic modular fetch unit for fetching instructions
 
-`ifndef HW_FETCH_FETCH_V
-`define HW_FETCH_FETCH_V
+`ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
+`define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
 
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
 
-module Fetch
+module FetchUnitL1
 #(
   parameter p_rst_addr = 32'b0,
 
@@ -189,4 +189,4 @@ module Fetch
 
 endmodule
 
-`endif // HW_FETCH_FETCH_V
+`endif // HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V

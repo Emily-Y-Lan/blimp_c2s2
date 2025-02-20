@@ -3,7 +3,7 @@
 //========================================================================
 // A testbench for our fetch unit
 
-`include "hw/fetch/Fetch.v"
+`include "hw/fetch/fetch_unit_variants/FetchUnitL1.v"
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
 `include "test/fl/MemIntfTestServer.v"
@@ -13,11 +13,11 @@
 import TestEnv::*;
 
 //========================================================================
-// FetchTestSuite
+// FetchUnitL1TestSuite
 //========================================================================
 // A test suite for a particular parametrization of the Fetch unit
 
-module FetchTestSuite #(
+module FetchUnitL1TestSuite #(
   parameter p_suite_num = 0,
   parameter p_rst_addr  = 32'b0,
   parameter p_addr_bits = 32,
@@ -28,7 +28,7 @@ module FetchTestSuite #(
   parameter p_mem_recv_intv_delay = 1,
   parameter p_D_recv_intv_delay   = 0
 );
-  string suite_name = $sformatf("%0d: FetchTestSuite_%0p_%0d_%0d_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: FetchUnitL1TestSuite_%0p_%0d_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_rst_addr, p_addr_bits,
                                 p_inst_bits, p_opaq_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay,
@@ -58,7 +58,7 @@ module FetchTestSuite #(
     .p_inst_bits (p_inst_bits)
   ) F__D_intf();
 
-  Fetch #(
+  FetchUnitL1 #(
     .p_rst_addr  (p_rst_addr ),
     .p_opaq_bits (p_opaq_bits)
   ) dut (
@@ -139,25 +139,10 @@ module FetchTestSuite #(
   // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
-  // test_case_1_basic
+  // Include test cases
   //----------------------------------------------------------------------
 
-  task test_case_1_basic();
-    t.test_case_begin( "test_case_1_basic" );
-    if( !t.run_test ) return;
-
-    //               addr            data
-    fl_mem.init_mem( p_rst_addr,     p_inst_bits'(32'hdeadbeef) );
-    fl_mem.init_mem( p_rst_addr + 4, p_inst_bits'(32'hcafef00d) );
-    fl_mem.init_mem( p_rst_addr + 8, p_inst_bits'(32'hbaadb0ba) );
-
-    //    inst          pc
-    recv( p_inst_bits'(32'hdeadbeef), p_rst_addr     );
-    recv( p_inst_bits'(32'hcafef00d), p_rst_addr + 4 );
-    recv( p_inst_bits'(32'hbaadb0ba), p_rst_addr + 8 );
-
-    t.test_case_end();
-  endtask
+  `include "hw/fetch/test/test_cases/basic_test_cases.v"
 
   //----------------------------------------------------------------------
   // test_case_2_branch_basic
@@ -232,7 +217,7 @@ module FetchTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    test_case_1_basic();
+    run_basic();
     // if ((t.n <= 0) || (t.n == 2)) test_case_2_branch_basic();
     // if ((t.n <= 0) || (t.n == 3)) test_case_3_branch_forward();
 
@@ -240,18 +225,18 @@ module FetchTestSuite #(
 endmodule
 
 //========================================================================
-// Fetch_test
+// FetchUnitL1_test
 //========================================================================
 
-module Fetch_test;
-  FetchTestSuite #(1)                                   suite_1();
-  FetchTestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2();
-  FetchTestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3();
-  FetchTestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4();
-  FetchTestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5();
-  FetchTestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6();
-  FetchTestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7();
-  FetchTestSuite #(8, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8();
+module FetchUnitL1_test;
+  FetchUnitL1TestSuite #(1)                                   suite_1();
+  FetchUnitL1TestSuite #(2, 32'h00FFFF00, 32, 32, 8, 0, 0, 0) suite_2();
+  FetchUnitL1TestSuite #(3, 8'hF0,         8,  8, 1, 0, 0, 0) suite_3();
+  FetchUnitL1TestSuite #(4, 32'h0,        32, 32, 8, 3, 0, 0) suite_4();
+  FetchUnitL1TestSuite #(5, 32'h0,        32, 32, 8, 0, 3, 0) suite_5();
+  FetchUnitL1TestSuite #(6, 32'h0,        32, 32, 8, 0, 0, 3) suite_6();
+  FetchUnitL1TestSuite #(7, 16'hA000,     16, 32, 4, 3, 3, 3) suite_7();
+  FetchUnitL1TestSuite #(8, 8'hF0,         8,  8, 1, 9, 9, 9) suite_8();
 
   int s;
 

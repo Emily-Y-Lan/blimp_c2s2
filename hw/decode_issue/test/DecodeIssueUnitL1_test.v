@@ -1,10 +1,10 @@
 //========================================================================
-// DecodeBasic_test.v
+// DecodeIssueUnitL1_test.v
 //========================================================================
-// A testbench for our basic decoder
+// A testbench for our basic decode-issue unit
 
 `include "defs/UArch.v"
-`include "hw/decode_issue/DecodeIssue.v"
+`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL1.v"
 `include "test/asm/rv32/assemble32.v"
 `include "test/fl/TestPub.v"
 `include "test/fl/TestIstream.v"
@@ -14,11 +14,11 @@ import UArch::*;
 import TestEnv::*;
 
 //========================================================================
-// DecodeIssueTestSuite
+// DecodeIssueUnitL1TestSuite
 //========================================================================
 // A test suite for the basic decoder
 
-module DecodeIssueTestSuite #(
+module DecodeIssueUnitL1TestSuite #(
   parameter p_suite_num   = 0,
   parameter p_num_pipes   = 3,
   parameter p_addr_bits   = 32,
@@ -32,7 +32,7 @@ module DecodeIssueTestSuite #(
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 );
 
-  string suite_name = $sformatf("%0d: DecodeIssueTestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: DecodeIssueUnitL1TestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_num_pipes, p_addr_bits, 
                                 p_inst_bits, p_rst_addr,
                                 p_F_send_intv_delay, p_X_recv_intv_delay);
@@ -74,7 +74,7 @@ module DecodeIssueTestSuite #(
     .p_data_bits    (p_inst_bits)
   ) complete_notif();
 
-  DecodeIssue #(
+  DecodeIssueUnitL1 #(
     .p_isa_subset   (p_tinyrv1),
     .p_num_pipes    (p_num_pipes),
     .p_pipe_subsets (p_pipe_subsets)
@@ -338,128 +338,11 @@ module DecodeIssueTestSuite #(
   // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
-  // test_case_1_basic
+  // Include test cases
   //----------------------------------------------------------------------
 
-  task test_case_1_basic();
-    t.test_case_begin( "test_case_1_basic" );
-    if( !t.run_test ) return;
-
-    fork
-      begin
-        //   addr            inst
-        send(p_rst_addr + 0, assemble32("mul x1, x0, x0"));
-        send(p_rst_addr + 4, assemble32("addi x1, x0, 10"));
-      end
-
-      begin
-        //   pc              op1 op2  waddr uop
-        recv(p_rst_addr + 0, 0,   0,  1,    OP_MUL);
-        recv(p_rst_addr + 4, 0,  10,  1,    OP_ADD);
-      end
-    join
-
-    t.test_case_end();
-  endtask
-
-  //----------------------------------------------------------------------
-  // test_case_2_pending
-  //----------------------------------------------------------------------
-
-  task test_case_2_pending();
-    t.test_case_begin( "test_case_2_pending" );
-    if( !t.run_test ) return;
-
-    //   seq_num waddr wdata wen
-    pub( 'x,     1,    1,    1 );
-    pub( 'x,     3,    3,    1 );
-    pub( 'x,     5,    5,    1 );
-
-    fork
-      begin
-        //   addr             inst
-        send(p_rst_addr +  0, assemble32("add  x2, x0, x1"));
-        send(p_rst_addr +  4, assemble32("add  x4, x3, x2"));
-        send(p_rst_addr +  8, assemble32("add  x5, x5, x4"));
-        send(p_rst_addr + 12, assemble32("add  x5, x5, x5"));
-        send(p_rst_addr + 16, assemble32("add  x6, x5, x4"));
-      end
-
-      begin
-        //   pc                op1 op2  waddr uop
-        recv(p_rst_addr +  0,  0,   1,  2,    OP_ADD);
-        pub( 'x, 2, 1, 1 );
-        recv(p_rst_addr +  4,  3,   1,  4,    OP_ADD);
-        pub( 'x, 4, 4, 1 );
-        recv(p_rst_addr +  8,  5,   4,  5,    OP_ADD);
-        pub( 'x, 5, 9, 1 );
-        recv(p_rst_addr + 12,  9,   9,  5,    OP_ADD);
-        pub( 'x, 5, 18, 1 );
-        recv(p_rst_addr + 16, 18,   4,  6,    OP_ADD);
-      end
-    join
-
-    t.test_case_end();
-  endtask
-
-  //----------------------------------------------------------------------
-  // test_case_3_add
-  //----------------------------------------------------------------------
-
-  task test_case_3_add();
-    t.test_case_begin( "test_case_3_add" );
-    if( !t.run_test ) return;
-    
-    //   seq_num waddr wdata wen
-    pub( 'x,     1,    3,    1 );
-    pub( 'x,     2,    7,    1 );
-
-    fork
-      begin
-        //   addr            inst
-        send(p_rst_addr + 0, assemble32("add x4, x1, x2"));
-        send(p_rst_addr + 4, assemble32("add x2, x5, x4"));
-      end
-
-      begin
-        //   pc              op1 op2 waddr uop
-        recv(p_rst_addr + 0, 3,  7,  4,    OP_ADD);
-        pub( 'x, 4, 10, 1 );
-        recv(p_rst_addr + 4, 0, 10,  2,    OP_ADD);
-      end
-    join
-
-    t.test_case_end();
-  endtask
-
-  //----------------------------------------------------------------------
-  // test_case_4_addi
-  //----------------------------------------------------------------------
-
-  task test_case_4_addi();
-    t.test_case_begin( "test_case_4_addi" );
-    if( !t.run_test ) return;
-
-    //   seq_num waddr wdata wen
-    pub( 'x,     1,    9,    1 );
-
-    fork
-      begin
-        //   addr            inst
-        send(p_rst_addr + 0, assemble32("addi x3, x1, 10"));
-        send(p_rst_addr + 4, assemble32("addi x2, x3, 2047"));
-      end
-
-      begin
-        //   pc              op1 op2  waddr uop
-        recv(p_rst_addr + 0, 9,   10, 3,    OP_ADD );
-        pub( 'x, 3, 13, 1 );
-        recv(p_rst_addr + 4, 13, 2047, 2,    OP_ADD );
-      end
-    join
-  
-    t.test_case_end();
-  endtask
+  `include "hw/decode_issue/test/test_cases/basic_test_cases.v"
+  `include "hw/decode_issue/test/test_cases/arith_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -468,21 +351,19 @@ module DecodeIssueTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    test_case_1_basic();
-    test_case_2_pending();
-    test_case_3_add();
-    test_case_4_addi();
+    run_basic();
+    run_arith_l1();
 
   endtask
 endmodule
 
 //========================================================================
-// DecodeIssue_test
+// DecodeIssueUnitL1_test
 //========================================================================
 
-module DecodeIssue_test;
-  DecodeIssueTestSuite #(1) suite_1();
-  DecodeIssueTestSuite #(
+module DecodeIssueUnitL1_test;
+  DecodeIssueUnitL1TestSuite #(1) suite_1();
+  DecodeIssueUnitL1TestSuite #(
     2, 
     2, 
     32, 
@@ -493,7 +374,7 @@ module DecodeIssue_test;
     0, 
     {p_tinyrv1, OP_ADD_VEC}) 
   suite_2();
-  DecodeIssueTestSuite #(3, 
+  DecodeIssueUnitL1TestSuite #(3, 
     5, 
     32, 
     32, 
@@ -509,7 +390,7 @@ module DecodeIssue_test;
       OP_MUL_VEC
     }
   ) suite_3();
-  DecodeIssueTestSuite #(
+  DecodeIssueUnitL1TestSuite #(
     4, 
     1, 
     32, 
@@ -520,7 +401,7 @@ module DecodeIssue_test;
     0, 
     {p_tinyrv1}
   ) suite_4();
-  DecodeIssueTestSuite #(
+  DecodeIssueUnitL1TestSuite #(
     5, 
     3, 
     32, 
@@ -535,7 +416,7 @@ module DecodeIssue_test;
       p_tinyrv1
     }
   ) suite_5();
-  DecodeIssueTestSuite #(
+  DecodeIssueUnitL1TestSuite #(
     6, 
     3, 
     32, 
@@ -550,7 +431,7 @@ module DecodeIssue_test;
       p_tinyrv1
     }
   ) suite_6();
-  DecodeIssueTestSuite #(
+  DecodeIssueUnitL1TestSuite #(
     7, 
     3, 
     32, 
