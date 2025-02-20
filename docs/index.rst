@@ -11,6 +11,12 @@ overall framework, and how users can use and/or modify implementations.
 
 .. toctree::
    :maxdepth: 1
+   :caption: Microarchitectural Units
+
+   impls/versions
+
+.. toctree::
+   :maxdepth: 1
    :caption: Microarchitectural Details
 
    uarch/seq_nums.md
