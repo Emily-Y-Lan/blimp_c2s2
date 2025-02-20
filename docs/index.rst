@@ -11,9 +11,15 @@ overall framework, and how users can use and/or modify implementations.
 
 .. toctree::
    :maxdepth: 1
+   :caption: Overview
+
+   overview/versions
+
+.. toctree::
+   :maxdepth: 2
    :caption: Microarchitectural Units
 
-   impls/versions
+   units/units
 
 .. toctree::
    :maxdepth: 1

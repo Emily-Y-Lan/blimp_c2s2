@@ -1,21 +1,11 @@
-Blimp Versions
+Processor Versions
 ==========================================================================
 
 Blimp takes an iterative design approach, enabled through its modularity.
-Different levels of Blimp's microarchitectural units can be composed to
-form different versions of Blimp processors. This enabled the design of
-these components to occur iteratively, adding on functionality as the
-complexity of the processor progressed.
-
-Blimp outlines the following units as first-class microarchitectural
-blocks in the processor:
-
-* **Fetch Unit** *(FU)*
-* **Decode Issue Unit** *(DIU)*
-* **Execute Unit(s)** *(XU)*
-* **Writeback Commit Unit** *(WCU)*
-* **Sequencing Unit** *(SQU)*
-* **Squash Unit** *(SU)*
+Different levels of Blimp's :doc:`microarchitectural units </units/units>`
+can be composed to form different versions of Blimp processors. This
+enables the design of these components to occur iteratively, adding on
+functionality as the complexity of the processor progressed.
 
 Currently, 1 version of the processor is implemented. The table below
 details the level of each unit that each processor version requires:
