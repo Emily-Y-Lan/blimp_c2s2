@@ -5,7 +5,6 @@
 
 `include "defs/UArch.v"
 `include "hw/execute/execute_variants/Multiplier.v"
-`include "test/TraceUtils.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
 
@@ -160,13 +159,24 @@ module MultiplierTestSuite #(
     W_Ostream.recv(msg_to_recv);
   endtask
 
-  Tracer tracer ( clk, {
-    D_Istream.trace,
-    " | ",
-    dut.trace,
-    " | ",
-    W_Ostream.trace
-  } );
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+  string trace;
+
+  always_ff @( posedge clk ) begin
+    #2;
+    trace = "";
+
+    trace = {trace, D_Istream.trace()};
+    trace = {trace, " | "};
+    trace = {trace, dut.trace()};
+    trace = {trace, " | "};
+    trace = {trace, W_Ostream.trace()};
+
+    t.trace( trace );
+  end
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -174,8 +184,7 @@ module MultiplierTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       //   pc  seq_num op1 op2 waddr uop
@@ -185,7 +194,7 @@ module MultiplierTestSuite #(
       recv('0, 0,      5'h1, 2,    1);
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -194,8 +203,7 @@ module MultiplierTestSuite #(
 
   task test_case_2_pos_pos();
     t.test_case_begin( "test_case_2_pos_pos" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -213,7 +221,7 @@ module MultiplierTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -222,8 +230,7 @@ module MultiplierTestSuite #(
 
   task test_case_3_pos_neg();
     t.test_case_begin( "test_case_3_pos_neg" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -241,7 +248,7 @@ module MultiplierTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -250,8 +257,7 @@ module MultiplierTestSuite #(
 
   task test_case_4_neg_pos();
     t.test_case_begin( "test_case_4_neg_pos" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -267,7 +273,7 @@ module MultiplierTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -276,8 +282,7 @@ module MultiplierTestSuite #(
 
   task test_case_5_neg_neg();
     t.test_case_begin( "test_case_5_neg_neg" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -293,7 +298,7 @@ module MultiplierTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -302,8 +307,7 @@ module MultiplierTestSuite #(
 
   task test_case_6_zero();
     t.test_case_begin( "test_case_6_zero" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -321,7 +325,7 @@ module MultiplierTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -335,8 +339,7 @@ module MultiplierTestSuite #(
 
   task test_case_7_random();
     t.test_case_begin( "test_case_7_random" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     for( int i = 0; i < 20; i = i + 1 ) begin
       rand_pc      = p_addr_bits'($urandom());
@@ -352,7 +355,7 @@ module MultiplierTestSuite #(
       join
     end
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -362,13 +365,13 @@ module MultiplierTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 2)) test_case_2_pos_pos();
-    if ((t.n <= 0) || (t.n == 3)) test_case_3_pos_neg();
-    if ((t.n <= 0) || (t.n == 4)) test_case_4_neg_pos();
-    if ((t.n <= 0) || (t.n == 5)) test_case_5_neg_neg();
-    if ((t.n <= 0) || (t.n == 6)) test_case_6_zero();
-    if ((t.n <= 0) || (t.n == 7)) test_case_7_random();
+    test_case_1_basic();
+    test_case_2_pos_pos();
+    test_case_3_pos_neg();
+    test_case_4_neg_pos();
+    test_case_5_neg_neg();
+    test_case_6_zero();
+    test_case_7_random();
 
   endtask
 

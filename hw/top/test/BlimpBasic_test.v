@@ -7,7 +7,6 @@
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
 `include "test/asm/rv32/assemble32.v"
-`include "test/TraceUtils.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/InstTraceSub.v"
 
@@ -123,13 +122,22 @@ module BlimpBasicTestSuite #(
     );
   endtask
 
-  Tracer tracer ( clk, {
-    fl_mem.trace,
-    " || ",
-    dut.trace,
-    " || ",
-    inst_trace_sub.trace
-  });
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+  string trace;
+
+  always_ff @( posedge clk ) begin
+    #2;
+    trace = "";
+
+    trace = {trace, fl_mem.trace()};
+    trace = {trace, " || "};
+    trace = {trace, dut.trace()};
+    trace = {trace, " || "};
+    trace = {trace, inst_trace_sub.trace()};
+  end
 
   //----------------------------------------------------------------------
   // Include Tests
@@ -145,8 +153,8 @@ module BlimpBasicTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) run_add_tests(1);
-    if ((t.n <= 0) || (t.n == 2)) run_mul_tests(2);
+    run_add_tests();
+    run_mul_tests();
 
   endtask
 endmodule

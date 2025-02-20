@@ -7,10 +7,9 @@
 // test_case_add_1_basic
 //------------------------------------------------------------------------
 
-task test_case_add_1_basic(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_1_basic", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_1_basic();
+  t.test_case_begin( "test_case_add_1_basic" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -24,17 +23,16 @@ task test_case_add_1_basic(input int test_num);
   check_trace( 'h004, 2, 'h0000_0003, 1 ); // addi x2, x0, 3
   check_trace( 'h008, 3, 'h0000_0005, 1 ); // add  x3, x1, x2
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_add_2_x0
 //------------------------------------------------------------------------
 
-task test_case_add_2_x0(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_2_x0", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_2_x0();
+  t.test_case_begin( "test_case_add_2_x0" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -57,17 +55,16 @@ task test_case_add_2_x0(input int test_num);
   check_trace( 'h018,  4, 'h02, 1 ); // add  x4, x2, x0
 
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_add_3_regs
 //------------------------------------------------------------------------
 
-task test_case_add_3_regs(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_3_regs", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_3_regs();
+  t.test_case_begin( "test_case_add_3_regs" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -130,17 +127,16 @@ task test_case_add_3_regs(input int test_num);
   check_trace( 'h054,  3, 'h12, 1 ); // addi x3,  x3,  0
 
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_add_4_deps
 //------------------------------------------------------------------------
 
-task test_case_add_4_deps(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_4_deps", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_4_deps();
+  t.test_case_begin( "test_case_%0d_add_4_deps" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -158,17 +154,16 @@ task test_case_add_4_deps(input int test_num);
   check_trace( 'h00c, 4, 'h04, 1 ); // add  x4,  x3,  x1
   check_trace( 'h010, 5, 'h05, 1 ); // add  x5,  x4,  x1
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_add_5_pos
 //------------------------------------------------------------------------
 
-task test_case_add_5_pos(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_5_pos", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_5_pos();
+  t.test_case_begin( "test_case_add_5_pos" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -210,17 +205,16 @@ task test_case_add_5_pos(input int test_num);
   check_trace( 'h030, 6, 4005, 1 ); // add  x6,  x2,  x3
   check_trace( 'h034, 7, 4007, 1 ); // add  x7,  x3,  x4
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_add_6_neg
 //------------------------------------------------------------------------
 
-task test_case_add_6_neg(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_6_neg", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_6_neg();
+  t.test_case_begin( "test_case_add_6_neg" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -262,17 +256,16 @@ task test_case_add_6_neg(input int test_num);
   check_trace( 'h030, 6, -4005, 1 ); // add  x6,  x2,  x3
   check_trace( 'h034, 7, -4007, 1 ); // add  x7,  x3,  x4
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_add_7_overflow
 //------------------------------------------------------------------------
 
-task test_case_add_7_overflow(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_add_7_overflow", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_add_7_overflow();
+  t.test_case_begin( "test_case_add_7_overflow" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -286,19 +279,19 @@ task test_case_add_7_overflow(input int test_num);
   check_trace( 'h004, 2, 'h0000_0001, 1 ); // addi x2,  x0,  1
   check_trace( 'h008, 3, 'h0000_0000, 1 ); // addi x3,  x1,  x2
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // run_add_tests
 //------------------------------------------------------------------------
 
-task run_add_tests(input int test_num);
-  if ((t.c <= 0) || (t.c == 1)) test_case_add_1_basic   ( test_num );
-  if ((t.c <= 0) || (t.c == 2)) test_case_add_2_x0      ( test_num );
-  if ((t.c <= 0) || (t.c == 3)) test_case_add_3_regs    ( test_num );
-  if ((t.c <= 0) || (t.c == 4)) test_case_add_4_deps    ( test_num );
-  if ((t.c <= 0) || (t.c == 5)) test_case_add_5_pos     ( test_num );
-  if ((t.c <= 0) || (t.c == 6)) test_case_add_6_neg     ( test_num );
-  if ((t.c <= 0) || (t.c == 7)) test_case_add_7_overflow( test_num );
+task run_add_tests();
+  test_case_add_1_basic();
+  test_case_add_2_x0();
+  test_case_add_3_regs();
+  test_case_add_4_deps();
+  test_case_add_5_pos();
+  test_case_add_6_neg();
+  test_case_add_7_overflow();
 endtask

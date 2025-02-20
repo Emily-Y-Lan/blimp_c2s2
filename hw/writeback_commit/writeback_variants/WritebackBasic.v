@@ -196,21 +196,17 @@ module WritebackBasic #(
     return (val / 4) + (val % 4);
   endfunction
 
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
   int str_len;
-  // verilator lint_on UNUSEDSIGNAL
-
   assign str_len = ceil_div_4( p_seq_num_bits ) + 1 + // seq_num
                    ceil_div_4( 5 )              + 1 + // addr
                    ceil_div_4( p_data_bits );         // data
   
-  always_comb begin
+  function string trace();
     if( X_reg.wen )
       trace = $sformatf("%h:%h:%h", X_reg.seq_num, X_reg.waddr, X_reg.wdata );
     else
       trace = {str_len{" "}};
-  end
+  endfunction
 `endif
 
 endmodule

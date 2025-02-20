@@ -9,7 +9,7 @@
 
 `include "defs/UArch.v"
 `include "hw/fetch/Fetch.v"
-`include "hw/decode_issue/decode_issue_variants/DecodeBasic.v"
+`include "hw/decode_issue/DecodeIssue.v"
 `include "hw/execute/execute_variants/ALU.v"
 `include "hw/execute/execute_variants/Multiplier.v"
 `include "hw/execute/execute_variants/ALU.v"
@@ -98,7 +98,7 @@ module BlimpBasic #(
     .*
   );
 
-  DecodeBasic #(
+  DecodeIssue #(
     .p_isa_subset   (OP_ADD_VEC | OP_MUL_VEC),
     .p_num_pipes    (2),
     .p_pipe_subsets ({
@@ -149,27 +149,19 @@ module BlimpBasic #(
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
-  function int ceil_div_4( int val );
-    return (val / 4) + (val % 4);
-  endfunction
-
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-  
-  always_comb begin
+  function string trace();
     trace = {
-      fetch.trace,
+      fetch.trace(),
       " | ",
-      decode.trace,
+      decode.trace(),
       " | ",
-      alu.trace,
+      alu.trace(),
       " | ",
-      mul.trace,
+      mul.trace(),
       " | ",
-      writeback.trace
+      writeback.trace()
     };
-  end
+  endfunction
 `endif
 
 endmodule

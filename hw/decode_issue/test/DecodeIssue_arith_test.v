@@ -4,9 +4,8 @@
 // A testbench for our basic decoder
 
 `include "defs/UArch.v"
-`include "hw/decode_issue/decode_issue_variants/DecodeBasic.v"
+`include "hw/decode_issue/DecodeIssue.v"
 `include "test/asm/rv32/assemble32.v"
-`include "test/TraceUtils.v"
 `include "test/fl/TestPub.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
@@ -15,11 +14,11 @@ import UArch::*;
 import TestEnv::*;
 
 //========================================================================
-// DecodeBasicTestSuite
+// DecodeIssueTestSuite
 //========================================================================
 // A test suite for the basic decoder
 
-module DecodeBasicTestSuite #(
+module DecodeIssueTestSuite #(
   parameter p_suite_num   = 0,
   parameter p_num_pipes   = 3,
   parameter p_addr_bits   = 32,
@@ -33,7 +32,7 @@ module DecodeBasicTestSuite #(
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 );
 
-  string suite_name = $sformatf("%0d: DecodeBasicTestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: DecodeIssueTestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_num_pipes, p_addr_bits, 
                                 p_inst_bits, p_rst_addr,
                                 p_F_send_intv_delay, p_X_recv_intv_delay);
@@ -75,7 +74,7 @@ module DecodeBasicTestSuite #(
     .p_data_bits    (p_inst_bits)
   ) complete_notif();
 
-  DecodeBasic #(
+  DecodeIssue #(
     .p_isa_subset   (p_tinyrv1),
     .p_num_pipes    (p_num_pipes),
     .p_pipe_subsets (p_pipe_subsets)
@@ -294,31 +293,45 @@ module DecodeBasicTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // Trace the design
+  // Linetracing
   //----------------------------------------------------------------------
 
   string X_traces [p_num_pipes-1:0];
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign X_traces[i] = X_Ostreams[i].X_Ostream.trace;
+      always_ff @( posedge clk ) begin
+        #2;
+        X_traces[i] = X_Ostreams[i].X_Ostream.trace();
+      end
     end
   endgenerate
 
-  string X_trace;
-  always_comb begin
-    X_trace = "";
-    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
-      X_trace = { X_trace, X_traces[j], " " };
-    end
-  end
+  // Need to store other traces, to be aligned with X_Ostream traces
+  string trace;
+  string F_Istream_trace;
+  string dut_trace;
 
-  Tracer tracer ( clk, {
-    F_Istream.trace,
-    " | ",
-    dut.trace,
-    " | ",
-    X_trace
-  } );
+  always_ff @( posedge clk ) begin
+    #2;
+    F_Istream_trace = F_Istream.trace();
+    dut_trace       = dut.trace();
+
+    // Wait until X_Ostream traces are ready
+    #1;
+    trace = "";
+
+    trace = {trace, F_Istream_trace};
+    trace = {trace, " | "};
+    trace = {trace, dut_trace};
+    trace = {trace, " | "};
+    for( int j = 0; j < p_num_pipes; j++ ) begin
+      if( j > 0 )
+        trace = {trace, " "};
+      trace = {trace, X_traces[j]};
+    end
+    
+    t.trace( trace );
+  end
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -326,8 +339,7 @@ module DecodeBasicTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -343,7 +355,7 @@ module DecodeBasicTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -352,8 +364,7 @@ module DecodeBasicTestSuite #(
 
   task test_case_2_pending();
     t.test_case_begin( "test_case_2_pending" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     //   seq_num waddr wdata wen
     pub( 'x,     1,    1,    1 );
@@ -384,7 +395,7 @@ module DecodeBasicTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -393,8 +404,7 @@ module DecodeBasicTestSuite #(
 
   task test_case_3_add();
     t.test_case_begin( "test_case_3_add" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
     
     //   seq_num waddr wdata wen
     pub( 'x,     1,    3,    1 );
@@ -415,7 +425,7 @@ module DecodeBasicTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -424,8 +434,7 @@ module DecodeBasicTestSuite #(
 
   task test_case_4_addi();
     t.test_case_begin( "test_case_4_addi" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     //   seq_num waddr wdata wen
     pub( 'x,     1,    9,    1 );
@@ -445,7 +454,7 @@ module DecodeBasicTestSuite #(
       end
     join
   
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -455,21 +464,21 @@ module DecodeBasicTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
-    if ((t.n <= 0) || (t.n == 2)) test_case_2_pending();
-    if ((t.n <= 0) || (t.n == 3)) test_case_3_add();
-    if ((t.n <= 0) || (t.n == 4)) test_case_4_addi();
+    test_case_1_basic();
+    test_case_2_pending();
+    test_case_3_add();
+    test_case_4_addi();
 
   endtask
 endmodule
 
 //========================================================================
-// DecodeBasic_test
+// DecodeIssue_test
 //========================================================================
 
-module DecodeBasic_test;
-  DecodeBasicTestSuite #(1) suite_1();
-  DecodeBasicTestSuite #(
+module DecodeIssue_test;
+  DecodeIssueTestSuite #(1) suite_1();
+  DecodeIssueTestSuite #(
     2, 
     2, 
     32, 
@@ -480,7 +489,7 @@ module DecodeBasic_test;
     0, 
     {p_tinyrv1, OP_ADD_VEC}) 
   suite_2();
-  DecodeBasicTestSuite #(3, 
+  DecodeIssueTestSuite #(3, 
     5, 
     32, 
     32, 
@@ -496,7 +505,7 @@ module DecodeBasic_test;
       OP_MUL_VEC
     }
   ) suite_3();
-  DecodeBasicTestSuite #(
+  DecodeIssueTestSuite #(
     4, 
     1, 
     32, 
@@ -507,7 +516,7 @@ module DecodeBasic_test;
     0, 
     {p_tinyrv1}
   ) suite_4();
-  DecodeBasicTestSuite #(
+  DecodeIssueTestSuite #(
     5, 
     3, 
     32, 
@@ -522,7 +531,7 @@ module DecodeBasic_test;
       p_tinyrv1
     }
   ) suite_5();
-  DecodeBasicTestSuite #(
+  DecodeIssueTestSuite #(
     6, 
     3, 
     32, 
@@ -537,7 +546,7 @@ module DecodeBasic_test;
       p_tinyrv1
     }
   ) suite_6();
-  DecodeBasicTestSuite #(
+  DecodeIssueTestSuite #(
     7, 
     3, 
     32, 

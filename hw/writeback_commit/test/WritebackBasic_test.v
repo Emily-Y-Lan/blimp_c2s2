@@ -9,7 +9,6 @@
 `include "intf/CompleteNotif.v"
 `include "intf/X__WIntf.v"
 `include "test/TestUtils.v"
-`include "test/TraceUtils.v"
 
 import TestEnv::*;
 
@@ -146,21 +145,6 @@ module WritebackBasicTestSuite #(
     msgs_to_send[pipe_num].push_back( pipe_msg );
   endtask
 
-  string X_traces [p_num_pipes-1:0];
-  generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign X_traces[i] = X_Istreams[i].X_Istream.trace;
-    end
-  endgenerate
-
-  string X_trace;
-  always_comb begin
-    X_trace = "";
-    for( int j = 0; j < p_num_pipes; j = j + 1 ) begin
-      X_trace = { X_trace, X_traces[j], " " };
-    end
-  end
-
   //----------------------------------------------------------------------
   // Completion Test Subscriber
   //----------------------------------------------------------------------
@@ -250,18 +234,49 @@ module WritebackBasicTestSuite #(
   endtask
 
   //----------------------------------------------------------------------
-  // Trace the design
+  // Linetracing
   //----------------------------------------------------------------------
 
-  Tracer tracer ( clk, {
-    X_trace,
-    " | ",
-    dut.trace,
-    " | ",
-    CompleteSub.trace,
-    " - ",
-    CommitSub.trace
-  } );
+  string X_traces [p_num_pipes-1:0];
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      always_ff @( posedge clk ) begin
+        #2;
+        X_traces[i] = X_Istreams[i].X_Istream.trace();
+      end
+    end
+  endgenerate
+
+  // Need to store other traces, to be aligned with X_Istream traces
+  string trace;
+  string dut_trace;
+  string CompleteSub_trace;
+  string CommitSub_trace;
+
+  always_ff @( posedge clk ) begin
+    #2;
+    dut_trace         = dut.trace();
+    CompleteSub_trace = CompleteSub.trace();
+    CommitSub_trace   = CommitSub.trace();
+
+    // Wait until X_Istream traces are ready
+    #1;
+    trace = "";
+
+    for( int j = 0; j < p_num_pipes; j++ ) begin
+      if( j > 0 )
+        trace = {trace, " "};
+      trace = {trace, X_traces[j]};
+    end
+    trace = {trace, " | "};
+    trace = {trace, dut_trace};
+    trace = {trace, " | "};
+    trace = {trace, CompleteSub_trace};
+    trace = {trace, " - "};
+    trace = {trace, CommitSub_trace};
+    
+    t.trace( trace );
+  end
 
   //----------------------------------------------------------------------
   // test_case_1_basic
@@ -269,8 +284,7 @@ module WritebackBasicTestSuite #(
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
-    if( t.n != 0 )
-      tracer.enable_trace();
+    if( !t.run_test ) return;
 
     fork
       begin
@@ -292,7 +306,7 @@ module WritebackBasicTestSuite #(
       end
     join
 
-    tracer.disable_trace();
+    t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
@@ -302,7 +316,7 @@ module WritebackBasicTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    if ((t.n <= 0) || (t.n == 1)) test_case_1_basic();
+    test_case_1_basic();
 
   endtask
 endmodule

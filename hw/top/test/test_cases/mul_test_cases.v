@@ -7,10 +7,9 @@
 // test_case_mul_1_basic
 //------------------------------------------------------------------------
 
-task test_case_mul_1_basic(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_1_basic", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_1_basic();
+  t.test_case_begin( "test_case_mul_1_basic" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -24,17 +23,16 @@ task test_case_mul_1_basic(input int test_num);
   check_trace( 'h004, 2, 'h0000_0003, 1 ); // addi x2, x0, 3
   check_trace( 'h008, 3, 'h0000_0006, 1 ); // mul  x3, x1, x2
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_2_x0
 //------------------------------------------------------------------------
 
-task test_case_mul_2_x0(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_2_x0", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_2_x0();
+  t.test_case_begin( "test_case_mul_2_x0" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -56,17 +54,16 @@ task test_case_mul_2_x0(input int test_num);
   check_trace( 'h014,  3, 'h00, 1 ); // mul  x3, x0, x1
   check_trace( 'h018,  4, 'h00, 1 ); // mul  x4, x2, x0
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_3_regs
 //------------------------------------------------------------------------
 
-task test_case_mul_3_regs(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_3_regs", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_3_regs();
+  t.test_case_begin( "test_case_mul_3_regs" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -128,17 +125,16 @@ task test_case_mul_3_regs(input int test_num);
   check_trace( 'h050,  2, 'h120,    1 ); // addi x2,  x2,  0
   check_trace( 'h054,  3, 'h240,    1 ); // addi x3,  x3,  0
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_4_deps
 //------------------------------------------------------------------------
 
-task test_case_mul_4_deps(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_4_deps", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_4_deps();
+  t.test_case_begin( "test_case_mul_4_deps" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -156,17 +152,16 @@ task test_case_mul_4_deps(input int test_num);
   check_trace( 'h00c, 4, 'h0c, 1 ); // mul  x4,  x3,  x1
   check_trace( 'h010, 5, 'h18, 1 ); // mul  x5,  x4,  x1
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_5_pos
 //------------------------------------------------------------------------
 
-task test_case_mul_5_pos(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_5_pos", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_5_pos();
+  t.test_case_begin( "test_case_mul_5_pos" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -208,17 +203,16 @@ task test_case_mul_5_pos(input int test_num);
   check_trace( 'h030, 6, 4_010_006, 1 ); // mul  x6,  x2,  x3
   check_trace( 'h034, 7, 4_014_012, 1 ); // mul  x7,  x3,  x4
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_6_neg
 //------------------------------------------------------------------------
 
-task test_case_mul_6_neg(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_6_neg", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_6_neg();
+  t.test_case_begin( "test_case_mul_6_neg" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -260,17 +254,16 @@ task test_case_mul_6_neg(input int test_num);
   check_trace( 'h030, 6, -4_010_006, 1 ); // mul  x6,  x2,  x3
   check_trace( 'h034, 7,  4_014_012, 1 ); // mul  x7,  x3,  x4
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_7_overflow
 //------------------------------------------------------------------------
 
-task test_case_mul_7_overflow(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_7_overflow", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_7_overflow();
+  t.test_case_begin( "test_case_mul_7_overflow" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -284,17 +277,16 @@ task test_case_mul_7_overflow(input int test_num);
   check_trace( 'h004, 2, 'h0000_0002, 1 ); // addi x2,  x0,  2
   check_trace( 'h008, 3, 'hffff_fffe, 1 ); // addi x3,  x1,  x2
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // test_case_mul_8_mix
 //------------------------------------------------------------------------
 
-task test_case_mul_8_mix(input int test_num);
-  t.test_case_begin( $sformatf("test_case_%0d_mul_8_mix", test_num) );
-  if( t.n != 0 )
-      tracer.enable_trace();
+task test_case_mul_8_mix();
+  t.test_case_begin( "test_case_mul_8_mix" );
+  if( !t.run_test ) return;
 
   // Write assembly program into memory
 
@@ -334,20 +326,20 @@ task test_case_mul_8_mix(input int test_num);
   check_trace( 'h02c, 6, 21, 1 ); // mul  x6,  x4, x5
   check_trace( 'h030, 3, 38, 1 ); // add  x3,  x3, x6
 
-  tracer.disable_trace();
+  t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
 // run_mul_tests
 //------------------------------------------------------------------------
 
-task run_mul_tests(input int test_num);
-  if ((t.c <= 0) || (t.c == 1)) test_case_mul_1_basic   ( test_num );
-  if ((t.c <= 0) || (t.c == 2)) test_case_mul_2_x0      ( test_num );
-  if ((t.c <= 0) || (t.c == 3)) test_case_mul_3_regs    ( test_num );
-  if ((t.c <= 0) || (t.c == 4)) test_case_mul_4_deps    ( test_num );
-  if ((t.c <= 0) || (t.c == 5)) test_case_mul_5_pos     ( test_num );
-  if ((t.c <= 0) || (t.c == 6)) test_case_mul_6_neg     ( test_num );
-  if ((t.c <= 0) || (t.c == 7)) test_case_mul_7_overflow( test_num );
-  if ((t.c <= 0) || (t.c == 8)) test_case_mul_8_mix     ( test_num );
+task run_mul_tests();
+  test_case_mul_1_basic();
+  test_case_mul_2_x0();
+  test_case_mul_3_regs();
+  test_case_mul_4_deps();
+  test_case_mul_5_pos();
+  test_case_mul_6_neg();
+  test_case_mul_7_overflow();
+  test_case_mul_8_mix();
 endtask

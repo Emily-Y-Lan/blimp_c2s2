@@ -194,17 +194,13 @@ module DecodeIssue #(
   // Linetracing
   //----------------------------------------------------------------------
 
-`ifndef SYNTHESIS
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-  
-  always_comb begin
+`ifndef SYNTHESIS  
+  function string trace();
     if( F_reg.val & F.rdy )
       trace = $sformatf("%-20s", disassemble32(F_reg.inst) );
     else
       trace = {20{" "}};
-  end
+  endfunction
 `endif
 
 endmodule

@@ -134,30 +134,25 @@ module ALU #(
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
-  // verilator lint_off UNUSEDSIGNAL
-  string trace;
-  // verilator lint_on UNUSEDSIGNAL
-
   function int ceil_div_4( int val );
     return (val / 4) + (val % 4);
   endfunction
 
-  always_comb begin
-    int str_len;
+  int str_len;
+  assign str_len = 11                         + 1 + // uop
+                   ceil_div_4(p_seq_num_bits) + 1 + // seq_num
+                   ceil_div_4(5)              + 1 + // waddr
+                   ceil_div_4(p_data_bits)    + 1 + // op1
+                   ceil_div_4(p_data_bits)    + 1 + // op2
+                   ceil_div_4(p_data_bits);         // wdata
 
-    str_len = 11                         + 1 + // uop
-              ceil_div_4(p_seq_num_bits) + 1 + // seq_num
-              ceil_div_4(5)              + 1 + // waddr
-              ceil_div_4(p_data_bits)    + 1 + // op1
-              ceil_div_4(p_data_bits)    + 1 + // op2
-              ceil_div_4(p_data_bits);         // wdata
-
+  function string trace();
     if( W.val & W.rdy )
       trace = $sformatf("%11s:%h:%h:%h:%h:%h", D_reg.uop.name(), 
                         W.seq_num, W.waddr, op1, op2, W.wdata );
     else
       trace = {str_len{" "}};
-  end
+  endfunction
 `endif
 
 endmodule
