@@ -91,7 +91,7 @@ module BlimpV1 #(
   FetchUnitL1 #(
     .p_rst_addr  (p_rst_addr),
     .p_opaq_bits (p_opaq_bits)
-  ) fetch (
+  ) FU (
     .mem (inst_mem),
     .D   (f__d_intf),
     .*
@@ -104,7 +104,7 @@ module BlimpV1 #(
       OP_ADD_VEC, // ALU
       OP_MUL_VEC  // Multiplier
     })
-  ) decode (
+  ) DIU (
     .F        (f__d_intf),
     .Ex       (d__x_intfs),
     .complete (complete_notif),
@@ -115,7 +115,7 @@ module BlimpV1 #(
     .p_addr_bits    (p_addr_bits),
     .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
-  ) alu (
+  ) ALU_XU (
     .D (d__x_intfs[0]),
     .W (x__w_intfs[0]),
     .*
@@ -125,7 +125,7 @@ module BlimpV1 #(
     .p_addr_bits    (p_addr_bits),
     .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
-  ) mul (
+  ) MUL_XU (
     .D (d__x_intfs[1]),
     .W (x__w_intfs[1]),
     .*
@@ -133,7 +133,7 @@ module BlimpV1 #(
 
   WritebackCommitUnitL1 #(
     .p_num_pipes (2)
-  ) writeback (
+  ) WCU (
     .Ex       (x__w_intfs),
     .complete (complete_notif),
     .commit   (commit_notif),
@@ -150,15 +150,15 @@ module BlimpV1 #(
 `ifndef SYNTHESIS
   function string trace();
     trace = {
-      fetch.trace(),
+      FU.trace(),
       " | ",
-      decode.trace(),
+      DIU.trace(),
       " | ",
-      alu.trace(),
+      ALU_XU.trace(),
       " | ",
-      mul.trace(),
+      MUL_XU.trace(),
       " | ",
-      writeback.trace()
+      WCU.trace()
     };
   endfunction
 `endif
