@@ -183,7 +183,11 @@ module FetchUnitL1
 
 `ifndef SYNTHESIS
   function string trace();
-    trace = $sformatf("(%h)", req_opaque);
+    if( memreq_xfer )
+      trace = $sformatf("(%h)", req_opaque);
+    else
+      if( memreq_xfer )
+      trace = $sformatf("(%h)", req_opaque);
   endfunction
 `endif
 

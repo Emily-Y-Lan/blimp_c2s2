@@ -135,7 +135,7 @@ endtask
 //------------------------------------------------------------------------
 
 task test_case_add_4_deps();
-  t.test_case_begin( "test_case_%0d_add_4_deps" );
+  t.test_case_begin( "test_case_add_4_deps" );
   if( !t.run_test ) return;
 
   // Write assembly program into memory
