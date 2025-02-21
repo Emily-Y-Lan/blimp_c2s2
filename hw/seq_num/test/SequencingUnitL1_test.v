@@ -80,6 +80,12 @@ module SequencingUnitL1TestSuite #(
     .*
   );
 
+  task seq_alloc(
+    input logic [p_seq_num_bits-1:0] seq_num
+  );
+    alloc_Ostream.recv( seq_num );
+  endtask
+
   //----------------------------------------------------------------------
   // FL Freer
   //----------------------------------------------------------------------
@@ -89,6 +95,12 @@ module SequencingUnitL1TestSuite #(
     .val (free.val),
     .*
   );
+
+  task seq_free(
+    input logic [p_seq_num_bits-1:0] seq_num
+  );
+    free_pub.pub( seq_num );
+  endtask
 
   //----------------------------------------------------------------------
   // Linetracing
@@ -159,14 +171,14 @@ module SequencingUnitL1TestSuite #(
     t.test_case_begin( "test_case_1_basic" );
     if( !t.run_test ) return;
 
-    alloc_Ostream.recv( mk_seq_num(0, 0) );
-    alloc_Ostream.recv( mk_seq_num(0, 1) );
+    seq_alloc( mk_seq_num(0, 0) );
+    seq_alloc( mk_seq_num(0, 1) );
 
     check_age( mk_seq_num(0, 0), mk_seq_num(0, 1), 1 );
     check_allocated( 2 );
 
-    free_pub.pub( mk_seq_num(0, 0) );
-    free_pub.pub( mk_seq_num(0, 1) );
+    seq_free( mk_seq_num(0, 0) );
+    seq_free( mk_seq_num(0, 1) );
 
     t.test_case_end();
   endtask
