@@ -164,24 +164,10 @@ module SequencingUnitL1TestSuite #(
   endfunction
 
   //----------------------------------------------------------------------
-  // test_case_1_basic
+  // Include test cases
   //----------------------------------------------------------------------
 
-  task test_case_1_basic();
-    t.test_case_begin( "test_case_1_basic" );
-    if( !t.run_test ) return;
-
-    seq_alloc( mk_seq_num(0, 0) );
-    seq_alloc( mk_seq_num(0, 1) );
-
-    check_age( mk_seq_num(0, 0), mk_seq_num(0, 1), 1 );
-    check_allocated( 2 );
-
-    seq_free( mk_seq_num(0, 0) );
-    seq_free( mk_seq_num(0, 1) );
-
-    t.test_case_end();
-  endtask
+  `include "hw/seq_num/test/test_cases/basic_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -190,7 +176,7 @@ module SequencingUnitL1TestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    test_case_1_basic();
+    run_basic_test_cases();
   endtask
 endmodule
 
@@ -202,8 +188,8 @@ module SequencingUnitL1_test;
   SequencingUnitL1TestSuite #(1)                suite_1();
   SequencingUnitL1TestSuite #(2,  6,  4,  2, 0) suite_2();
   SequencingUnitL1TestSuite #(3,  8,  6,  2, 0) suite_3();
-  SequencingUnitL1TestSuite #(3, 16, 16,  4, 0) suite_4();
-  SequencingUnitL1TestSuite #(3, 32, 32,  8, 3) suite_5();
+  SequencingUnitL1TestSuite #(4, 12, 16,  4, 0) suite_4();
+  SequencingUnitL1TestSuite #(5, 16, 32,  8, 3) suite_5();
 
   int s;
 

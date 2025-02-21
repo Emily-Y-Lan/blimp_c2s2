@@ -6,7 +6,6 @@
 `ifndef HW_SEQNUM_SEQUENCINGUNITL1_V
 `define HW_SEQNUM_SEQUENCINGUNITL1_V
 
-`include "hw/common/PriorityEncoder.v"
 `include "intf/seq_num/SeqNumAgeIntf.v"
 `include "intf/seq_num/SeqNumAllocIntf.v"
 `include "intf/seq_num/SeqNumFreeIntf.v"
@@ -118,37 +117,48 @@ module SequencingUnitL1 #(
   //----------------------------------------------------------------------
   // Reclaiming
   //----------------------------------------------------------------------
-  // Use a priority encoder to figure out how much we can reclaim
 
-  logic [p_free_width-1:0] reclaim_window;
+  logic [p_seq_num_bits-1:0] entries_allocated;
+  assign entries_allocated = curr_head_ptr - curr_tail_ptr;
+
+  logic [p_free_width-1:0] reclaim_valid /* verilator split_var */;
   logic [p_free_width-1:0] reclaim_select;
 
   genvar i;
   generate
     for( i = 0; i < p_free_width; i = i + 1 ) begin
-      assign reclaim_window[i] = ( epochs[curr_tail_ptr + i] == FREE );
+      if( i == 0 )
+        assign reclaim_valid[i] = ( epochs[curr_tail_ptr + i] == FREE ) &
+                                  (p_seq_num_bits'(i) < entries_allocated);
+      else
+        assign reclaim_valid[i] = ( epochs[curr_tail_ptr + i] == FREE ) &
+                                  (p_seq_num_bits'(i) < entries_allocated) &
+                                  reclaim_valid[i - 1];
     end
   endgenerate
 
-  PriorityEncoder #( .p_width( p_free_width ) ) reclaim_selector (
-    .in  (reclaim_window),
-    .out (reclaim_select)
+  // Identify the maximum amount to reclaim
+  assign reclaim_select = reclaim_valid & (
+    ((~reclaim_valid) >> 1) | 
+    {1'b1, (p_free_width-1)'(1'b0)}
   );
 
-  logic [p_seq_num_bits-1:0] entries_allocated;
-  assign entries_allocated = curr_head_ptr - curr_tail_ptr;
-
+  // Find the maximum amount to reclaim
   logic [p_seq_num_bits-1:0] curr_tail_incr;
-  always_comb begin
-    curr_tail_incr = '0;
-    for( int j = 0; j < p_free_width; j = j + 1 ) begin
-      if( 
-        reclaim_select[j] &
-        (p_seq_num_bits'(j) < entries_allocated)
-      )
-        curr_tail_incr = curr_tail_incr | p_seq_num_bits'(j + 1);
+  logic [p_seq_num_bits-1:0] curr_tail_incr_arr [p_free_width];
+
+  generate
+    for( i = 0; i < p_free_width; i = i + 1 ) begin
+      always_comb begin
+        if( reclaim_select[i] )
+          curr_tail_incr_arr[i] = p_seq_num_bits'(i + 1);
+        else
+          curr_tail_incr_arr[i] = '0;
+      end
     end
-  end
+  endgenerate
+
+  assign curr_tail_incr = curr_tail_incr_arr.or();
 
   always_ff @( posedge clk ) begin
     if( rst ) begin
