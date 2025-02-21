@@ -11,7 +11,7 @@
 `include "intf/seq_num/SeqNumFreeIntf.v"
 
 module SequencingUnitL1 #(
-  parameter p_free_width = 2 // Number of entries that can be freed at once
+  parameter p_reclaim_width = 2 // Number of entries that can be reclaimed at once
 )(
   input  logic clk,
   input  logic rst,
@@ -121,12 +121,12 @@ module SequencingUnitL1 #(
   logic [p_seq_num_bits-1:0] entries_allocated;
   assign entries_allocated = curr_head_ptr - curr_tail_ptr;
 
-  logic [p_free_width-1:0] reclaim_valid /* verilator split_var */;
-  logic [p_free_width-1:0] reclaim_select;
+  logic [p_reclaim_width-1:0] reclaim_valid /* verilator split_var */;
+  logic [p_reclaim_width-1:0] reclaim_select;
 
   genvar i;
   generate
-    for( i = 0; i < p_free_width; i = i + 1 ) begin
+    for( i = 0; i < p_reclaim_width; i = i + 1 ) begin
       if( i == 0 )
         assign reclaim_valid[i] = ( epochs[curr_tail_ptr + i] == FREE ) &
                                   (p_seq_num_bits'(i) < entries_allocated);
@@ -140,15 +140,15 @@ module SequencingUnitL1 #(
   // Identify the maximum amount to reclaim
   assign reclaim_select = reclaim_valid & (
     ((~reclaim_valid) >> 1) | 
-    {1'b1, (p_free_width-1)'(1'b0)}
+    {1'b1, (p_reclaim_width-1)'(1'b0)}
   );
 
   // Find the maximum amount to reclaim
   logic [p_seq_num_bits-1:0] curr_tail_incr;
-  logic [p_seq_num_bits-1:0] curr_tail_incr_arr [p_free_width];
+  logic [p_seq_num_bits-1:0] curr_tail_incr_arr [p_reclaim_width];
 
   generate
-    for( i = 0; i < p_free_width; i = i + 1 ) begin
+    for( i = 0; i < p_reclaim_width; i = i + 1 ) begin
       always_comb begin
         if( reclaim_select[i] )
           curr_tail_incr_arr[i] = p_seq_num_bits'(i + 1);

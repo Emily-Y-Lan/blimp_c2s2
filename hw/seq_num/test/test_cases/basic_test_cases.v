@@ -98,11 +98,57 @@ task test_case_4_reclaim_speed();
   seq_free( 0 );
 
   // Only wait the needed time
-  for( int i = 0; i < 16 / p_free_width; i = i + 1 )
+  for( int i = 0; i < 16 / p_reclaim_width; i = i + 1 )
     @( posedge clk );
   #1;
 
   check_allocated( 0 );
+
+  t.test_case_end();
+endtask
+
+//----------------------------------------------------------------------
+// test_case_5_capacity
+//----------------------------------------------------------------------
+
+task test_case_5_capacity();
+  t.test_case_begin( "test_case_5_capacity" );
+  if( !t.run_test ) return;
+
+  // Fill up to maximum entries
+  for( int i = 0; i < p_num_epochs - 1; i = i + 1 ) begin
+    for( int j = 0; j < p_entries_per_epoch; j = j + 1 ) begin
+      seq_alloc({
+        p_epoch_bits'(i),
+        p_non_epoch_bits'(j)
+      });
+    end
+  end
+
+  for( int j = 0; j < p_entries_per_epoch - 1; j = j + 1 ) begin
+    seq_alloc({
+      p_epoch_bits'(p_num_epochs - 1),
+      p_non_epoch_bits'(j)
+    });
+  end
+
+  check_allocated( (p_num_epochs * p_entries_per_epoch) - 1 );
+
+  // Free the entire first epoch
+  for( int j = 0; j < p_entries_per_epoch; j = j + 1 ) begin
+    seq_free({
+      p_epoch_bits'(0),
+      p_non_epoch_bits'(j)
+    });
+  end
+
+  // Now we can allocate the final entry
+  seq_alloc({
+    p_epoch_bits'(p_num_epochs - 1),
+    p_non_epoch_bits'(p_entries_per_epoch - 1)
+  });
+
+  check_allocated( (p_num_epochs - 1) * p_entries_per_epoch );
 
   t.test_case_end();
 endtask
@@ -116,5 +162,6 @@ task run_basic_test_cases();
   test_case_2_reclaim();
   test_case_3_ooo_free();
   test_case_4_reclaim_speed();
+  test_case_5_capacity();
 endtask
 
