@@ -20,7 +20,7 @@ interface SeqNumAllocIntf
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   logic [p_seq_num_bits-1:0] seq_num;
-  logic                      val
+  logic                      val;
   logic                      rdy;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
