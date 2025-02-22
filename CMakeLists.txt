@@ -16,6 +16,7 @@ set(V_TEST_FILES
   hw/decode_issue/test/Regfile_test.v
   hw/execute/test/l1/ALU_test.v
   hw/execute/test/l1/Multiplier_test.v
+  hw/execute/test/l2/PipelinedMultiplier_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/top/test/BlimpV1_test.v
   hw/seq_num/test/SequencingUnitL1_test.v

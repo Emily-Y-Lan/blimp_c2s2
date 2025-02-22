@@ -3,8 +3,8 @@
 //========================================================================
 // An execute unit for performing arithmetic operations
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_ALU_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_ALU_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L1_ALU_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L1_ALU_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -157,4 +157,4 @@ module ALU #(
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_ALU_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L1_ALU_V

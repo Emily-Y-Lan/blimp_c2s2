@@ -1,10 +1,10 @@
 //========================================================================
-// Multiplier.v
+// PipelinedMultiplier.v
 //========================================================================
-// An execute unit for performing multiplication operations
+// A multiplier with a parametrizable latency
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIER_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIER_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIER_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIER_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -12,10 +12,11 @@
 
 import UArch::*;
 
-module Multiplier #(
-  parameter p_addr_bits    = 32,
-  parameter p_data_bits    = 32,
-  parameter p_seq_num_bits = 5
+module PipelinedMultiplier #(
+  parameter p_addr_bits       = 32,
+  parameter p_data_bits       = 32,
+  parameter p_seq_num_bits    = 5,
+  parameter p_pipeline_stages = 1
 )(
   input  logic clk,
   input  logic rst,
@@ -47,10 +48,21 @@ module Multiplier #(
     rv_uop                     uop;
   } D_input;
 
+  typedef struct packed {
+    logic    [p_addr_bits-1:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic    [p_data_bits-1:0] wdata;
+    logic                      wen;
+    logic                      val;
+  } W_input;
+
   D_input D_reg;
   D_input D_reg_next;
+  W_input mul_output;
   logic   D_xfer;
   logic   W_xfer;
+  logic   mul_output_rdy;
 
   // verilator lint_off ENUMVALUE
 
@@ -71,7 +83,7 @@ module Multiplier #(
 
   always_comb begin
     D_xfer = D.val & D.rdy;
-    W_xfer = W.val & W.rdy;
+    W_xfer = mul_output.val & mul_output_rdy;
 
     if ( D_xfer )
       D_reg_next = '{ 
@@ -112,22 +124,56 @@ module Multiplier #(
 
   always_comb begin
     case( uop )
-      OP_MUL:  W.wdata = op1 * op2;
-      default: W.wdata = 'x;
+      OP_MUL:  mul_output.wdata = op1 * op2;
+      default: mul_output.wdata = 'x;
     endcase
   end
 
   //----------------------------------------------------------------------
-  // Assign remaining signals
+  // Assign remaining output signals
   //----------------------------------------------------------------------
 
-  assign D.rdy = W.rdy | (!D_reg.val);
-  assign W.val = D_reg.val;
+  assign D.rdy = mul_output_rdy | (!D_reg.val);
+  assign mul_output.val = D_reg.val;
 
-  assign W.pc      = D_reg.pc;
-  assign W.wen     = 1'b1;
-  assign W.seq_num = D_reg.seq_num;
-  assign W.waddr   = D_reg.waddr;
+  assign mul_output.pc      = D_reg.pc;
+  assign mul_output.wen     = 1'b1;
+  assign mul_output.seq_num = D_reg.seq_num;
+  assign mul_output.waddr   = D_reg.waddr;
+
+  //----------------------------------------------------------------------
+  // Pipeline stages
+  //----------------------------------------------------------------------
+
+  W_input pipeline_outputs [p_pipeline_stages];
+  logic   pipeline_rdy     [p_pipeline_stages]/* verilator split_var */;
+
+  assign pipeline_outputs[0] = mul_output;
+  assign mul_output_rdy      = pipeline_rdy[0];
+
+  assign W.val     = pipeline_outputs[p_pipeline_stages-1].val;
+  assign W.pc      = pipeline_outputs[p_pipeline_stages-1].pc;
+  assign W.seq_num = pipeline_outputs[p_pipeline_stages-1].seq_num;
+  assign W.waddr   = pipeline_outputs[p_pipeline_stages-1].waddr;
+  assign W.wdata   = pipeline_outputs[p_pipeline_stages-1].wdata;
+  assign W.wen     = pipeline_outputs[p_pipeline_stages-1].val;
+  assign pipeline_rdy[p_pipeline_stages-1] = W.rdy;
+
+  genvar i;
+  generate
+    for( i = 1; i < p_pipeline_stages; i = i + 1 ) begin
+      always_ff @( posedge clk ) begin
+        if( rst )
+          pipeline_outputs[i] <= '0; // Invalid
+        else if( pipeline_outputs[i - 1].val & pipeline_rdy[i - 1] )
+          pipeline_outputs[i] <= pipeline_outputs[i - 1];
+        else if( pipeline_outputs[i].val & pipeline_rdy[i] )
+          pipeline_outputs[i] <= '0; // Invalid
+      end
+      assign pipeline_rdy[i - 1] = pipeline_rdy[i] |
+                                   !( pipeline_outputs[i - 1].val );
+    end
+  endgenerate
 
   //----------------------------------------------------------------------
   // Linetracing
@@ -157,4 +203,4 @@ module Multiplier #(
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIER_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIER_V
