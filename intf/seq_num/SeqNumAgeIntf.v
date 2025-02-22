@@ -13,11 +13,8 @@
 interface SeqNumAgeIntf
 #(
   parameter p_seq_num_bits = 5,
-  parameter p_num_epochs   = 2
+  parameter p_epoch_bits   = 2
 );
-
-  localparam p_epoch_bits = $clog2( p_num_epochs );
-
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

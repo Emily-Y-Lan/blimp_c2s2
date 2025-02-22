@@ -19,17 +19,17 @@ import TestEnv::*;
 // A test suite for a particular parametrization of the sequencing unit
 
 module SequencingUnitL1TestSuite #(
-  parameter p_suite_num    = 0,
-  parameter p_seq_num_bits = 5,
-  parameter p_num_epochs   = 4,
-  parameter p_reclaim_width   = 2,
+  parameter p_suite_num     = 0,
+  parameter p_seq_num_bits  = 5,
+  parameter p_epoch_bits    = 2,
+  parameter p_reclaim_width = 2,
 
   parameter p_alloc_intv_delay = 0
 );
 
   string suite_name = $sformatf("%0d: SequencingUnitL1TestSuite_%0d_%0d_%0d",
                                 p_suite_num, p_seq_num_bits,
-                                p_num_epochs, p_reclaim_width);
+                                p_epoch_bits, p_reclaim_width);
 
   //----------------------------------------------------------------------
   // Setup
@@ -45,8 +45,8 @@ module SequencingUnitL1TestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  localparam p_epoch_bits = $clog2( p_num_epochs );
-  localparam p_non_epoch_bits = p_seq_num_bits - p_epoch_bits;
+  localparam p_num_epochs        = 2 ** p_epoch_bits;
+  localparam p_non_epoch_bits    = p_seq_num_bits - p_epoch_bits;
   localparam p_entries_per_epoch = 2 ** (p_non_epoch_bits);
 
   SeqNumAllocIntf #(
@@ -59,7 +59,7 @@ module SequencingUnitL1TestSuite #(
   
   SeqNumAgeIntf #(
     .p_seq_num_bits (p_seq_num_bits),
-    .p_num_epochs   (p_num_epochs)
+    .p_epoch_bits   (p_epoch_bits)
   ) age();
 
   SequencingUnitL1 #(
@@ -188,10 +188,10 @@ endmodule
 
 module SequencingUnitL1_test;
   SequencingUnitL1TestSuite #(1)                suite_1();
-  SequencingUnitL1TestSuite #(2,  6,  4,  2, 0) suite_2();
-  SequencingUnitL1TestSuite #(3,  8,  6,  2, 0) suite_3();
-  SequencingUnitL1TestSuite #(4,  8, 16,  4, 0) suite_4();
-  SequencingUnitL1TestSuite #(5,  8, 32,  8, 3) suite_5();
+  SequencingUnitL1TestSuite #(2,  6,  2,  2, 0) suite_2();
+  SequencingUnitL1TestSuite #(3,  8,  3,  2, 0) suite_3();
+  SequencingUnitL1TestSuite #(4,  8,  4,  4, 0) suite_4();
+  SequencingUnitL1TestSuite #(5,  8,  5,  8, 3) suite_5();
 
   int s;
 

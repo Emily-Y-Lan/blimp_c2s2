@@ -16,11 +16,11 @@ import TestEnv::*;
 module SeqNumAgeIntfTestSuite #(
   parameter p_suite_num    = 0,
   parameter p_seq_num_bits = 5,
-  parameter p_num_epochs   = 4
+  parameter p_epoch_bits   = 2
 );
 
   string suite_name = $sformatf("%0d: SeqNumAgeIntfTestSuite_%0d_%0d",
-                                p_suite_num, p_seq_num_bits, p_num_epochs);
+                                p_suite_num, p_seq_num_bits, p_epoch_bits);
 
   //----------------------------------------------------------------------
   // Setup
@@ -36,12 +36,11 @@ module SeqNumAgeIntfTestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  localparam p_epoch_bits = $clog2( p_num_epochs );
   logic [p_epoch_bits-1:0] dut_curr_tail_epoch;
 
   SeqNumAgeIntf #(
     .p_seq_num_bits (p_seq_num_bits),
-    .p_num_epochs   (p_num_epochs)
+    .p_epoch_bits   (p_epoch_bits)
   ) dut();
 
   assign dut.curr_tail_epoch = dut_curr_tail_epoch;
@@ -198,26 +197,18 @@ module SeqNumAgeIntfTestSuite #(
 
     for( int i = 0; i < 30; i++ ) begin
       do begin
-        // Must do modulus by number of epochs
-        rand_seq_num_0[p_seq_num_bits-1:p_seq_num_bits-p_epoch_bits]
-         = p_epoch_bits'( $urandom() % p_num_epochs );
-        rand_seq_num_1[p_seq_num_bits-1:p_seq_num_bits-p_epoch_bits]
-         = p_epoch_bits'( $urandom() % p_num_epochs );
-        rand_curr_tail_epoch =   p_epoch_bits'( $urandom() % p_num_epochs );
-
-        rand_seq_num_0[p_seq_num_bits-p_epoch_bits-1:0]
-          = ( p_seq_num_bits - p_epoch_bits )'( $urandom() );
-        rand_seq_num_1[p_seq_num_bits-p_epoch_bits-1:0]
-          = ( p_seq_num_bits - p_epoch_bits )'( $urandom() );
+        rand_seq_num_0 = p_seq_num_bits'( $urandom() );
+        rand_seq_num_1 = p_seq_num_bits'( $urandom() );
       end while( rand_seq_num_0 == rand_seq_num_1 );
+      rand_curr_tail_epoch =   p_epoch_bits'( $urandom() );
 
       seq_num_0_epoch = int'( rand_seq_num_0[p_seq_num_bits-1:p_seq_num_bits-p_epoch_bits] );
       seq_num_1_epoch = int'( rand_seq_num_1[p_seq_num_bits-1:p_seq_num_bits-p_epoch_bits] );
 
       if( seq_num_0_epoch < int'( rand_curr_tail_epoch ) )
-        seq_num_0_epoch = seq_num_0_epoch + p_num_epochs;
+        seq_num_0_epoch = seq_num_0_epoch + ( 2 ** p_epoch_bits );
       if( seq_num_1_epoch < int'( rand_curr_tail_epoch ) )
-        seq_num_1_epoch = seq_num_1_epoch + p_num_epochs;
+        seq_num_1_epoch = seq_num_1_epoch + ( 2 ** p_epoch_bits );
 
       if( seq_num_0_epoch != seq_num_1_epoch )
         exp_is_older = ( seq_num_0_epoch < seq_num_1_epoch );
@@ -255,9 +246,9 @@ endmodule
 
 module SeqNumAgeIntf_test;
   SeqNumAgeIntfTestSuite #(1)         suite_1();
-  SeqNumAgeIntfTestSuite #(2,  6,  4) suite_2();
-  SeqNumAgeIntfTestSuite #(3,  8,  6) suite_3();
-  SeqNumAgeIntfTestSuite #(3, 32, 32) suite_4();
+  SeqNumAgeIntfTestSuite #(2,  6,  2) suite_2();
+  SeqNumAgeIntfTestSuite #(3,  8,  3) suite_3();
+  SeqNumAgeIntfTestSuite #(3, 32,  6) suite_4();
 
   int s;
 

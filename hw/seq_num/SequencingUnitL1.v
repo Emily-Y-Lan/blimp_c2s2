@@ -36,10 +36,9 @@ module SequencingUnitL1 #(
 );
 
   localparam p_seq_num_bits = age.p_seq_num_bits;
-  localparam p_num_epochs   = age.p_num_epochs;
+  localparam p_epoch_bits   = age.p_epoch_bits;
 
   // Derived parameters
-  localparam p_epoch_bits  = $clog2( p_num_epochs );
   localparam p_num_entries = 2 ** p_seq_num_bits;
 
   //----------------------------------------------------------------------
