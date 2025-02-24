@@ -59,7 +59,7 @@ one (closest to the tail):
 
 .. code-block:: sv
 
-   assign is_older = ( seq_num_0 < seq_num_1 );
+   assign 0_is_older = ( seq_num_0 < seq_num_1 );
 
 However, let's now consider the case where sequence numbers wrap-around
 (a.k.a. one sequence number is less than ``tail``, indicating we've
@@ -77,9 +77,9 @@ flipped for each sequence number that is less than the tail:
 
 .. code-block:: sv
 
-   assign is_older = ( seq_num_0 < seq_num_1 ) ^
-                     ( seq_num_0 < tail      ) ^
-                     ( seq_num_1 < tail      );
+   assign 0_is_older = ( seq_num_0 < seq_num_1 ) ^
+                       ( seq_num_0 < tail      ) ^
+                       ( seq_num_1 < tail      );
 
 Credit: `SonicBOOM <https://github.com/riscv-boom/riscv-boom/blob/7184be9db9d48bd01689cf9dd429a4ac32b21105/src/main/scala/v3/util/util.scala#L363>`_
 
@@ -120,11 +120,11 @@ compare the (remaining) sequence number bits like before:
 
   always_comb begin
     if( seq_num_0_epoch == seq_num_1_epoch )
-      is_older = ( seq_num_0_non_epoch < seq_num_1_non_epoch );
+      0_is_older = ( seq_num_0_non_epoch < seq_num_1_non_epoch );
     else
-      is_older = ( seq_num_0_epoch < seq_num_1_epoch ) ^
-                 ( seq_num_0_epoch < tail_epoch      ) ^
-                 ( seq_num_1_epoch < tail_epoch      );
+      0_is_older = ( seq_num_0_epoch < seq_num_1_epoch ) ^
+                   ( seq_num_0_epoch < tail_epoch      ) ^
+                   ( seq_num_1_epoch < tail_epoch      );
   end
 
 Note that the primary comparisons (in the ``else`` case) now only
