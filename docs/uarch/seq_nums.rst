@@ -102,7 +102,9 @@ We now also revise the semantics of the ``tail`` pointer; if an allocation
 would now cause ``head`` to be in the same epoch as ``tail``, the
 allocation must wait until ``tail`` proceeds to the next epoch. This
 reduces the maximum number of instructions in-flight by
-``epoch_size - 1``; in the above example, this reduces by 1.
+``epoch_size - 1``; in the above example, this reduces by 1. Note that
+the above linear example is a specific case of this, where each sequence
+number has its own epoch (``epoch_size = 1``).
 
 Epoch Age Logic
 --------------------------------------------------------------------------
