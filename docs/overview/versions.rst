@@ -8,7 +8,7 @@ enables the design of these components to occur iteratively, adding on
 functionality as the complexity of the processor progressed.
 
 Currently, 1 version of the processor is implemented. The table below
-details the level of each unit that each processor version requires:
+details the level of each unit that each processor version supports:
 
 .. list-table::
    :header-rows: 1
@@ -28,6 +28,14 @@ details the level of each unit that each processor version requires:
      - 1
      - 1
      -
+     -
+
+   * - V2
+     - 1
+     - 2
+     - 1, 2
+     - 2
+     - 1
      -
 
 Version 1
