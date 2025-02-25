@@ -36,32 +36,20 @@ set(RV32_ASM_FILES
 #-------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.10)
-project(BLIMP VERSION 1.0)
+project(
+  BLIMP 
+  VERSION 1.0
+  DESCRIPTION "BLIMP: BRG's Luculently-Interfaced Modular Processor"
+)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
 enable_testing()
 
-#-------------------------------------------------------------------------
-# verilator_share_from_bin
-#-------------------------------------------------------------------------
-# Hacky way to Verilator's share directory from the bin directory
-
-function(verilator_share_from_bin VARNAME BIN)
-  get_filename_component(BIN_DIR ${BIN} DIRECTORY)
-  get_filename_component(INSTALL_DIR ${BIN_DIR} DIRECTORY)
-  set(${VARNAME} "${INSTALL_DIR}/share/verilator" PARENT_SCOPE)
-endfunction()
-
 #------------------------------------------------------------------------
 # Import Verilator
 #------------------------------------------------------------------------
-
-find_program(VERILATOR_BIN "verilator")
-verilator_share_from_bin(VERILATOR_SHARE ${VERILATOR_BIN})
-
-list(APPEND CMAKE_PREFIX_PATH ${VERILATOR_SHARE})
 
 find_package(verilator REQUIRED)
 
