@@ -176,7 +176,7 @@ module DecodeIssueUnitL1TestSuite #(
 
   TestPub #(
     t_complete_msg
-  ) CommitPub (
+  ) CompletePub (
     .msg (complete_msg),
     .val (complete_notif.val),
     .*
@@ -195,7 +195,7 @@ module DecodeIssueUnitL1TestSuite #(
     msg_to_pub.wdata   = wdata;
     msg_to_pub.wen     = wen;
 
-    CommitPub.pub( msg_to_pub );
+    CompletePub.pub( msg_to_pub );
   endtask
 
   //----------------------------------------------------------------------

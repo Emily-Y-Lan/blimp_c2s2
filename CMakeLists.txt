@@ -19,9 +19,8 @@ set(V_TEST_FILES
   hw/execute/test/l2/PipelinedMultiplier_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/top/test/BlimpV1_test.v
-  hw/seq_num/test/SequencingUnitL1_test.v
+  hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
-  intf/seq_num/test/SeqNumAgeIntf_test.v
 )
 
 set(RV32_ASM_FILES
