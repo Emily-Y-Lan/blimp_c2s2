@@ -22,7 +22,7 @@ class FLProc {
   void init( uint32_t addr, uint32_t inst );
   void init( uint32_t addr, std::string assembly );
 
-  // Step one cycle in execution
+  // Step one instruction in execution
   FLTrace step();
 
   //----------------------------------------------------------------------
