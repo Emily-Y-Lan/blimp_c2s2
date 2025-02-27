@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <format>
 
 //------------------------------------------------------------------------
 // Field Table
@@ -46,23 +47,24 @@ uint32_t assemble32( const char* vassembly )
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   std::string inst;
+  std::string excp;
 
   try {
     inst = tokens.at( 0 );
   } catch ( const std::out_of_range& e ) {
-    std::cout << "Error: Empty assembly '" << assembly << "'"
-              << std::endl;
-    throw std::invalid_argument( "Error: Empty assembly '" + assembly +
-                                 "'" );
+    excp = std::format("Error: Empty assembly '{}'", assembly);
+    std::cout << excp << std::endl;
+    throw std::invalid_argument( excp );
   }
 
   inst_spec                spec        = get_inst_spec( inst );
   std::vector<std::string> spec_tokens = tokenize( spec.assembly );
 
   if ( spec_tokens.size() != tokens.size() ) {
-    char excp[100];
-    sprintf( excp, "Error: '%s' expects %d fields, but found %d", inst,
-             spec_tokens.size(), tokens.size() );
+    excp = std::format(
+      "Error: '{}' expects {} fields, but found {}",
+      assembly, spec_tokens.size(), tokens.size()
+    );
     std::cout << excp << std::endl;
     throw std::invalid_argument( excp );
   }

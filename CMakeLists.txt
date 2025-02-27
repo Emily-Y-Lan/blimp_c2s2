@@ -34,15 +34,18 @@ set(RV32_ASM_FILES
 # Boilerplate
 #-------------------------------------------------------------------------
 
+set(CMAKE_C_COMPILER gcc)
+set(CMAKE_CXX_COMPILER g++)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 cmake_minimum_required(VERSION 3.10)
 project(
   BLIMP 
   VERSION 1.0
   DESCRIPTION "BLIMP: BRG's Luculently-Interfaced Modular Processor"
 )
-
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED True)
 
 enable_testing()
 
