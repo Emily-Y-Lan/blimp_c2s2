@@ -23,11 +23,19 @@ set(V_TEST_FILES
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
 )
 
-set(RV32_ASM_FILES
+set(ASM_FILES
   test/asm/assemble.cpp
   test/asm/disassemble.cpp
   test/asm/inst.cpp
   test/asm/fields.cpp
+)
+
+set(FL_PROC_FILES
+  test/fl_proc/FLInst.cpp
+  test/fl_proc/FLMem.cpp
+  test/fl_proc/FLProc.cpp
+  test/fl_proc/FLRegfile.cpp
+  test/fl_proc/FLTrace.cpp
 )
 
 #-------------------------------------------------------------------------
@@ -76,10 +84,19 @@ function(remove_extension VARNAME FILE_NAME)
 endfunction()
 
 #------------------------------------------------------------------------
-# RV32 ASM Library
+# ASM Library
 #------------------------------------------------------------------------
 
-add_library(RV32_ASM_LIB STATIC ${RV32_ASM_FILES})
+add_library(ASM STATIC ${ASM_FILES})
+target_include_directories(ASM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test/asm)
+
+#------------------------------------------------------------------------
+# FL_PROC Library
+#------------------------------------------------------------------------
+
+add_library(FL_PROC STATIC ${FL_PROC_FILES})
+target_include_directories(FL_PROC PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test/asm)
+target_include_directories(FL_PROC PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test/fl_proc)
 
 #------------------------------------------------------------------------
 # Add our targets
@@ -94,7 +111,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
   add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
-  target_link_libraries(${V_TEST_BIN} PRIVATE RV32_ASM_LIB) 
+  target_link_libraries(${V_TEST_BIN} PRIVATE ASM FL_PROC) 
   set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
 
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
