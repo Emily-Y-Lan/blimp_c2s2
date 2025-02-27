@@ -66,12 +66,7 @@ uint32_t assemble( const char* vassembly, uint32_t pc )
 
   uint32_t encoding = spec.match;
 
-  for ( int i = 0; i < spec_tokens.size(); i++ ) {
-    // Skip instruction token
-    if ( i == 0 ) {
-      continue;
-    }
-
+  for ( int i = 1; i < spec_tokens.size(); i++ ) {
     std::string inst_token = tokens[i];
     std::string spec_token = spec_tokens[i];
 
