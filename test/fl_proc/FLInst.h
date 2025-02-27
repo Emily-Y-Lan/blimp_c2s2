@@ -19,18 +19,18 @@ class FLInst {
   FLInst( std::string assembly );
 
   // Metadata
-  std::string name() const;
+  __attribute__( ( const ) ) std::string name() const;
 
   // Fields
-  uint32_t rs1() const;
-  uint32_t rs2() const;
-  uint32_t rd() const;
+  __attribute__( ( const ) ) uint32_t rs1() const;
+  __attribute__( ( const ) ) uint32_t rs2() const;
+  __attribute__( ( const ) ) uint32_t rd() const;
 
-  uint32_t imm_i() const;
-  uint32_t imm_s() const;
-  uint32_t imm_b() const;
-  uint32_t imm_u() const;
-  uint32_t imm_j() const;
+  __attribute__( ( const ) ) uint32_t imm_i() const;
+  __attribute__( ( const ) ) uint32_t imm_s() const;
+  __attribute__( ( const ) ) uint32_t imm_b() const;
+  __attribute__( ( const ) ) uint32_t imm_u() const;
+  __attribute__( ( const ) ) uint32_t imm_j() const;
 
   //----------------------------------------------------------------------
   // Protected attrributes

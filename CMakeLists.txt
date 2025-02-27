@@ -137,7 +137,7 @@ endforeach(V_TEST_FILE_REL_PATH)
 
 set(KNOWN_TESTS_TEXT "Available test targets:")
 foreach(VTEST ${CMAKE_VTESTS})
-  set(KNOWN_TESTS_TEXT "${KNOWN_TESTS_TEXT}\\n - ${VTEST}")
+  set(KNOWN_TESTS_TEXT "${KNOWN_TESTS_TEXT}" " - ${VTEST}")
 endforeach(VTEST)
 
 add_custom_target(
