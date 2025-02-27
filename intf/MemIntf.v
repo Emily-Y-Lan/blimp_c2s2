@@ -10,8 +10,8 @@
 
 interface MemIntf
 #(
-  parameter type t_req_msg  = t_mem_req_msg_32_32_8,
-  parameter type t_resp_msg = t_mem_resp_msg_32_32_8
+  parameter type t_req_msg  = `MEM_REQ ( 8 ),
+  parameter type t_resp_msg = `MEM_RESP( 8 )
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

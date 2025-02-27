@@ -17,16 +17,16 @@ task test_case_add();
 
   fork
     begin
-      //   addr            inst
-      send(p_rst_addr + 0, assemble32("add x4, x1, x2"));
-      send(p_rst_addr + 4, assemble32("add x2, x5, x4"));
+      //   addr   inst
+      send('h200, assemble32("add x4, x1, x2"));
+      send('h204, assemble32("add x2, x5, x4"));
     end
 
     begin
-      //   pc              op1 op2 waddr uop
-      recv(p_rst_addr + 0, 3,  7,  4,    OP_ADD);
+      //   pc     op1 op2 waddr uop
+      recv('h200, 3,  7,  4,    OP_ADD);
       pub( 'x, 4, 10, 1 );
-      recv(p_rst_addr + 4, 0, 10,  2,    OP_ADD);
+      recv('h204, 0, 10,  2,    OP_ADD);
     end
   join
 
@@ -46,16 +46,16 @@ task test_case_addi();
 
   fork
     begin
-      //   addr            inst
-      send(p_rst_addr + 0, assemble32("addi x3, x1, 10"));
-      send(p_rst_addr + 4, assemble32("addi x2, x3, 2047"));
+      //   addr   inst
+      send('h200, assemble32("addi x3, x1, 10"));
+      send('h204, assemble32("addi x2, x3, 2047"));
     end
 
     begin
-      //   pc              op1 op2  waddr uop
-      recv(p_rst_addr + 0, 9,   10, 3,    OP_ADD );
+      //   pc     op1 op2  waddr uop
+      recv('h200, 9,   10, 3,    OP_ADD );
       pub( 'x, 3, 13, 1 );
-      recv(p_rst_addr + 4, 13, 2047, 2,    OP_ADD );
+      recv('h204, 13, 2047, 2,    OP_ADD );
     end
   join
   
@@ -72,25 +72,24 @@ task test_case_mul();
 
   fork
     begin
-      //   addr            inst
-      send(p_rst_addr +  0, assemble32("addi x3, x0, 10"));
-      send(p_rst_addr +  4, assemble32("addi x2, x0,  5"));
-      send(p_rst_addr +  8, assemble32("mul  x4, x3, x2"));
-      send(p_rst_addr + 12, assemble32("mul  x4, x4, x2"));
-      send(p_rst_addr + 12, assemble32("mul  x4, x4, x4"));
+      //   addr   inst
+      send('h200, assemble32("addi x3, x0, 10"));
+      send('h204, assemble32("addi x2, x0,  5"));
+      send('h208, assemble32("mul  x4, x3, x2"));
+      send('h20c, assemble32("mul  x4, x4, x2"));
+      send('h210, assemble32("mul  x4, x4, x4"));
     end
 
     begin
-      //   pc                 op1 op2  waddr uop
-      recv(p_rst_addr +  0,   0,   10, 3,    OP_ADD );
+      recv('h200,   0,   10, 3,    OP_ADD );
       pub( 'x, 3,  10, 1 );
-      recv(p_rst_addr +  4,   0,    5, 2,    OP_ADD );
+      recv('h204,   0,    5, 2,    OP_ADD );
       pub( 'x, 2,   5, 1 );
-      recv(p_rst_addr +  8,  10,    5, 4,    OP_MUL );
+      recv('h208,  10,    5, 4,    OP_MUL );
       pub( 'x, 4,  50, 1 );
-      recv(p_rst_addr + 12,  50,    5, 4,    OP_MUL );
+      recv('h20c,  50,    5, 4,    OP_MUL );
       pub( 'x, 4, 250, 1 );
-      recv(p_rst_addr + 12, 250,  250, 4,    OP_MUL );
+      recv('h210, 250,  250, 4,    OP_MUL );
     end
   join
   

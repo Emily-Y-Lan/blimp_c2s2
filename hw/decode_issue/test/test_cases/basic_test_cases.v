@@ -14,15 +14,15 @@ task test_case_basic();
 
   fork
     begin
-      //   addr            inst
-      send(p_rst_addr + 0, assemble32("mul x1, x0, x0"));
-      send(p_rst_addr + 4, assemble32("addi x1, x0, 10"));
+      //   addr   inst
+      send('h200, assemble32("mul x1, x0, x0"));
+      send('h204, assemble32("addi x1, x0, 10"));
     end
 
     begin
-      //   pc              op1 op2  waddr uop
-      recv(p_rst_addr + 0, 0,   0,  1,    OP_MUL);
-      recv(p_rst_addr + 4, 0,  10,  1,    OP_ADD);
+      //   pc     op1 op2  waddr uop
+      recv('h200, 0,   0,  1,    OP_MUL);
+      recv('h204, 0,  10,  1,    OP_ADD);
     end
   join
 
@@ -45,24 +45,24 @@ task test_case_pending();
   fork
     begin
       //   addr             inst
-      send(p_rst_addr +  0, assemble32("add  x2, x0, x1"));
-      send(p_rst_addr +  4, assemble32("add  x4, x3, x2"));
-      send(p_rst_addr +  8, assemble32("add  x5, x5, x4"));
-      send(p_rst_addr + 12, assemble32("add  x5, x5, x5"));
-      send(p_rst_addr + 16, assemble32("add  x6, x5, x4"));
+      send('h200, assemble32("add  x2, x0, x1"));
+      send('h204, assemble32("add  x4, x3, x2"));
+      send('h208, assemble32("add  x5, x5, x4"));
+      send('h20c, assemble32("add  x5, x5, x5"));
+      send('h210, assemble32("add  x6, x5, x4"));
     end
 
     begin
       //   pc                op1 op2  waddr uop
-      recv(p_rst_addr +  0,  0,   1,  2,    OP_ADD);
+      recv('h200,  0,   1,  2,    OP_ADD);
       pub( 'x, 2, 1, 1 );
-      recv(p_rst_addr +  4,  3,   1,  4,    OP_ADD);
+      recv('h204,  3,   1,  4,    OP_ADD);
       pub( 'x, 4, 4, 1 );
-      recv(p_rst_addr +  8,  5,   4,  5,    OP_ADD);
+      recv('h208,  5,   4,  5,    OP_ADD);
       pub( 'x, 5, 9, 1 );
-      recv(p_rst_addr + 12,  9,   9,  5,    OP_ADD);
+      recv('h20c,  9,   9,  5,    OP_ADD);
       pub( 'x, 5, 18, 1 );
-      recv(p_rst_addr + 16, 18,   4,  6,    OP_ADD);
+      recv('h210, 18,   4,  6,    OP_ADD);
     end
   join
 

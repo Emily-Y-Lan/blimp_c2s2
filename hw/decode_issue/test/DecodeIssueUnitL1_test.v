@@ -19,12 +19,9 @@ import TestEnv::*;
 // A test suite for the basic decoder
 
 module DecodeIssueUnitL1TestSuite #(
-  parameter p_suite_num   = 0,
-  parameter p_num_pipes   = 3,
-  parameter p_addr_bits   = 32,
-  parameter p_inst_bits   = 32,
-  parameter p_rob_entries = 32,
-  parameter p_rst_addr    = 32'h0,
+  parameter p_suite_num    = 0,
+  parameter p_num_pipes    = 3,
+  parameter p_seq_num_bits = 5,
 
   parameter p_F_send_intv_delay = 0,
   parameter p_X_recv_intv_delay = 0,
@@ -32,9 +29,8 @@ module DecodeIssueUnitL1TestSuite #(
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 );
 
-  string suite_name = $sformatf("%0d: DecodeIssueUnitL1TestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
-                                p_suite_num, p_num_pipes, p_addr_bits, 
-                                p_inst_bits, p_rst_addr,
+  string suite_name = $sformatf("%0d: DecodeIssueUnitL1TestSuite_%0d_%0d_%0d_%0d", 
+                                p_suite_num, p_num_pipes, p_seq_num_bits,
                                 p_F_send_intv_delay, p_X_recv_intv_delay);
 
   initial begin
@@ -42,8 +38,6 @@ module DecodeIssueUnitL1TestSuite #(
       suite_name = $sformatf("%s_%h", suite_name, p_pipe_subsets[i]);
     end
   end
-
-  localparam p_seq_num_bits = $clog2( p_rob_entries );
 
   //----------------------------------------------------------------------
   // Setup
@@ -58,20 +52,14 @@ module DecodeIssueUnitL1TestSuite #(
   // Here, we additionally use virtual fl_X interfaces to allow for
   // non-constant indexing
 
-  F__DIntf #(
-    .p_addr_bits (p_addr_bits),
-    .p_inst_bits (p_inst_bits)
-  ) F__D_intf();
+  F__DIntf F__D_intf();
 
   D__XIntf #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_inst_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) D__X_intfs [p_num_pipes-1:0]();
 
   CompleteNotif #(
-    .p_seq_num_bits (p_seq_num_bits),
-    .p_data_bits    (p_inst_bits)
+    .p_seq_num_bits (p_seq_num_bits)
   ) complete_notif();
 
   DecodeIssueUnitL1 #(
@@ -90,8 +78,8 @@ module DecodeIssueUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [p_inst_bits-1:0] inst;
-    logic [p_addr_bits-1:0] pc;
+    logic [31:0] inst;
+    logic [31:0] pc;
   } t_f__d_msg;
 
   t_f__d_msg f__d_msg;
@@ -109,8 +97,8 @@ module DecodeIssueUnitL1TestSuite #(
   t_f__d_msg msg_to_send;
 
   task send(
-    input logic [p_addr_bits-1:0] pc,
-    input logic [p_inst_bits-1:0] inst
+    input logic [31:0] pc,
+    input logic [31:0] inst
   );
     msg_to_send.inst  = inst;
     msg_to_send.pc    = pc;
@@ -123,11 +111,11 @@ module DecodeIssueUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [p_addr_bits-1:0] pc;
-    logic [p_inst_bits-1:0] op1;
-    logic [p_inst_bits-1:0] op2;
-    logic             [4:0] waddr;
-    rv_uop                  uop;
+    logic [31:0] pc;
+    logic [31:0] op1;
+    logic [31:0] op2;
+    logic  [4:0] waddr;
+    rv_uop       uop;
   } t_d__x_msg;
 
   t_d__x_msg                 d__x_msgs       [p_num_pipes];
@@ -163,7 +151,7 @@ module DecodeIssueUnitL1TestSuite #(
   typedef struct packed {
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
-    logic    [p_inst_bits-1:0] wdata;
+    logic               [31:0] wdata;
     logic                      wen;
   } t_complete_msg;
 
@@ -187,7 +175,7 @@ module DecodeIssueUnitL1TestSuite #(
   task pub(
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
-    input logic    [p_inst_bits-1:0] wdata,
+    input logic               [31:0] wdata,
     input logic                      wen
   );
     msg_to_pub.seq_num = seq_num;
@@ -247,11 +235,11 @@ module DecodeIssueUnitL1TestSuite #(
   end
 
   task recv(
-    input logic [p_addr_bits-1:0] pc,
-    input logic [p_inst_bits-1:0] op1,
-    input logic [p_inst_bits-1:0] op2,
-    input logic             [4:0] waddr,
-    input rv_uop                  uop,
+    input logic [31:0] pc,
+    input logic [31:0] op1,
+    input logic [31:0] op2,
+    input logic  [4:0] waddr,
+    input rv_uop       uop,
   );
     // Set message correctly
     pipe_msg.pc    = pc;
@@ -366,20 +354,15 @@ module DecodeIssueUnitL1_test;
   DecodeIssueUnitL1TestSuite #(
     2, 
     2, 
-    32, 
-    32, 
-    16, 
-    32'h0, 
+    4, 
     0, 
     0, 
     {p_tinyrv1, OP_ADD_VEC}) 
   suite_2();
-  DecodeIssueUnitL1TestSuite #(3, 
+  DecodeIssueUnitL1TestSuite #(
+    3, 
     5, 
-    32, 
-    32, 
-    256, 
-    32'h0, 
+    8, 
     0, 
     0, 
     {
@@ -393,10 +376,7 @@ module DecodeIssueUnitL1_test;
   DecodeIssueUnitL1TestSuite #(
     4, 
     1, 
-    32, 
-    32, 
-    8, 
-    32'h0, 
+    3, 
     0, 
     0, 
     {p_tinyrv1}
@@ -404,10 +384,7 @@ module DecodeIssueUnitL1_test;
   DecodeIssueUnitL1TestSuite #(
     5, 
     3, 
-    32, 
-    32, 
-    64, 
-    32'h0, 
+    6, 
     3, 
     0, 
     {
@@ -419,10 +396,7 @@ module DecodeIssueUnitL1_test;
   DecodeIssueUnitL1TestSuite #(
     6, 
     3, 
-    32, 
-    32, 
-    128, 
-    32'h0, 
+    7, 
     0, 
     3, 
     {
@@ -434,10 +408,7 @@ module DecodeIssueUnitL1_test;
   DecodeIssueUnitL1TestSuite #(
     7, 
     3, 
-    32, 
-    32, 
-    8, 
-    32'h0, 
+    3, 
     3, 
     3, 
     {

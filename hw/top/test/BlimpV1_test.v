@@ -18,19 +18,17 @@ import TestEnv::*;
 // A test suite for a particular parametrization of the basic Blimp unit
 
 module BlimpV1TestSuite #(
-  parameter p_suite_num   = 0,
-  parameter p_rst_addr    = 32'b0,
-  parameter p_addr_bits   = 32,
-  parameter p_opaq_bits   = 8,
-  parameter p_rob_entries = 32,
+  parameter p_suite_num    = 0,
+  parameter p_opaq_bits    = 8,
+  parameter p_seq_num_bits = 5,
 
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1
 );
 
-  string suite_name = $sformatf("%0d: BlimpV1TestSuite_%0p_%0d_%0d_%0d_%0d", 
-                                p_suite_num, p_rst_addr, p_addr_bits,
-                                p_opaq_bits,
+  string suite_name = $sformatf("%0d: BlimpV1TestSuite_%0d_%0d_%0d_%0d", 
+                                p_suite_num,
+                                p_opaq_bits, p_seq_num_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay);
 
   //----------------------------------------------------------------------
@@ -40,27 +38,23 @@ module BlimpV1TestSuite #(
   logic clk, rst;
   TestUtils t( .* );
 
-  `MEM_REQ_DEFINE ( 32, p_addr_bits, p_opaq_bits );
-  `MEM_RESP_DEFINE( 32, p_addr_bits, p_opaq_bits );
+  `MEM_REQ_DEFINE ( p_opaq_bits );
+  `MEM_RESP_DEFINE( p_opaq_bits );
 
   //----------------------------------------------------------------------
   // Instantiate design under test
   //----------------------------------------------------------------------
 
   MemIntf #(
-    .t_req_msg  (`MEM_REQ ( 32, p_addr_bits, p_opaq_bits )),
-    .t_resp_msg (`MEM_RESP( 32, p_addr_bits, p_opaq_bits ))
+    .t_req_msg  (`MEM_REQ ( p_opaq_bits )),
+    .t_resp_msg (`MEM_RESP( p_opaq_bits ))
   ) mem_intf();
 
-  InstTraceNotif #(
-    .p_addr_bits (p_addr_bits),
-    .p_data_bits (32)
-  ) inst_trace_notif();
+  InstTraceNotif inst_trace_notif();
 
   BlimpV1 #(
-    .p_rst_addr    (p_rst_addr),
-    .p_opaq_bits   (p_opaq_bits),
-    .p_rob_entries (p_rob_entries)
+    .p_opaq_bits    (p_opaq_bits),
+    .p_seq_num_bits (p_seq_num_bits)
   ) dut (
     .inst_mem   (mem_intf),
     .inst_trace (inst_trace_notif),
@@ -72,12 +66,10 @@ module BlimpV1TestSuite #(
   //----------------------------------------------------------------------
 
   MemIntfTestServer #(
-    .t_req_msg         (`MEM_REQ ( 32, p_addr_bits, p_opaq_bits )),
-    .t_resp_msg        (`MEM_RESP( 32, p_addr_bits, p_opaq_bits )),
+    .t_req_msg         (`MEM_REQ ( p_opaq_bits )),
+    .t_resp_msg        (`MEM_RESP( p_opaq_bits )),
     .p_send_intv_delay (p_mem_send_intv_delay),
     .p_recv_intv_delay (p_mem_recv_intv_delay),
-    .p_addr_bits       (p_addr_bits),
-    .p_data_bits       (32),
     .p_opaq_bits       (p_opaq_bits)
   ) fl_mem (
     .dut (mem_intf),
@@ -85,20 +77,17 @@ module BlimpV1TestSuite #(
   );
 
   task asm(
-    input logic [p_addr_bits-1:0] addr,
-    input string                  inst
+    input logic [31:0] addr,
+    input string       inst
   );
-    fl_mem.init_mem( p_addr_bits'(p_rst_addr) + addr, assemble32( inst ) );
+    fl_mem.init_mem( addr, assemble32( inst ) );
   endtask
 
   //----------------------------------------------------------------------
   // Instruction Tracing
   //----------------------------------------------------------------------
 
-  InstTraceSub #(
-    .p_addr_bits (p_addr_bits),
-    .p_data_bits (32)
-  ) inst_trace_sub (
+  InstTraceSub inst_trace_sub (
     .pc    (inst_trace_notif.pc),
     .waddr (inst_trace_notif.waddr),
     .wdata (inst_trace_notif.wdata),
@@ -108,14 +97,14 @@ module BlimpV1TestSuite #(
   );
 
   task check_trace(
-    input logic    [p_addr_bits-1:0] pc,
-    input logic                [4:0] waddr,
-    input logic               [31:0] wdata,
-    input logic                      wen
+    input logic [31:0] pc,
+    input logic  [4:0] waddr,
+    input logic [31:0] wdata,
+    input logic        wen
   );
 
     inst_trace_sub.check_trace(
-      p_addr_bits'(p_rst_addr) + pc,
+      pc,
       waddr,
       wdata,
       wen
@@ -168,14 +157,14 @@ endmodule
 //========================================================================
 
 module BlimpV1_test;
-  BlimpV1TestSuite #(1)                                        suite_1();
-  BlimpV1TestSuite #(2, 'h800, 32,  8, 32, 1, 1)               suite_2();
-  BlimpV1TestSuite #(3, 'h000, 16,  8, 32, 1, 1)               suite_3();
-  BlimpV1TestSuite #(4, 'h000, 32,  4, 32, 1, 1)               suite_4();
-  BlimpV1TestSuite #(4, 'h000, 32,  4,  8, 1, 1)               suite_5();
-  BlimpV1TestSuite #(5, 'h400,  8, 32, 16, 3, 1)               suite_6();
-  BlimpV1TestSuite #(6, 'h200, 64,  2,  4, 1, 3)               suite_7();
-  BlimpV1TestSuite #(7, 'h100, 16,  4, 64, 3, 3)               suite_8();
+  BlimpV1TestSuite #(1)             suite_1();
+  BlimpV1TestSuite #(2, 8, 5, 1, 1) suite_2();
+  BlimpV1TestSuite #(3, 8, 5, 1, 1) suite_3();
+  BlimpV1TestSuite #(4, 4, 5, 1, 1) suite_4();
+  BlimpV1TestSuite #(4, 4, 3, 1, 1) suite_5();
+  BlimpV1TestSuite #(5,32, 4, 3, 1) suite_6();
+  BlimpV1TestSuite #(6, 2, 2, 1, 3) suite_7();
+  BlimpV1TestSuite #(7, 4, 6, 3, 3) suite_8();
 
   int s;
 

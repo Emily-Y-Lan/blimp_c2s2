@@ -11,17 +11,14 @@
 
 `include "test/FLTestUtils.v"
 
-module InstTraceSub #(
-  parameter p_addr_bits = 32,
-  parameter p_data_bits = 32
-)(
-  input logic                   clk,
+module InstTraceSub (
+  input logic        clk,
   
-  input logic [p_addr_bits-1:0] pc,
-  input logic             [4:0] waddr,
-  input logic [p_data_bits-1:0] wdata,
-  input logic                   wen,
-  input logic                   val
+  input logic [31:0] pc,
+  input logic  [4:0] waddr,
+  input logic [31:0] wdata,
+  input logic        wen,
+  input logic        val
 );
   
   FLTestUtils t( .rst( 1'b0), .* );
@@ -31,20 +28,20 @@ module InstTraceSub #(
   //----------------------------------------------------------------------
   // A function to check an instruction trace
 
-  logic [p_addr_bits-1:0] dut_pc;
-  logic             [4:0] dut_waddr;
-  logic [p_data_bits-1:0] dut_wdata;
-  logic                   dut_wen;
-  logic                   dut_val;
-  logic                   waiting;
+  logic [31:0] dut_pc;
+  logic  [4:0] dut_waddr;
+  logic [31:0] dut_wdata;
+  logic        dut_wen;
+  logic        dut_val;
+  logic        waiting;
 
   initial waiting = 1'b0;
 
   task check_trace (
-    input logic [p_addr_bits-1:0] exp_pc,
-    input logic             [4:0] exp_waddr,
-    input logic [p_data_bits-1:0] exp_wdata,
-    input logic                   exp_wen
+    input logic [31:0] exp_pc,
+    input logic  [4:0] exp_waddr,
+    input logic [31:0] exp_wdata,
+    input logic        exp_wen
   );
 
     waiting = 1'b1;
@@ -82,18 +79,18 @@ module InstTraceSub #(
 
   function string trace();
     int str_len;
-    str_len = ceil_div_4(p_addr_bits) + 1 + // pc
-              1                       + 1 + // wen
-              ceil_div_4(5)           + 1 + // waddr
-              ceil_div_4(p_data_bits);      // wdata
+    str_len = 8 + 1 + // pc
+              1 + 1 + // wen
+              2 + 1 + // waddr
+              8;      // wdata
 
     if( val & waiting ) begin
       if( wen )
         trace = $sformatf("%h:%b:%h:%h", pc, wen, waddr, wdata);
       else
         trace = $sformatf("%h:%b:%s:%s", pc, wen, 
-                          {ceil_div_4(5){"x"}},
-                          {ceil_div_4(p_data_bits){"x"}});
+                          {2{"x"}},
+                          {8{"x"}});
     end
     else if( val )
       trace = {{(str_len-1){" "}}, "X"};

@@ -16,8 +16,6 @@ import UArch::*;
 
 interface D__XIntf
 #(
-  parameter p_addr_bits    = 32,
-  parameter p_data_bits    = 32,
   parameter p_seq_num_bits = 5
 );
 
@@ -25,10 +23,10 @@ interface D__XIntf
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic    [p_addr_bits-1:0] pc;
+  logic               [31:0] pc;
   logic [p_seq_num_bits-1:0] seq_num;
-  logic    [p_data_bits-1:0] op1;
-  logic    [p_data_bits-1:0] op2;
+  logic               [31:0] op1;
+  logic               [31:0] op2;
   logic                [4:0] waddr;
   rv_uop                     uop;
   logic                      val;

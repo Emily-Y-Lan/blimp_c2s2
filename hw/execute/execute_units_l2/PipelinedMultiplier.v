@@ -13,9 +13,7 @@
 import UArch::*;
 
 module PipelinedMultiplier #(
-  parameter p_addr_bits       = 32,
-  parameter p_data_bits       = 32,
-  parameter p_seq_num_bits    = 5,
+  parameter p_seq_num_bits    = 5, // Bug with interface arrays - must pass directly
   parameter p_pipeline_stages = 1
 )(
   input  logic clk,
@@ -40,19 +38,19 @@ module PipelinedMultiplier #(
 
   typedef struct packed {
     logic                      val;
-    logic    [p_addr_bits-1:0] pc;
+    logic               [31:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
-    logic    [p_data_bits-1:0] op1;
-    logic    [p_data_bits-1:0] op2;
+    logic               [31:0] op1;
+    logic               [31:0] op2;
     logic                [4:0] waddr;
     rv_uop                     uop;
   } D_input;
 
   typedef struct packed {
-    logic    [p_addr_bits-1:0] pc;
+    logic               [31:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
-    logic    [p_data_bits-1:0] wdata;
+    logic               [31:0] wdata;
     logic                      wen;
     logic                      val;
   } W_input;
@@ -115,7 +113,7 @@ module PipelinedMultiplier #(
   // Arithmetic Operations
   //----------------------------------------------------------------------
   
-  logic [p_data_bits-1:0] op1, op2;
+  logic [31:0] op1, op2;
   assign op1 = D_reg.op1;
   assign op2 = D_reg.op2;
 
@@ -188,9 +186,9 @@ module PipelinedMultiplier #(
   assign str_len = 11                         + 1 + // uop
                    ceil_div_4(p_seq_num_bits) + 1 + // seq_num
                    ceil_div_4(5)              + 1 + // waddr
-                   ceil_div_4(p_data_bits)    + 1 + // op1
-                   ceil_div_4(p_data_bits)    + 1 + // op2
-                   ceil_div_4(p_data_bits);         // wdata
+                   8                          + 1 + // op1
+                   8                          + 1 + // op2
+                   8;                               // wdata
 
   function string trace();
     if( W.val & W.rdy )

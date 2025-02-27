@@ -10,21 +10,17 @@
 // InstTraceNotif
 //------------------------------------------------------------------------
 
-interface InstTraceNotif
-#(
-  parameter p_addr_bits    = 32,
-  parameter p_data_bits    = 32
-);
+interface InstTraceNotif;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic    [p_addr_bits-1:0] pc;
-  logic                [4:0] waddr;
-  logic    [p_data_bits-1:0] wdata;
-  logic                      wen;
-  logic                      val;
+  logic [31:0] pc;
+  logic  [4:0] waddr;
+  logic [31:0] wdata;
+  logic        wen;
+  logic        val;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports

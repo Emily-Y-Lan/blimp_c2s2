@@ -20,17 +20,14 @@ import TestEnv::*;
 module WritebackCommitUnitL1TestSuite #(
   parameter p_suite_num    = 0,
   parameter p_num_pipes    = 1,
-  parameter p_addr_bits    = 32,
-  parameter p_data_bits    = 32,
-  parameter p_seq_num_bits = 8,
+  parameter p_seq_num_bits = 3,
 
   parameter p_X_send_intv_delay = 0
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: WritebackCommitUnitL1TestSuite_%0d_%0d_%0d_%0d_%0d", 
-                                p_suite_num, p_num_pipes,
-                                p_addr_bits, p_data_bits, p_seq_num_bits,
+  string suite_name = $sformatf("%0d: WritebackCommitUnitL1TestSuite_%0d_%0d_%0d", 
+                                p_suite_num, p_num_pipes, p_seq_num_bits,
                                 p_X_send_intv_delay);
   //verilator lint_on UNUSEDSIGNAL
 
@@ -46,18 +43,14 @@ module WritebackCommitUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   X__WIntf #(
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intfs [p_num_pipes-1:0]();
 
   CompleteNotif #(
-    .p_seq_num_bits (p_seq_num_bits),
-    .p_data_bits    (p_data_bits)
+    .p_seq_num_bits (p_seq_num_bits)
   ) complete_notif();
 
   CommitNotif #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif();
 
@@ -75,10 +68,10 @@ module WritebackCommitUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic    [p_addr_bits-1:0] pc;
+    logic               [31:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
-    logic    [p_data_bits-1:0] wdata;
+    logic               [31:0] wdata;
     logic                      wen;
   } t_x__w_msg;
 
@@ -130,10 +123,10 @@ module WritebackCommitUnitL1TestSuite #(
     input int                        pipe_num,
     // verilator lint_on UNUSEDSIGNAL
 
-    input logic    [p_addr_bits-1:0] pc,
+    input logic               [31:0] pc,
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
-    input logic    [p_data_bits-1:0] wdata,
+    input logic               [31:0] wdata,
     input logic                      wen
   );
     pipe_msg.pc      = pc;
@@ -152,7 +145,7 @@ module WritebackCommitUnitL1TestSuite #(
   typedef struct packed {
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
-    logic    [p_data_bits-1:0] wdata;
+    logic               [31:0] wdata;
     logic                      wen;
   } t_complete_msg;
 
@@ -176,7 +169,7 @@ module WritebackCommitUnitL1TestSuite #(
   task complete_sub(
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
-    input logic    [p_data_bits-1:0] wdata,
+    input logic               [31:0] wdata,
     input logic                      wen
   );
     msg_to_complete_sub.seq_num = seq_num;
@@ -192,10 +185,10 @@ module WritebackCommitUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic    [p_addr_bits-1:0] pc;
+    logic               [31:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
-    logic    [p_data_bits-1:0] wdata;
+    logic               [31:0] wdata;
     logic                      wen;
   } t_commit_msg;
 
@@ -218,10 +211,10 @@ module WritebackCommitUnitL1TestSuite #(
   t_commit_msg msg_to_commit_sub;
 
   task commit_sub(
-    input logic    [p_addr_bits-1:0] pc,
+    input logic               [31:0] pc,
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
-    input logic    [p_data_bits-1:0] wdata,
+    input logic               [31:0] wdata,
     input logic                      wen
   );
     msg_to_commit_sub.pc      = pc;

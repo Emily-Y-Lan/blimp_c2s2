@@ -22,9 +22,8 @@
 `include "intf/InstTraceNotif.v"
 
 module BlimpV1 #(
-  parameter p_rst_addr    = 32'h0,
-  parameter p_opaq_bits   = 8,
-  parameter p_rob_entries = 32
+  parameter p_opaq_bits    = 8,
+  parameter p_seq_num_bits = 5
 ) (
   input logic clk,
   input logic rst,
@@ -42,39 +41,25 @@ module BlimpV1 #(
   InstTraceNotif.pub inst_trace
 );
 
-  localparam p_seq_num_bits = $clog2(p_rob_entries);
-  localparam p_addr_bits    = inst_trace.p_addr_bits;
-  localparam p_data_bits    = inst_trace.p_data_bits;
-
   //----------------------------------------------------------------------
   // Interfaces
   //----------------------------------------------------------------------
 
-  F__DIntf #(
-    .p_addr_bits (p_addr_bits),
-    .p_inst_bits (p_data_bits)
-  ) f__d_intf();
+  F__DIntf f__d_intf();
 
   D__XIntf #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) d__x_intfs[2]();
 
   X__WIntf #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) x__w_intfs[2]();
 
   CompleteNotif #(
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) complete_notif();
 
   CommitNotif #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif();
 
@@ -89,7 +74,6 @@ module BlimpV1 #(
   //----------------------------------------------------------------------
 
   FetchUnitL1 #(
-    .p_rst_addr  (p_rst_addr),
     .p_opaq_bits (p_opaq_bits)
   ) FU (
     .mem (inst_mem),
@@ -112,8 +96,6 @@ module BlimpV1 #(
   );
 
   ALU #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) ALU_XU (
     .D (d__x_intfs[0]),
@@ -122,8 +104,6 @@ module BlimpV1 #(
   );
 
   Multiplier #(
-    .p_addr_bits    (p_addr_bits),
-    .p_data_bits    (p_data_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) MUL_XU (
     .D (d__x_intfs[1]),

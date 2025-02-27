@@ -45,8 +45,6 @@ module DecodeIssueUnitL1 #(
   CompleteNotif.sub complete
 );
 
-  localparam p_addr_bits    = F.p_addr_bits;
-  localparam p_inst_bits    = F.p_inst_bits;
   localparam p_seq_num_bits = Ex.p_seq_num_bits;
   
   //----------------------------------------------------------------------
@@ -54,9 +52,9 @@ module DecodeIssueUnitL1 #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic                   val;
-    logic [p_inst_bits-1:0] inst;
-    logic [p_addr_bits-1:0] pc;
+    logic        val;
+    logic [31:0] inst;
+    logic [31:0] pc;
   } F_input;
 
   F_input F_reg;
@@ -110,11 +108,11 @@ module DecodeIssueUnitL1 #(
     .op2_sel (decoder_op2_sel)
   );
 
-  logic [p_inst_bits-1:0] rdata0, rdata1;
+  logic [31:0] rdata0, rdata1;
   logic pending [1:0];
 
   Regfile #(
-    .t_entry (logic [p_inst_bits-1:0]),
+    .t_entry (logic [31:0]),
     .p_num_regs (32)
   ) regfile (
     .clk              (clk),
@@ -157,7 +155,7 @@ module DecodeIssueUnitL1 #(
   // Pass remaining signals to pipes
   //----------------------------------------------------------------------
   
-  logic [p_inst_bits-1:0] op1, op2;
+  logic [31:0] op1, op2;
 
   always_comb begin
     op1 = rdata0;

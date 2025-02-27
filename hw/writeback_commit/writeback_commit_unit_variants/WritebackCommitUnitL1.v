@@ -37,18 +37,16 @@ module WritebackCommitUnitL1 #(
   CommitNotif.pub   commit
 );
 
-  localparam p_addr_bits    = commit.p_addr_bits;
-  localparam p_data_bits    = complete.p_data_bits;
   localparam p_seq_num_bits = complete.p_seq_num_bits;
 
   //----------------------------------------------------------------------
   // Select which pipe to get from
   //----------------------------------------------------------------------
 
-  logic    [p_addr_bits-1:0] Ex_pc      [p_num_pipes-1:0];
+  logic               [31:0] Ex_pc      [p_num_pipes-1:0];
   logic [p_seq_num_bits-1:0] Ex_seq_num [p_num_pipes-1:0];
   logic                [4:0] Ex_waddr   [p_num_pipes-1:0];
-  logic    [p_data_bits-1:0] Ex_wdata   [p_num_pipes-1:0];
+  logic               [31:0] Ex_wdata   [p_num_pipes-1:0];
   logic                      Ex_wen     [p_num_pipes-1:0];
   logic                      Ex_val     [p_num_pipes-1:0];
   logic                      Ex_rdy     [p_num_pipes-1:0];
@@ -84,28 +82,28 @@ module WritebackCommitUnitL1 #(
     .gnt (Ex_gnt_packed)
   );
 
-  logic    [p_addr_bits-1:0] Ex_pc_masked      [p_num_pipes-1:0];
+  logic               [31:0] Ex_pc_masked      [p_num_pipes-1:0];
   logic [p_seq_num_bits-1:0] Ex_seq_num_masked [p_num_pipes-1:0];
   logic                [4:0] Ex_waddr_masked   [p_num_pipes-1:0];
-  logic    [p_data_bits-1:0] Ex_wdata_masked   [p_num_pipes-1:0];
+  logic               [31:0] Ex_wdata_masked   [p_num_pipes-1:0];
   logic                      Ex_wen_masked     [p_num_pipes-1:0];
   logic                      Ex_val_masked     [p_num_pipes-1:0];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign Ex_pc_masked[i]      = Ex_pc[i]      & {p_addr_bits{Ex_gnt[i]}};
+      assign Ex_pc_masked[i]      = Ex_pc[i]      & {32{Ex_gnt[i]}};
       assign Ex_seq_num_masked[i] = Ex_seq_num[i] & {p_seq_num_bits{Ex_gnt[i]}};
       assign Ex_waddr_masked[i]   = Ex_waddr[i]   & {5{Ex_gnt[i]}};
-      assign Ex_wdata_masked[i]   = Ex_wdata[i]   & {p_data_bits{Ex_gnt[i]}};
+      assign Ex_wdata_masked[i]   = Ex_wdata[i]   & {32{Ex_gnt[i]}};
       assign Ex_wen_masked[i]     = Ex_wen[i]     & Ex_gnt[i];
       assign Ex_val_masked[i]     = Ex_val[i]     & Ex_gnt[i];
     end
   endgenerate
 
-  logic    [p_addr_bits-1:0] Ex_pc_sel;
+  logic               [31:0] Ex_pc_sel;
   logic [p_seq_num_bits-1:0] Ex_seq_num_sel;
-  logic             [4:0]    Ex_waddr_sel;
-  logic [p_data_bits-1:0]    Ex_wdata_sel;
+  logic                [4:0] Ex_waddr_sel;
+  logic               [31:0] Ex_wdata_sel;
   logic                      Ex_wen_sel;
   logic                      Ex_val_sel;
 
@@ -129,10 +127,10 @@ module WritebackCommitUnitL1 #(
 
   typedef struct packed {
     logic                      val;
-    logic    [p_addr_bits-1:0] pc;
+    logic               [31:0] pc;
     logic [p_seq_num_bits-1:0] seq_num;
     logic                [4:0] waddr;
-    logic    [p_data_bits-1:0] wdata;
+    logic               [31:0] wdata;
     logic                      wen;
   } X_input;
 
@@ -199,7 +197,7 @@ module WritebackCommitUnitL1 #(
   int str_len;
   assign str_len = ceil_div_4( p_seq_num_bits ) + 1 + // seq_num
                    ceil_div_4( 5 )              + 1 + // addr
-                   ceil_div_4( p_data_bits );         // data
+                   8;                                 // data
   
   function string trace();
     if( X_reg.wen )

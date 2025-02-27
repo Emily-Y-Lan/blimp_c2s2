@@ -12,15 +12,12 @@
 `define TEST_FL_MEM_INTF_TEST_SERVER_V
 
 module MemIntfTestServer #(
-  parameter type t_req_msg  = `MEM_REQ ( 32, 32, 8 ),
-  parameter type t_resp_msg = `MEM_RESP( 32, 32, 8 ),
+  parameter type t_req_msg  = `MEM_REQ ( 8 ),
+  parameter type t_resp_msg = `MEM_RESP( 8 ),
+  parameter p_opaq_bits     = 8,
 
-  parameter p_send_intv_delay  = 1,
-  parameter p_recv_intv_delay = 1,
-
-  parameter p_addr_bits = 32,
-  parameter p_data_bits = 32,
-  parameter p_opaq_bits = 8
+  parameter p_send_intv_delay = 1,
+  parameter p_recv_intv_delay = 1
 )(
   input  logic clk,
   input  logic rst,
@@ -35,7 +32,7 @@ module MemIntfTestServer #(
   // Store memory values in association array
   //----------------------------------------------------------------------
 
-  logic [p_data_bits-1:0] mem [logic [p_addr_bits-1:0]];
+  logic [31:0] mem [logic [31:0]];
 
   always_ff @( posedge clk ) begin
     if( rst )
@@ -43,8 +40,8 @@ module MemIntfTestServer #(
   end
 
   task init_mem(
-    input logic [p_addr_bits-1:0] addr,
-    input logic [p_data_bits-1:0] data
+    input logic [31:0] addr,
+    input logic [31:0] data
   );
     mem[addr] = data;
   endtask
@@ -142,8 +139,8 @@ module MemIntfTestServer #(
 
     str_len = 2 + 1 +                       // op
               ceil_div_4(p_opaq_bits) + 1 + // opaque
-              ceil_div_4(p_addr_bits) + 1 + // addr
-              ceil_div_4(p_data_bits);      // data
+              8                       + 1 + // addr
+              8;                            // data
 
     if( dut.req_val & dut.req_rdy ) begin
       case( dut.req_msg.op )

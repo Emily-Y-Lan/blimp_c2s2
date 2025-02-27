@@ -35,12 +35,24 @@ module SeqAgeTestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  CommitNotif #( 32, 32, p_seq_num_bits ) commit_notif();
+  CommitNotif #( 
+    .p_seq_num_bits (p_seq_num_bits)
+  ) commit_notif();
 
   SeqAge dut(
     .commit (commit_notif),
     .*
   );
+
+  logic [31:0] unused_commit_pc;
+  logic  [4:0] unused_commid_waddr;
+  logic [31:0] unused_commit_wdata;
+  logic        unused_commit_wen;
+
+  assign unused_commit_pc    = commit_notif.pc;
+  assign unused_commid_waddr = commit_notif.waddr;
+  assign unused_commit_wdata = commit_notif.wdata;
+  assign unused_commit_wen   = commit_notif.wen;
 
   //----------------------------------------------------------------------
   // commit

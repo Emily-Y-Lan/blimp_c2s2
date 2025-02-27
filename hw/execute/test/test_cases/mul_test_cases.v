@@ -12,10 +12,10 @@ task test_case_mul_pos_pos();
 
   fork
     begin
-      //   pc  seq_num op1                       op2  waddr uop
-      send('0, 1,                             4,  3,  5'h1, OP_MUL);
-      send('1, 2,                            12, 12,  5'h4, OP_MUL);
-      send('0, 3,      p_data_bits'('h80000000),  2,  5'h2, OP_MUL);
+      //   pc  seq_num op1           op2  waddr uop
+      send('0, 1,                 4,  3,  5'h1, OP_MUL);
+      send('1, 2,                12, 12,  5'h4, OP_MUL);
+      send('0, 3,      32'h80000000,  2,  5'h2, OP_MUL);
     end
 
     begin
@@ -39,10 +39,10 @@ task test_case_mul_pos_neg();
 
   fork
     begin
-      //   pc  seq_num op1                       op2  waddr uop   
-      send('0, 1,                             4,  -3, 5'h1, OP_MUL);
-      send('1, 0,                            12, -12, 5'h4, OP_MUL);
-      send('0, 1,      p_data_bits'('h80000000),  -2, 5'h2, OP_MUL);
+      //   pc  seq_num op1           op2  waddr uop   
+      send('0, 1,                 4,  -3, 5'h1, OP_MUL);
+      send('1, 0,                12, -12, 5'h4, OP_MUL);
+      send('0, 1,      32'h80000000,  -2, 5'h2, OP_MUL);
     end
 
     begin
@@ -137,9 +137,9 @@ endtask
 // test_case_mul_random
 //----------------------------------------------------------------------
 
-logic    [p_addr_bits-1:0] rand_pc;
+logic               [31:0] rand_pc;
 logic [p_seq_num_bits-1:0] rand_seq_num;
-logic    [p_data_bits-1:0] rand_op1, rand_op2, exp_out;
+logic               [31:0] rand_op1, rand_op2, exp_out;
 logic                [4:0] rand_waddr;
 
 task test_case_mul_random();
@@ -147,10 +147,10 @@ task test_case_mul_random();
   if( !t.run_test ) return;
 
   for( int i = 0; i < 20; i = i + 1 ) begin
-    rand_pc      = p_addr_bits'($urandom());
+    rand_pc      = 32'($urandom());
     rand_seq_num = p_seq_num_bits'($urandom());
-    rand_op1     = p_data_bits'($urandom());
-    rand_op2     = p_data_bits'($urandom());
+    rand_op1     = 32'($urandom());
+    rand_op2     = 32'($urandom());
     rand_waddr   = 5'($urandom());
     exp_out      = rand_op1 * rand_op2;
 

@@ -6,20 +6,16 @@
 `ifndef INTF_F__D_INTF_V
 `define INTF_F__D_INTF_V
 
-interface F__DIntf
-#(
-  parameter p_addr_bits = 32,
-  parameter p_inst_bits = 32
-);
+interface F__DIntf;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [p_inst_bits-1:0] inst;
-  logic [p_addr_bits-1:0] pc;
-  logic                   val;
-  logic                   rdy;
+  logic [31:0] inst;
+  logic [31:0] pc;
+  logic        val;
+  logic        rdy;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports

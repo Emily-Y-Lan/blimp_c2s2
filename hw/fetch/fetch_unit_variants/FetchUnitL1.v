@@ -11,17 +11,9 @@
 
 module FetchUnitL1
 #(
-  parameter p_rst_addr = 32'b0,
-
-  //----------------------------------------------------------------------
-  // Interface Parameters
-  //----------------------------------------------------------------------
-
-  // parameter p_addr_bits = 32,
-  // parameter p_inst_bits = 32,
   parameter p_opaq_bits = 8
 )
-(
+( 
   input  logic    clk,
   input  logic    rst,
 
@@ -37,13 +29,12 @@ module FetchUnitL1
 
   F__DIntf.F_intf D
 );
-
-  localparam p_addr_bits = D.p_addr_bits;
-  localparam p_inst_bits = D.p_inst_bits;
   
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Local Parameters
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  localparam p_rst_addr = 32'h200;
   
   localparam logic [p_opaq_bits:0] p_max_in_flight = 2 ** p_opaq_bits;
   localparam type t_req_msg  = type(mem.req_msg);
@@ -87,12 +78,12 @@ module FetchUnitL1
   // Keep track of the current request address
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [p_addr_bits-1:0] curr_addr;
-  logic [p_addr_bits-1:0] curr_addr_next;
+  logic [31:0] curr_addr;
+  logic [31:0] curr_addr_next;
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      curr_addr <= p_addr_bits'(p_rst_addr);
+      curr_addr <= 32'(p_rst_addr);
     // else if ( D.squash & !memreq_xfer )
     //   curr_addr <= D.branch_target;
     else if ( memreq_xfer )
@@ -167,10 +158,8 @@ module FetchUnitL1
   // Unused signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  parameter p_len_bits = p_inst_bits / 8;
-
-  logic                  unused_resp_op;
-  logic [p_len_bits-1:0] unused_resp_len;
+  logic       unused_resp_op;
+  logic [3:0] unused_resp_len;
 
   always_comb begin
     unused_resp_op  = mem.resp_msg.op;
