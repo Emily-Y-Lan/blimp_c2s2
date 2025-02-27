@@ -16,7 +16,7 @@ class FLInst {
  public:
   // Constructors
   FLInst( uint32_t inst );
-  FLInst( std::string assembly );
+  FLInst( std::string assembly, uint32_t addr );
 
   // Metadata
   __attribute__( ( const ) ) std::string name() const;

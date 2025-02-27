@@ -7,7 +7,7 @@
 `define TEST_ASM_RV32_DISASSEMBLE32_V
 
 `ifndef SYNTHESIS
-import "DPI-C" function string disassemble( bit [31:0] binary );
+import "DPI-C" function string disassemble( bit [31:0] binary, bit [31:0] pc );
 `endif
 
 `endif // TEST_ASM_DISASSEMBLE_V

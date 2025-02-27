@@ -35,7 +35,7 @@ std::map<std::string, std::function<std::string( uint32_t )>>
 
 std::string instruction;
 
-const char* disassemble( const uint32_t* vbinary )
+const char* disassemble( const uint32_t* vbinary, const uint32_t* pc )
 {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Get the appropriate instruction specification

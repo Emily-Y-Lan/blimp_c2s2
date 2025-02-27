@@ -7,7 +7,7 @@
 `define TEST_ASM_ASSEMBLE_V
 
 `ifndef SYNTHESIS
-import "DPI-C" function bit [31:0] assemble( string assembly );
+import "DPI-C" function bit [31:0] assemble( string assembly, bit [31:0] pc );
 `endif
 
 `endif // TEST_ASM_ASSEMBLE_V

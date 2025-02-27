@@ -15,8 +15,8 @@ task test_case_basic();
   fork
     begin
       //   addr   inst
-      send('h200, assemble("mul x1, x0, x0"));
-      send('h204, assemble("addi x1, x0, 10"));
+      send('h200, "mul x1, x0, x0" );
+      send('h204, "addi x1, x0, 10");
     end
 
     begin
@@ -44,12 +44,12 @@ task test_case_pending();
 
   fork
     begin
-      //   addr             inst
-      send('h200, assemble("add  x2, x0, x1"));
-      send('h204, assemble("add  x4, x3, x2"));
-      send('h208, assemble("add  x5, x5, x4"));
-      send('h20c, assemble("add  x5, x5, x5"));
-      send('h210, assemble("add  x6, x5, x4"));
+      //   addr    inst
+      send('h200, "add  x2, x0, x1");
+      send('h204, "add  x4, x3, x2");
+      send('h208, "add  x5, x5, x4");
+      send('h20c, "add  x5, x5, x5");
+      send('h210, "add  x6, x5, x4");
     end
 
     begin

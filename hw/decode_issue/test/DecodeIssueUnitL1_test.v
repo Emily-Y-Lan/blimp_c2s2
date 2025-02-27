@@ -98,9 +98,9 @@ module DecodeIssueUnitL1TestSuite #(
 
   task send(
     input logic [31:0] pc,
-    input logic [31:0] inst
+    input string       assembly
   );
-    msg_to_send.inst  = inst;
+    msg_to_send.inst  = assemble( assembly, pc );
     msg_to_send.pc    = pc;
 
     F_Istream.send(msg_to_send);

@@ -8,6 +8,7 @@
 
 #include <cstdint>
 
-extern "C" const char* disassemble( const uint32_t* vbinary );
+extern "C" const char* disassemble( const uint32_t* vbinary,
+                                    const uint32_t* pc );
 
 #endif  // DISASSEMBLE_H

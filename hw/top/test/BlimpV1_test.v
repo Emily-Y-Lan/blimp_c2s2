@@ -80,7 +80,7 @@ module BlimpV1TestSuite #(
     input logic [31:0] addr,
     input string       inst
   );
-    fl_mem.init_mem( addr, assemble( inst ) );
+    fl_mem.init_mem( addr, assemble( inst, addr ) );
   endtask
 
   //----------------------------------------------------------------------

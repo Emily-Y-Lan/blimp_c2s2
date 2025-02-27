@@ -195,7 +195,7 @@ module DecodeIssueUnitL1 #(
 `ifndef SYNTHESIS  
   function string trace();
     if( F_reg.val & F.rdy )
-      trace = $sformatf("%-20s", disassemble(F_reg.inst) );
+      trace = $sformatf("%-20s", disassemble(F_reg.inst, F_reg.pc) );
     else
       trace = {20{" "}};
   endfunction

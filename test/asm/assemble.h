@@ -8,6 +8,6 @@
 
 #include <cstdint>
 
-extern "C" uint32_t assemble( const char* vassembly );
+extern "C" uint32_t assemble( const char* vassembly, uint32_t pc );
 
 #endif  // ASSEMBLE_H

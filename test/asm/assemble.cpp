@@ -32,7 +32,7 @@ std::map<std::string, std::function<uint32_t( std::string )>>
 // Convert the assembly into tokens, then call the instruction-specific
 // assembler
 
-uint32_t assemble( const char* vassembly )
+uint32_t assemble( const char* vassembly, uint32_t pc )
 {
   std::string              assembly = vassembly;
   std::vector<std::string> tokens   = tokenize( assembly );
