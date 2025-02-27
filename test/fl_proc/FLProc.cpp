@@ -3,8 +3,7 @@
 //========================================================================
 // Definitions for our functional-level processor
 
-#include "FLInst.h"
-#include "FLProc.h"
+#include "test/fl_proc/FLProc.h"
 #include <format>
 #include <stdexcept>
 

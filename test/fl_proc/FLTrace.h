@@ -7,6 +7,7 @@
 #define FL_TRACE_H
 
 #include <cstdint>
+#include <iostream>
 
 class FLTrace {
   //----------------------------------------------------------------------
@@ -15,6 +16,10 @@ class FLTrace {
  public:
   // Constructors
   FLTrace( uint32_t pc, uint32_t waddr, uint32_t wdata, bool wen );
+
+  // String representation for stream output
+  friend std::ostream &operator<<( std::ostream  &out,
+                                   const FLTrace &trace );
 
   //----------------------------------------------------------------------
   // Protected attrributes

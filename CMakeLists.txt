@@ -56,6 +56,7 @@ project(
 )
 
 enable_testing()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 #------------------------------------------------------------------------
 # Import Verilator
@@ -88,22 +89,19 @@ endfunction()
 #------------------------------------------------------------------------
 
 add_library(ASM STATIC ${ASM_FILES})
-target_include_directories(ASM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test/asm)
 
 #------------------------------------------------------------------------
 # FL_PROC Library
 #------------------------------------------------------------------------
 
 add_library(FL_PROC STATIC ${FL_PROC_FILES})
-target_include_directories(FL_PROC PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test/asm)
-target_include_directories(FL_PROC PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test/fl_proc)
+target_link_libraries(FL_PROC PRIVATE ASM)
 
 #------------------------------------------------------------------------
-# Add our targets
+# Add our SystemVerilog tests
 #------------------------------------------------------------------------
 
 add_custom_target(check COMMAND "ctest" "--timeout" "10")
-set(V_INCL_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   set(V_TEST_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_TEST_FILE_REL_PATH}")
@@ -122,7 +120,6 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   verilate(
     ${V_TEST_BIN} 
     SOURCES ${V_TEST_FILE_PATH} 
-    INCLUDE_DIRS ${V_INCL_DIR}
     TRACE
     TRACE_STRUCTS
     VERILATOR_ARGS --timing --flatten --quiet-stats

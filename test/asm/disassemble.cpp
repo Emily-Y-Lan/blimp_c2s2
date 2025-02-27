@@ -4,9 +4,9 @@
 // A function to disassemble instructions directly from binary, for use
 // from test cases
 
-#include "disassemble.h"
-#include "fields.h"
-#include "inst.h"
+#include "test/asm/disassemble.h"
+#include "test/asm/fields.h"
+#include "test/asm/inst.h"
 #include <cstdint>
 #include <functional>
 #include <map>
