@@ -18,8 +18,8 @@ task test_case_add();
   fork
     begin
       //   addr   inst
-      send('h200, assemble32("add x4, x1, x2"));
-      send('h204, assemble32("add x2, x5, x4"));
+      send('h200, assemble("add x4, x1, x2"));
+      send('h204, assemble("add x2, x5, x4"));
     end
 
     begin
@@ -47,8 +47,8 @@ task test_case_addi();
   fork
     begin
       //   addr   inst
-      send('h200, assemble32("addi x3, x1, 10"));
-      send('h204, assemble32("addi x2, x3, 2047"));
+      send('h200, assemble("addi x3, x1, 10"));
+      send('h204, assemble("addi x2, x3, 2047"));
     end
 
     begin
@@ -73,11 +73,11 @@ task test_case_mul();
   fork
     begin
       //   addr   inst
-      send('h200, assemble32("addi x3, x0, 10"));
-      send('h204, assemble32("addi x2, x0,  5"));
-      send('h208, assemble32("mul  x4, x3, x2"));
-      send('h20c, assemble32("mul  x4, x4, x2"));
-      send('h210, assemble32("mul  x4, x4, x4"));
+      send('h200, assemble("addi x3, x0, 10"));
+      send('h204, assemble("addi x2, x0,  5"));
+      send('h208, assemble("mul  x4, x3, x2"));
+      send('h20c, assemble("mul  x4, x4, x2"));
+      send('h210, assemble("mul  x4, x4, x4"));
     end
 
     begin

@@ -6,7 +6,7 @@
 `include "hw/top/BlimpV1.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
-`include "test/asm/rv32/assemble32.v"
+`include "test/asm/assemble.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/InstTraceSub.v"
 
@@ -80,7 +80,7 @@ module BlimpV1TestSuite #(
     input logic [31:0] addr,
     input string       inst
   );
-    fl_mem.init_mem( addr, assemble32( inst ) );
+    fl_mem.init_mem( addr, assemble( inst ) );
   endtask
 
   //----------------------------------------------------------------------

@@ -1,11 +1,8 @@
 //========================================================================
-// assemble32.cpp
+// assemble.cpp
 //========================================================================
 // A function to assemble instructions directly into binary, for use from
 // test cases
-
-#ifndef ASSEMBLE32_CPP
-#define ASSEMBLE32_CPP
 
 #include <cstdint>
 #include <format>
@@ -16,8 +13,8 @@
 #include <string>
 #include <vector>
 
-#include "inst32.h"
-#include "inst32_utils.h"
+#include "inst.h"
+#include "fields.h"
 
 //------------------------------------------------------------------------
 // Field Table
@@ -35,9 +32,7 @@ std::map<std::string, std::function<uint32_t(std::string)>> asm_field_map = {
 // Convert the assembly into tokens, then call the instruction-specific
 // assembler
 
-extern "C" uint32_t assemble32(const char* vassembly);
-
-uint32_t assemble32(const char* vassembly) {
+extern "C" uint32_t assemble(const char* vassembly) {
   std::string assembly = vassembly;
   std::vector<std::string> tokens = tokenize(assembly);
 
@@ -90,5 +85,3 @@ uint32_t assemble32(const char* vassembly) {
 
   return encoding;
 }
-
-#endif  // ASSEMBLE32_CPP

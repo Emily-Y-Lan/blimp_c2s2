@@ -1,10 +1,10 @@
 //========================================================================
 // inst32_utils.h
 //========================================================================
-// Utility function declarations for our assembler
+// Utility functions for our assembler to get instruction fields
 
-#ifndef INST32_UTILS_H
-#define INST32_UTILS_H
+#ifndef FIELDS_H
+#define FIELDS_H
 
 #include <cstdint>
 #include <string>
@@ -37,4 +37,4 @@ std::string get_imm_b(uint32_t binary);
 std::string get_imm_u(uint32_t binary);
 std::string get_imm_j(uint32_t binary);
 
-#endif  // INST32_UTILS_H
+#endif  // FIELDSS_H

@@ -1,17 +1,14 @@
 //========================================================================
-// inst32_utils.cpp
+// fields.cpp
 //========================================================================
-// Utility function definitions for our assembler
-
-#ifndef INST32_UTILS_CPP
-#define INST32_UTILS_CPP
+// Utility functions for our assembler to get instruction fields
 
 #include <format>
 #include <iostream>
 #include <map>
 #include <stdexcept>
 
-#include "inst32_utils.h"
+#include "fields.h"
 
 //------------------------------------------------------------------------
 // Internal helper functions
@@ -212,5 +209,3 @@ std::string get_imm_j(uint32_t binary) {
   imm |= (binary >> 9) & 0x00000800;
   return std::to_string((int)imm);
 }
-
-#endif  // INST32_UTILS_CPP

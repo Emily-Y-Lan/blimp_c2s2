@@ -1,11 +1,11 @@
 //========================================================================
-// inst32.h
+// inst.h
 //========================================================================
 // The instructions that are supported by the assembler, as well as
 // functions to operate on the specifications
 
-#ifndef INST32_H
-#define INST32_H
+#ifndef INST_H
+#define INST_H
 
 #include <cstdint>
 #include <string>
@@ -57,4 +57,10 @@ std::vector<std::string> tokenize(std::string assembly);
 inst_spec get_inst_spec(std::string inst_name);
 inst_spec get_inst_spec(uint32_t inst_bin);
 
-#endif  // INST32_H
+//------------------------------------------------------------------------
+// Operate on specifications
+//------------------------------------------------------------------------
+
+std::string inst_spec_name(inst_spec spec);
+
+#endif  // INST_H

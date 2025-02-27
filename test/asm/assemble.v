@@ -1,13 +1,13 @@
 //========================================================================
-// assemble32.v
+// assemble.v
 //========================================================================
 // An include to access the 32b assembly function
 
-`ifndef TEST_ASM_RV32_ASSEMBLE32_V
-`define TEST_ASM_RV32_ASSEMBLE32_V
+`ifndef TEST_ASM_ASSEMBLE_V
+`define TEST_ASM_ASSEMBLE_V
 
 `ifndef SYNTHESIS
-import "DPI-C" function bit [31:0] assemble32( string assembly );
+import "DPI-C" function bit [31:0] assemble( string assembly );
 `endif
 
-`endif // TEST_ASM_RV32_ASSEMBLE32_V
+`endif // TEST_ASM_ASSEMBLE_V

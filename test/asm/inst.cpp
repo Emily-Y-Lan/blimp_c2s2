@@ -1,10 +1,7 @@
 //========================================================================
-// inst32.cpp
+// inst.cpp
 //========================================================================
 // Functions that operate on instruction specifications
-
-#ifndef INST32_CPP
-#define INST32_CPP
 
 #include <inttypes.h>
 
@@ -15,7 +12,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "inst32.h"
+#include "inst.h"
 
 //------------------------------------------------------------------------
 // Parse a given assembly into tokens
@@ -80,4 +77,11 @@ inst_spec get_inst_spec(uint32_t inst_bin) {
   throw std::invalid_argument(excp);
 }
 
-#endif  // INST32_CPP
+//------------------------------------------------------------------------
+// Get a specification's name
+//------------------------------------------------------------------------
+
+std::string inst_spec_name(inst_spec spec){
+  std::string assembly = spec.assembly;
+  return assembly.substr(0, assembly.find(" "));
+}

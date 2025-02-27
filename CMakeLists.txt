@@ -24,10 +24,10 @@ set(V_TEST_FILES
 )
 
 set(RV32_ASM_FILES
-  test/asm/rv32/assemble32.cpp
-  test/asm/rv32/disassemble32.cpp
-  test/asm/rv32/inst32.cpp
-  test/asm/rv32/inst32_utils.cpp
+  test/asm/assemble.cpp
+  test/asm/disassemble.cpp
+  test/asm/inst.cpp
+  test/asm/fields.cpp
 )
 
 #-------------------------------------------------------------------------

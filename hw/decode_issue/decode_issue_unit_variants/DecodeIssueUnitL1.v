@@ -14,7 +14,7 @@
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 `include "intf/CompleteNotif.v"
-`include "test/asm/rv32/disassemble32.v"
+`include "test/asm/disassemble.v"
 
 import ISA::*;
 
@@ -195,7 +195,7 @@ module DecodeIssueUnitL1 #(
 `ifndef SYNTHESIS  
   function string trace();
     if( F_reg.val & F.rdy )
-      trace = $sformatf("%-20s", disassemble32(F_reg.inst) );
+      trace = $sformatf("%-20s", disassemble(F_reg.inst) );
     else
       trace = {20{" "}};
   endfunction

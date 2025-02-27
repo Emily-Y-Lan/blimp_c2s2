@@ -1,11 +1,8 @@
 //========================================================================
-// disassemble32.cpp
+// disassemble.cpp
 //========================================================================
 // A function to disassemble instructions directly from binary, for use
 // from test cases
-
-#ifndef DISASSEMBLE32_CPP
-#define DISASSEMBLE32_CPP
 
 #include <cstdint>
 #include <functional>
@@ -14,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "inst32.h"
-#include "inst32_utils.h"
+#include "inst.h"
+#include "fields.h"
 
 //------------------------------------------------------------------------
 // Field Table
@@ -36,9 +33,7 @@ std::map<std::string, std::function<std::string(uint32_t)>> disasm_field_map = {
 
 std::string instruction;
 
-extern "C" const char* disassemble32(const uint32_t* vbinary);
-
-const char* disassemble32(const uint32_t* vbinary) {
+extern "C" const char* disassemble(const uint32_t* vbinary) {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Get the appropriate instruction specification
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,5 +68,3 @@ const char* disassemble32(const uint32_t* vbinary) {
 
   return instruction.c_str();
 }
-
-#endif  // DISASSEMBLE32_CPP

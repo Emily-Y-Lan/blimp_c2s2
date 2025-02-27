@@ -1,5 +1,5 @@
 //========================================================================
-// disassemble32.v
+// disassemble.v
 //========================================================================
 // An include to access the 32b disassembly function
 
@@ -7,7 +7,7 @@
 `define TEST_ASM_RV32_DISASSEMBLE32_V
 
 `ifndef SYNTHESIS
-import "DPI-C" function string disassemble32( bit [31:0] binary );
+import "DPI-C" function string disassemble( bit [31:0] binary );
 `endif
 
-`endif // TEST_ASM_RV32_DISASSEMBLE32_V
+`endif // TEST_ASM_DISASSEMBLE_V
