@@ -47,6 +47,28 @@ FLTrace FLProc::step()
     return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
   }
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // addi
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  if ( inst.name() == "addi" ) {
+    regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
+    uint32_t old_pc = pc;
+    pc              = pc + 4;
+    return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+  }
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // mul
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  if ( inst.name() == "mul" ) {
+    regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
+    uint32_t old_pc = pc;
+    pc              = pc + 4;
+    return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+  }
+
   // TODO: Add more instructions!
 
   std::string excp =
