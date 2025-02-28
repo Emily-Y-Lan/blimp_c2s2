@@ -7,10 +7,10 @@
 #define FL_PROC_H
 
 #include "fl/FLInst.h"
-#include "fl/FLMem.h"
 #include "fl/FLRegfile.h"
 #include "fl/FLTrace.h"
 #include <cstdint>
+#include <map>
 
 class FLProc {
   //----------------------------------------------------------------------
@@ -33,9 +33,9 @@ class FLProc {
   // Protected attrributes
   //----------------------------------------------------------------------
  protected:
-  uint32_t  pc;
-  FLRegfile regs;
-  FLMem     mem;
+  uint32_t                     pc;
+  FLRegfile                    regs;
+  std::map<uint32_t, uint32_t> mem;
 };
 
 #endif  // FL_PROC_H

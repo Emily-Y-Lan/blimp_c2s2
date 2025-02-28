@@ -3,6 +3,7 @@
 //========================================================================
 // Definitions for our functional-level processor
 
+#include "asm/assemble.h"
 #include "fl/FLProc.h"
 #include <format>
 #include <stdexcept>
@@ -29,11 +30,11 @@ void FLProc::reset()
 
 void FLProc::init( uint32_t addr, uint32_t inst )
 {
-  mem.init( addr, inst );
+  mem[addr] = inst;
 }
 void FLProc::init( uint32_t addr, std::string assembly )
 {
-  mem.init( addr, assembly );
+  mem[addr] = assemble( assembly.c_str(), addr );
 }
 
 //------------------------------------------------------------------------
