@@ -45,7 +45,9 @@ module BlimpV1 #(
   // Interfaces
   //----------------------------------------------------------------------
 
-  F__DIntf f__d_intf();
+  F__DIntf #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) f__d_intf();
 
   D__XIntf #(
     .p_seq_num_bits (p_seq_num_bits)

@@ -52,7 +52,9 @@ module DecodeIssueUnitL1TestSuite #(
   // Here, we additionally use virtual fl_X interfaces to allow for
   // non-constant indexing
 
-  F__DIntf F__D_intf();
+  F__DIntf #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) F__D_intf();
 
   D__XIntf #(
     .p_seq_num_bits (p_seq_num_bits)
@@ -74,18 +76,20 @@ module DecodeIssueUnitL1TestSuite #(
   );
 
   //----------------------------------------------------------------------
-  // FL D Interface
+  // FL F Interface
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [31:0] inst;
-    logic [31:0] pc;
+    logic               [31:0] inst;
+    logic               [31:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
   } t_f__d_msg;
 
   t_f__d_msg f__d_msg;
 
-  assign F__D_intf.inst  = f__d_msg.inst;
-  assign F__D_intf.pc    = f__d_msg.pc;
+  assign F__D_intf.inst    = f__d_msg.inst;
+  assign F__D_intf.pc      = f__d_msg.pc;
+  assign F__D_intf.seq_num = f__d_msg.seq_num;
 
   TestIstream #( t_f__d_msg, p_F_send_intv_delay ) F_Istream (
     .msg (f__d_msg),
@@ -97,11 +101,13 @@ module DecodeIssueUnitL1TestSuite #(
   t_f__d_msg msg_to_send;
 
   task send(
-    input logic [31:0] pc,
-    input string       assembly
+    input logic [31:0]               pc,
+    input string                     assembly,
+    input logic [p_seq_num_bits-1:0] seq_num
   );
-    msg_to_send.inst  = assemble( assembly, pc );
-    msg_to_send.pc    = pc;
+    msg_to_send.inst    = assemble( assembly, pc );
+    msg_to_send.pc      = pc;
+    msg_to_send.seq_num = seq_num;
 
     F_Istream.send(msg_to_send);
   endtask
@@ -111,25 +117,25 @@ module DecodeIssueUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [31:0] pc;
-    logic [31:0] op1;
-    logic [31:0] op2;
-    logic  [4:0] waddr;
-    rv_uop       uop;
+    logic               [31:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic               [31:0] op1;
+    logic               [31:0] op2;
+    logic                [4:0] waddr;
+    rv_uop                     uop;
   } t_d__x_msg;
 
   t_d__x_msg                 d__x_msgs       [p_num_pipes];
-  logic [p_seq_num_bits-1:0] unused_seq_nums [p_num_pipes];
 
   genvar i;
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign d__x_msgs[i].pc    = D__X_intfs[i].pc;
-      assign d__x_msgs[i].op1   = D__X_intfs[i].op1;
-      assign d__x_msgs[i].op2   = D__X_intfs[i].op2;
-      assign d__x_msgs[i].waddr = D__X_intfs[i].waddr;
-      assign d__x_msgs[i].uop   = D__X_intfs[i].uop;
-      assign unused_seq_nums[i] = D__X_intfs[i].seq_num;
+      assign d__x_msgs[i].pc      = D__X_intfs[i].pc;
+      assign d__x_msgs[i].seq_num = D__X_intfs[i].seq_num;
+      assign d__x_msgs[i].op1     = D__X_intfs[i].op1;
+      assign d__x_msgs[i].op2     = D__X_intfs[i].op2;
+      assign d__x_msgs[i].waddr   = D__X_intfs[i].waddr;
+      assign d__x_msgs[i].uop     = D__X_intfs[i].uop;
     end
   endgenerate
 
@@ -235,18 +241,20 @@ module DecodeIssueUnitL1TestSuite #(
   end
 
   task recv(
-    input logic [31:0] pc,
-    input logic [31:0] op1,
-    input logic [31:0] op2,
-    input logic  [4:0] waddr,
-    input rv_uop       uop,
+    input logic               [31:0] pc,
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic               [31:0] op1,
+    input logic               [31:0] op2,
+    input logic                [4:0] waddr,
+    input rv_uop                     uop,
   );
     // Set message correctly
-    pipe_msg.pc    = pc;
-    pipe_msg.op1   = op1;
-    pipe_msg.op2   = op2;
-    pipe_msg.waddr = waddr;
-    pipe_msg.uop   = uop;
+    pipe_msg.pc      = pc;
+    pipe_msg.seq_num = seq_num;
+    pipe_msg.op1     = op1;
+    pipe_msg.op2     = op2;
+    pipe_msg.waddr   = waddr;
+    pipe_msg.uop     = uop;
 
     pipe_found = 0;
     first_iter = 1;

@@ -45,16 +45,17 @@ module DecodeIssueUnitL1 #(
   CompleteNotif.sub complete
 );
 
-  localparam p_seq_num_bits = Ex.p_seq_num_bits;
+  localparam p_seq_num_bits = F.p_seq_num_bits;
   
   //----------------------------------------------------------------------
   // Pipeline registers for F interface
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic        val;
-    logic [31:0] inst;
-    logic [31:0] pc;
+    logic                      val;
+    logic               [31:0] inst;
+    logic               [31:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
   } F_input;
 
   F_input F_reg;
@@ -64,7 +65,7 @@ module DecodeIssueUnitL1 #(
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      F_reg <= '{ val: 1'b0, inst: 'x, pc: 'x };
+      F_reg <= '{ val: 1'b0, inst: 'x, pc: 'x, seq_num: 'x };
     else
       F_reg <= F_reg_next;
   end
@@ -73,9 +74,9 @@ module DecodeIssueUnitL1 #(
     F_xfer = F.val & F.rdy;
 
     if ( F_xfer )
-      F_reg_next = '{ val: 1'b1, inst: F.inst, pc: F.pc };
+      F_reg_next = '{ val: 1'b1, inst: F.inst, pc: F.pc, seq_num: F.seq_num };
     else if ( X_xfer )
-      F_reg_next = '{ val: 1'b0, inst: 'x, pc: 'x };
+      F_reg_next = '{ val: 1'b0, inst: 'x, pc: 'x, seq_num: 'x };
     else
       F_reg_next = F_reg;
   end
@@ -168,20 +169,12 @@ module DecodeIssueUnitL1 #(
   genvar k;
   generate
     for( k = 0; k < p_num_pipes; k = k + 1 ) begin: pipe_signals
-      assign Ex[k].pc    = F_reg.pc;
-      assign Ex[k].op1   = op1;
-      assign Ex[k].op2   = op2;
-      assign Ex[k].uop   = decoder_uop;
-      assign Ex[k].waddr = decoder_waddr;
-
-      // Unimplemented seq_num signal;
-      assign Ex[k].seq_num = '0;
-      
-      // logic unused_squash;
-      // logic [p_addr_bits-1:0] unused_branch_target;
-
-      // assign unused_squash = Ex[k].squash;
-      // assign unused_branch_target = Ex[k].branch_target;
+      assign Ex[k].pc      = F_reg.pc;
+      assign Ex[k].op1     = op1;
+      assign Ex[k].op2     = op2;
+      assign Ex[k].uop     = decoder_uop;
+      assign Ex[k].waddr   = decoder_waddr;
+      assign Ex[k].seq_num = F_reg.seq_num;
     end
   endgenerate
 

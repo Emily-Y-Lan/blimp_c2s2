@@ -18,8 +18,9 @@ import TestEnv::*;
 // A test suite for a particular parametrization of the Fetch unit
 
 module FetchUnitL1TestSuite #(
-  parameter p_suite_num = 0,
-  parameter p_opaq_bits = 8,
+  parameter p_suite_num    = 0,
+  parameter p_opaq_bits    = 8,
+  parameter p_seq_num_bits = 5,
 
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1,
@@ -49,7 +50,9 @@ module FetchUnitL1TestSuite #(
     .t_resp_msg (`MEM_RESP( p_opaq_bits ))
   ) mem_intf();
 
-  F__DIntf F__D_intf();
+  F__DIntf #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) F__D_intf();
 
   FetchUnitL1 #(
     .p_opaq_bits (p_opaq_bits)
@@ -87,6 +90,9 @@ module FetchUnitL1TestSuite #(
 
   assign f__d_msg.inst = F__D_intf.inst;
   assign f__d_msg.pc   = F__D_intf.pc;
+
+  logic [p_seq_num_bits-1:0] unused_seq_num;
+  assign unused_seq_num = F__D_intf.seq_num;
 
   TestOstream #( t_f__d_msg, p_D_recv_intv_delay ) D_Ostream (
     .msg (f__d_msg),
@@ -219,14 +225,14 @@ endmodule
 //========================================================================
 
 module FetchUnitL1_test;
-  FetchUnitL1TestSuite #(1)             suite_1();
-  FetchUnitL1TestSuite #(2, 8, 0, 0, 0) suite_2();
-  FetchUnitL1TestSuite #(3, 1, 0, 0, 0) suite_3();
-  FetchUnitL1TestSuite #(4, 8, 3, 0, 0) suite_4();
-  FetchUnitL1TestSuite #(5, 8, 0, 3, 0) suite_5();
-  FetchUnitL1TestSuite #(6, 8, 0, 0, 3) suite_6();
-  FetchUnitL1TestSuite #(7, 4, 3, 3, 3) suite_7();
-  FetchUnitL1TestSuite #(8, 1, 9, 9, 9) suite_8();
+  FetchUnitL1TestSuite #(1)                suite_1();
+  FetchUnitL1TestSuite #(2, 8, 5, 0, 0, 0) suite_2();
+  FetchUnitL1TestSuite #(3, 1, 2, 0, 0, 0) suite_3();
+  FetchUnitL1TestSuite #(4, 8, 3, 3, 0, 0) suite_4();
+  FetchUnitL1TestSuite #(5, 8, 4, 0, 3, 0) suite_5();
+  FetchUnitL1TestSuite #(6, 8, 6, 0, 0, 3) suite_6();
+  FetchUnitL1TestSuite #(7, 4, 5, 3, 3, 3) suite_7();
+  FetchUnitL1TestSuite #(8, 1, 7, 9, 9, 9) suite_8();
 
   int s;
 

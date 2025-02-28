@@ -14,15 +14,15 @@ task test_case_basic();
 
   fork
     begin
-      //   addr   inst
-      send('h200, "mul x1, x0, x0" );
-      send('h204, "addi x1, x0, 10");
+      //   addr   inst               seq_num
+      send('h200, "mul x1, x0, x0",  0);
+      send('h204, "addi x1, x0, 10", 1);
     end
 
     begin
-      //   pc     op1 op2  waddr uop
-      recv('h200, 0,   0,  1,    OP_MUL);
-      recv('h204, 0,  10,  1,    OP_ADD);
+      //   pc     seq_num op1 op2  waddr uop
+      recv('h200, 0,      0,   0,  1,    OP_MUL);
+      recv('h204, 1,      0,  10,  1,    OP_ADD);
     end
   join
 
@@ -44,25 +44,25 @@ task test_case_pending();
 
   fork
     begin
-      //   addr    inst
-      send('h200, "add  x2, x0, x1");
-      send('h204, "add  x4, x3, x2");
-      send('h208, "add  x5, x5, x4");
-      send('h20c, "add  x5, x5, x5");
-      send('h210, "add  x6, x5, x4");
+      //   addr    inst              seq_num
+      send('h200, "add  x2, x0, x1", 0);
+      send('h204, "add  x4, x3, x2", 1);
+      send('h208, "add  x5, x5, x4", 2);
+      send('h20c, "add  x5, x5, x5", 3);
+      send('h210, "add  x6, x5, x4", 4);
     end
 
     begin
-      //   pc                op1 op2  waddr uop
-      recv('h200,  0,   1,  2,    OP_ADD);
+      //   pc     seq_num op1 op2  waddr uop
+      recv('h200, 0,      0,   1,  2,    OP_ADD);
       pub( 'x, 2, 1, 1 );
-      recv('h204,  3,   1,  4,    OP_ADD);
+      recv('h204, 1,      3,   1,  4,    OP_ADD);
       pub( 'x, 4, 4, 1 );
-      recv('h208,  5,   4,  5,    OP_ADD);
+      recv('h208, 2,      5,   4,  5,    OP_ADD);
       pub( 'x, 5, 9, 1 );
-      recv('h20c,  9,   9,  5,    OP_ADD);
+      recv('h20c,  3,     9,   9,  5,    OP_ADD);
       pub( 'x, 5, 18, 1 );
-      recv('h210, 18,   4,  6,    OP_ADD);
+      recv('h210, 4,     18,   4,  6,    OP_ADD);
     end
   join
 

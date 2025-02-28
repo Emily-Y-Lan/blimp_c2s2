@@ -6,16 +6,20 @@
 `ifndef INTF_F__D_INTF_V
 `define INTF_F__D_INTF_V
 
-interface F__DIntf;
+interface F__DIntf
+#(
+  parameter p_seq_num_bits = 5
+);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [31:0] inst;
-  logic [31:0] pc;
-  logic        val;
-  logic        rdy;
+  logic               [31:0] inst;
+  logic [p_seq_num_bits-1:0] seq_num;
+  logic               [31:0] pc;
+  logic                      val;
+  logic                      rdy;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -23,6 +27,7 @@ interface F__DIntf;
 
   modport F_intf (
     output inst,
+    output seq_num,
     output pc,
     output val,
     input  rdy
@@ -30,6 +35,7 @@ interface F__DIntf;
 
   modport D_intf (
     input  inst,
+    output seq_num,
     input  pc,
     input  val,
     output rdy
