@@ -161,10 +161,16 @@ module FetchUnitL1
 `ifndef SYNTHESIS
   function string trace();
     if( memreq_xfer )
-      trace = $sformatf("(%h)", req_opaque);
+      trace = $sformatf("%h", mem.req_msg.addr);
     else
-      if( memreq_xfer )
-      trace = $sformatf("(%h)", req_opaque);
+      trace = {8{" "}};
+
+    trace = {trace, " > "};
+
+    if( memresp_xfer )
+      trace = {trace, $sformatf("%h", mem.resp_msg.addr)};
+    else
+      trace = {trace, {8{" "}}};
   endfunction
 `endif
 

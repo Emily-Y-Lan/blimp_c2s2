@@ -124,7 +124,7 @@ module BlimpV1TestSuite #(
       check_traces_success = fl_trace( check_traces_fl_trace );
       if( !check_traces_success ) return;
       
-      check_trace(
+      inst_trace_sub.check_trace(
         check_traces_fl_trace.pc,
         check_traces_fl_trace.waddr,
         check_traces_fl_trace.wdata,
