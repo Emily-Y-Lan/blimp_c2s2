@@ -4,6 +4,7 @@
 // Utility functions for our assembler to get instruction fields
 
 #include "asm/fields.h"
+#include <cstdint>
 #include <format>
 #include <iostream>
 #include <map>
@@ -33,9 +34,9 @@ uint32_t repl_upper( uint32_t bit, int start_idx )
   return mask;
 }
 
-int get_imm_int( std::string imm )
+int32_t get_imm_int( std::string imm )
 {
-  int val;
+  int32_t val;
 
   // Try conversion - matches decimal (100), hex (0x64), and octal (0144)
   if ( sscanf( imm.c_str(), "%i", &val ) ) {
@@ -112,7 +113,7 @@ std::string get_rd_id( uint32_t binary )
 
 uint32_t imm_i_mask( std::string imm )
 {
-  int imm_val = get_imm_int( imm );
+  int32_t imm_val = get_imm_int( imm );
 
   if ( imm_val > 0xfff ) {
     std::string excp = std::format( "Invalid I-immediate: {}", imm_val );
@@ -127,7 +128,7 @@ uint32_t imm_i_mask( std::string imm )
 
 uint32_t imm_s_mask( std::string imm )
 {
-  int imm_val = get_imm_int( imm );
+  int32_t imm_val = get_imm_int( imm );
 
   if ( imm_val > 0xfff ) {
     std::string excp = std::format( "Invalid S-immediate: {}", imm_val );
@@ -143,7 +144,7 @@ uint32_t imm_s_mask( std::string imm )
 
 uint32_t imm_b_mask( std::string imm )
 {
-  int imm_val = get_imm_int( imm );
+  int32_t imm_val = get_imm_int( imm );
 
   if ( imm_val > 0x1fff ) {
     std::string excp = std::format( "Invalid B-immediate: {}", imm_val );
@@ -166,7 +167,7 @@ uint32_t imm_b_mask( std::string imm )
 
 uint32_t imm_u_mask( std::string imm )
 {
-  int imm_val = get_imm_int( imm );
+  int32_t imm_val = get_imm_int( imm );
 
   if ( ( imm_val < 0 ) || ( imm_val > 0xFFFFF ) ) {
     std::string excp = std::format( "Invalid U-immediate: {}", imm_val );
@@ -180,7 +181,7 @@ uint32_t imm_u_mask( std::string imm )
 
 uint32_t imm_j_mask( std::string imm )
 {
-  int imm_val = get_imm_int( imm );
+  int32_t imm_val = get_imm_int( imm );
 
   if ( imm_val > 0xfffff ) {
     std::string excp = std::format( "Invalid J-immediate: {}", imm_val );
