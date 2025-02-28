@@ -21,6 +21,9 @@ class FLTrace {
   friend std::ostream &operator<<( std::ostream  &out,
                                    const FLTrace &trace );
 
+  // Verilog Representation
+  void vrep( uint32_t *vstruct );
+
   //----------------------------------------------------------------------
   // Protected attrributes
   //----------------------------------------------------------------------

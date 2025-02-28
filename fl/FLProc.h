@@ -19,6 +19,9 @@ class FLProc {
  public:
   FLProc();
 
+  // Reset state
+  void reset();
+
   // Initialize memory
   void init( uint32_t addr, uint32_t inst );
   void init( uint32_t addr, std::string assembly );

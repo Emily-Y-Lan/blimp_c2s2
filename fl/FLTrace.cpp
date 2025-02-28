@@ -27,3 +27,24 @@ std::ostream &operator<<( std::ostream &out, const FLTrace &trace )
   out << str_rep;
   return out;
 }
+
+//------------------------------------------------------------------------
+// Verilog Representation
+//------------------------------------------------------------------------
+// Assume a struct of the following format:
+//
+// typedef struct packed {
+//   bit        wen;
+//   bit  [4:0] waddr;
+//   bit [31:0] wdata;
+//   bit [31:0] pc;
+// } inst_trace;
+//
+// Pack the bits accordingly (pc is least-significant word)
+
+void FLTrace::vrep( uint32_t *vstruct )
+{
+  vstruct[0] = pc;
+  vstruct[1] = wdata;
+  vstruct[2] = waddr | ( (uint32_t) ( wen ) << 5 );
+}

@@ -19,6 +19,9 @@ class FLMem {
   void init( uint32_t addr, uint32_t inst );
   void init( uint32_t addr, std::string assembly );
 
+  // Clear memory
+  void clear();
+
   // Access memory
   uint32_t load( uint32_t addr ) const;
   void     store( uint32_t addr, uint32_t data );

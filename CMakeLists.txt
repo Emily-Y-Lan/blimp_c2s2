@@ -36,6 +36,7 @@ set(FL_PROC_FILES
   fl/FLProc.cpp
   fl/FLRegfile.cpp
   fl/FLTrace.cpp
+  fl/fl_vtrace.cpp
 )
 
 #-------------------------------------------------------------------------

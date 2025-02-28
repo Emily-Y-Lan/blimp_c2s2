@@ -9,6 +9,7 @@
 `include "intf/InstTraceNotif.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/InstTraceSub.v"
+`include "fl/fl_vtrace.v"
 
 import TestEnv::*;
 
