@@ -20,7 +20,12 @@ FLInst::FLInst( std::string assembly, uint32_t addr )
 // Name
 //------------------------------------------------------------------------
 
-std::string FLInst::name() const
+inst_name_t FLInst::name() const
+{
+  return get_inst_spec( binary )->name;
+}
+
+std::string FLInst::mnemonic() const
 {
   return inst_spec_name( get_inst_spec( binary ) );
 }

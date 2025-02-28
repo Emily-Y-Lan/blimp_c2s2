@@ -41,20 +41,20 @@ const char* disassemble( const uint32_t* vbinary, const uint32_t* pc )
   // Get the appropriate instruction specification
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  uint32_t  binary = *vbinary;
-  inst_spec spec;
+  uint32_t           binary = *vbinary;
+  const inst_spec_t* spec;
   try {
     spec = get_inst_spec( binary );
   } catch ( std::exception& e ) {
     return "????????";
   }
-  std::vector<std::string> spec_tokens = tokenize( spec.assembly );
+  std::vector<std::string> spec_tokens = tokenize( spec->assembly );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Use tokens to form instruction
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  instruction = spec.assembly;
+  instruction = spec->assembly;
 
   for ( int i = 1; i < spec_tokens.size(); i++ ) {
     std::string spec_token  = spec_tokens[i];

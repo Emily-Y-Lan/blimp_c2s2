@@ -18,7 +18,7 @@
 
 const std::vector<char> delimeters = { ' ', ',', '(', ')' };
 
-std::vector<std::string> tokenize( std::string assembly )
+std::vector<std::string> tokenize( const std::string& assembly )
 {
   std::vector<std::string> tokens;
   std::string              curr_token = "";
@@ -45,16 +45,16 @@ std::vector<std::string> tokenize( std::string assembly )
 // Find the appropriate specification
 //------------------------------------------------------------------------
 
-std::string get_inst_name( std::string inst_asm )
+std::string get_inst_name( const std::string inst_asm )
 {
   return inst_asm.substr( 0, inst_asm.find( " " ) );
 }
 
-inst_spec get_inst_spec( std::string inst_name )
+const inst_spec_t* get_inst_spec( const std::string& inst_name )
 {
-  for ( const inst_spec spec : inst_specs ) {
+  for ( const inst_spec_t& spec : inst_specs ) {
     if ( get_inst_name( spec.assembly ) == inst_name ) {
-      return spec;
+      return &spec;
     }
   }
 
@@ -64,11 +64,11 @@ inst_spec get_inst_spec( std::string inst_name )
   throw std::invalid_argument( excp );
 }
 
-inst_spec get_inst_spec( uint32_t inst_bin )
+const inst_spec_t* get_inst_spec( uint32_t inst_bin )
 {
-  for ( const inst_spec spec : inst_specs ) {
+  for ( const inst_spec_t& spec : inst_specs ) {
     if ( ( inst_bin & spec.mask ) == spec.match ) {
-      return spec;
+      return &spec;
     }
   }
 
@@ -83,8 +83,8 @@ inst_spec get_inst_spec( uint32_t inst_bin )
 // Get a specification's name
 //------------------------------------------------------------------------
 
-std::string inst_spec_name( inst_spec spec )
+std::string inst_spec_name( const inst_spec_t* spec )
 {
-  std::string assembly = spec.assembly;
-  return assembly.substr( 0, assembly.find( " " ) );
+  std::string assembly = spec->assembly;
+  return get_inst_name( assembly );
 }

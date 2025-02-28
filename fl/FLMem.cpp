@@ -1,0 +1,69 @@
+//========================================================================
+// FLMem.cpp
+//========================================================================
+// Definitions of our functional-level memory utilities
+
+#include "asm/assemble.h"
+#include "fl/FLMem.h"
+#include <format>
+#include <stdexcept>
+#include <type_traits>
+
+//------------------------------------------------------------------------
+// FLMem::init
+//------------------------------------------------------------------------
+
+void FLMem::init( uint32_t addr, uint32_t data )
+{
+  mem[addr] = data;
+}
+
+void FLMem::init( uint32_t addr, std::string assembly )
+{
+  mem[addr] = assemble( assembly.c_str(), addr );
+}
+
+//------------------------------------------------------------------------
+// FLMem::clear
+//------------------------------------------------------------------------
+
+void FLMem::clear()
+{
+  mem.clear();
+}
+
+//------------------------------------------------------------------------
+// FLMem::load
+//------------------------------------------------------------------------
+// No initialization of empty location currently (use operator[] if
+// desired)
+
+uint32_t FLMem::load( uint32_t addr ) const
+{
+  return mem.at( addr );
+}
+
+//------------------------------------------------------------------------
+// FLMem::store
+//------------------------------------------------------------------------
+
+void FLMem::store( uint32_t addr, uint32_t data )
+{
+  mem[addr] = data;
+}
+
+//------------------------------------------------------------------------
+// FLMem::operator[]
+//------------------------------------------------------------------------
+
+// Store - return uint32_t&
+uint32_t& FLMem::operator[]( uint32_t addr )
+{
+  return mem[addr];
+}
+
+// Load - return uint32_t
+uint32_t FLMem::operator[]( uint32_t addr ) const
+{
+  return load( addr );
+}

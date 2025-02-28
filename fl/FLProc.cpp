@@ -4,6 +4,7 @@
 // Definitions for our functional-level processor
 
 #include "asm/assemble.h"
+#include "asm/inst.h"
 #include "fl/FLProc.h"
 #include <format>
 #include <stdexcept>
@@ -44,44 +45,43 @@ void FLProc::init( uint32_t addr, std::string assembly )
 FLTrace FLProc::step()
 {
   // Fetch the instruction
-  FLInst inst( mem[pc] );
+  FLInst      inst( mem[pc] );
+  inst_name_t inst_name = inst.name();
+  uint32_t    old_pc    = pc;
 
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // add
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  switch ( inst_name ) {
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // add
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  if ( inst.name() == "add" ) {
-    regs[inst.rd()] = regs[inst.rs1()] + regs[inst.rs2()];
-    uint32_t old_pc = pc;
-    pc              = pc + 4;
-    return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+    case ADD:
+      regs[inst.rd()] = regs[inst.rs1()] + regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // addi
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case ADDI:
+      regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
+      pc              = pc + 4;
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // mul
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case MUL:
+      regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+
+      // TODO: Add more instructions!
+
+    default:
+      std::string excp =
+          std::format( "Unknown instruction: '{}'", inst.mnemonic() );
+      throw std::invalid_argument( excp );
   }
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // addi
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  if ( inst.name() == "addi" ) {
-    regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
-    uint32_t old_pc = pc;
-    pc              = pc + 4;
-    return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
-  }
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // mul
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  if ( inst.name() == "mul" ) {
-    regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
-    uint32_t old_pc = pc;
-    pc              = pc + 4;
-    return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
-  }
-
-  // TODO: Add more instructions!
-
-  std::string excp =
-      std::format( "Unknown instruction: '{}'", inst.name() );
-  throw std::invalid_argument( excp );
 }

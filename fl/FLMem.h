@@ -1,42 +1,40 @@
 //========================================================================
-// FLProc.h
+// FLMem.h
 //========================================================================
-// Declarations for our functional-level processor
+// Declarations of our functional-level memory utilities
 
-#ifndef FL_PROC_H
-#define FL_PROC_H
+#ifndef FL_MEM_H
+#define FL_MEM_H
 
-#include "fl/FLInst.h"
-#include "fl/FLMem.h"
-#include "fl/FLRegfile.h"
-#include "fl/FLTrace.h"
 #include <cstdint>
 #include <map>
+#include <string>
 
-class FLProc {
+class FLMem {
   //----------------------------------------------------------------------
   // Public accessor functions
   //----------------------------------------------------------------------
  public:
-  FLProc();
-
-  // Reset state
-  void reset();
-
   // Initialize memory
   void init( uint32_t addr, uint32_t inst );
   void init( uint32_t addr, std::string assembly );
 
-  // Step one instruction in execution
-  FLTrace step();
+  // Clear memory
+  void clear();
+
+  // Access memory
+  uint32_t load( uint32_t addr ) const;
+  void     store( uint32_t addr, uint32_t data );
+
+  // Overload with bracket for easier syntax - directly modify map
+  uint32_t& operator[]( uint32_t addr );        // store
+  uint32_t  operator[]( uint32_t addr ) const;  // load
 
   //----------------------------------------------------------------------
   // Protected attrributes
   //----------------------------------------------------------------------
  protected:
-  uint32_t  pc;
-  FLRegfile regs;
-  FLMem     mem;
+  std::map<uint32_t, uint32_t> mem;
 };
 
-#endif  // FL_PROC_H
+#endif  // FL_MEM_H

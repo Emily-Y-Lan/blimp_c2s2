@@ -6,6 +6,7 @@
 #ifndef FL_INST_H
 #define FL_INST_H
 
+#include "asm/inst.h"
 #include <cstdint>
 #include <string>
 
@@ -19,7 +20,8 @@ class FLInst {
   FLInst( std::string assembly, uint32_t addr );
 
   // Metadata
-  __attribute__( ( const ) ) std::string name() const;
+  __attribute__( ( const ) ) inst_name_t name() const;
+  __attribute__( ( const ) ) std::string mnemonic() const;
 
   // Fields
   __attribute__( ( const ) ) uint32_t rs1() const;

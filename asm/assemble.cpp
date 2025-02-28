@@ -51,8 +51,8 @@ uint32_t assemble( const char* vassembly, uint32_t pc )
     throw std::invalid_argument( excp );
   }
 
-  inst_spec                spec        = get_inst_spec( inst );
-  std::vector<std::string> spec_tokens = tokenize( spec.assembly );
+  const inst_spec_t*       spec        = get_inst_spec( inst );
+  std::vector<std::string> spec_tokens = tokenize( spec->assembly );
 
   if ( spec_tokens.size() != tokens.size() ) {
     excp = std::format( "Error: '{}' expects {} fields, but found {}",
@@ -64,7 +64,7 @@ uint32_t assemble( const char* vassembly, uint32_t pc )
   // Use tokens to form instruction
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  uint32_t encoding = spec.match;
+  uint32_t encoding = spec->match;
 
   for ( int i = 1; i < spec_tokens.size(); i++ ) {
     std::string inst_token = tokens[i];
