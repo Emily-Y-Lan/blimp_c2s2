@@ -37,6 +37,10 @@ std::string instruction;
 
 const char* disassemble( const uint32_t* vbinary, const uint32_t* pc )
 {
+  // pc unused currently - use the following to silence compiler,
+  // remove when used
+  (void) pc;
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Get the appropriate instruction specification
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,7 +60,7 @@ const char* disassemble( const uint32_t* vbinary, const uint32_t* pc )
 
   instruction = spec->assembly;
 
-  for ( int i = 1; i < spec_tokens.size(); i++ ) {
+  for ( std::size_t i = 1; i < spec_tokens.size(); i++ ) {
     std::string spec_token  = spec_tokens[i];
     std::string replacement = disasm_field_map[spec_token]( binary );
 

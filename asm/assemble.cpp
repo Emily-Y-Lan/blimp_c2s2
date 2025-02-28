@@ -34,6 +34,10 @@ std::map<std::string, std::function<uint32_t( std::string )>>
 
 uint32_t assemble( const char* vassembly, uint32_t pc )
 {
+  // pc unused currently - use the following to silence compiler,
+  // remove when used
+  (void) pc;
+
   std::string              assembly = vassembly;
   std::vector<std::string> tokens   = tokenize( assembly );
 
@@ -66,13 +70,14 @@ uint32_t assemble( const char* vassembly, uint32_t pc )
 
   uint32_t encoding = spec->match;
 
-  for ( int i = 1; i < spec_tokens.size(); i++ ) {
+  for ( std::size_t i = 1; i < spec_tokens.size(); i++ ) {
     std::string inst_token = tokens[i];
     std::string spec_token = spec_tokens[i];
 
     try {
       encoding |= asm_field_map[spec_token]( inst_token );
     } catch ( std::exception& e ) {
+      std::cout << e.what() << std::endl;
       std::cout << "Unrecognized spec token: " << spec_token << std::endl;
     }
   }

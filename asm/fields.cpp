@@ -37,13 +37,8 @@ int get_imm_int( std::string imm )
 {
   int val;
 
-  // Try hex conversion
-  if ( sscanf( imm.c_str(), "0x%x", &val ) ) {
-    return val;
-  }
-
-  // Try decimal conversion
-  if ( sscanf( imm.c_str(), "%d", &val ) ) {
+  // Try conversion - matches decimal (100), hex (0x64), and octal (0144)
+  if ( sscanf( imm.c_str(), "%i", &val ) ) {
     return val;
   }
 

@@ -90,6 +90,7 @@ endfunction()
 #------------------------------------------------------------------------
 
 add_library(ASM STATIC ${ASM_FILES})
+target_compile_options(ASM PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 #------------------------------------------------------------------------
 # FL_PROC Library
@@ -97,6 +98,7 @@ add_library(ASM STATIC ${ASM_FILES})
 
 add_library(FL_PROC STATIC ${FL_PROC_FILES})
 target_link_libraries(FL_PROC PRIVATE ASM)
+target_compile_options(FL_PROC PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
