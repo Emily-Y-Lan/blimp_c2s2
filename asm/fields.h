@@ -13,9 +13,9 @@
 // Register Specifiers
 //------------------------------------------------------------------------
 
-uint32_t rs1_mask( std::string reg_name );
-uint32_t rs2_mask( std::string reg_name );
-uint32_t rd_mask( std::string reg_name );
+uint32_t rs1_mask( const std::string& reg_name );
+uint32_t rs2_mask( const std::string& reg_name );
+uint32_t rd_mask( const std::string& reg_name );
 
 uint32_t get_rs1( uint32_t binary );
 uint32_t get_rs2( uint32_t binary );
@@ -29,11 +29,11 @@ std::string get_rd_id( uint32_t binary );
 // Immediate Specifiers
 //------------------------------------------------------------------------
 
-uint32_t imm_i_mask( std::string imm );
-uint32_t imm_s_mask( std::string imm );
-uint32_t imm_b_mask( std::string imm );
-uint32_t imm_u_mask( std::string imm );
-uint32_t imm_j_mask( std::string imm );
+uint32_t imm_i_mask( const std::string& imm );
+uint32_t imm_s_mask( const std::string& imm );
+uint32_t imm_b_mask( const std::string& imm );
+uint32_t imm_u_mask( const std::string& imm );
+uint32_t imm_j_mask( const std::string& imm );
 
 uint32_t get_imm_i( uint32_t binary );
 uint32_t get_imm_s( uint32_t binary );
