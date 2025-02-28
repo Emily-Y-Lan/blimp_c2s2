@@ -4,9 +4,9 @@
 // A function to assemble instructions directly into binary, for use from
 // test cases
 
-#include "fields.h"
-#include "inst.h"
 #include "test/asm/assemble.h"
+#include "test/asm/fields.h"
+#include "test/asm/inst.h"
 #include <format>
 #include <functional>
 #include <iostream>
