@@ -24,18 +24,18 @@ set(V_TEST_FILES
 )
 
 set(ASM_FILES
-  test/asm/assemble.cpp
-  test/asm/disassemble.cpp
-  test/asm/inst.cpp
-  test/asm/fields.cpp
+  asm/assemble.cpp
+  asm/disassemble.cpp
+  asm/inst.cpp
+  asm/fields.cpp
 )
 
 set(FL_PROC_FILES
-  test/fl_proc/FLInst.cpp
-  test/fl_proc/FLMem.cpp
-  test/fl_proc/FLProc.cpp
-  test/fl_proc/FLRegfile.cpp
-  test/fl_proc/FLTrace.cpp
+  fl/FLInst.cpp
+  fl/FLMem.cpp
+  fl/FLProc.cpp
+  fl/FLRegfile.cpp
+  fl/FLTrace.cpp
 )
 
 #-------------------------------------------------------------------------

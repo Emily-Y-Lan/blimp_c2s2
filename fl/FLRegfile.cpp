@@ -3,7 +3,7 @@
 //========================================================================
 // Definitions for our functional-level register file
 
-#include "test/fl_proc/FLRegfile.h"
+#include "fl/FLRegfile.h"
 
 //------------------------------------------------------------------------
 // Accessors

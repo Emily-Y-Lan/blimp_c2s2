@@ -3,8 +3,8 @@
 //========================================================================
 // Definitions of our functional-level memory utilities
 
-#include "test/asm/assemble.h"
-#include "test/fl_proc/FLMem.h"
+#include "asm/assemble.h"
+#include "fl/FLMem.h"
 #include <format>
 #include <stdexcept>
 #include <type_traits>

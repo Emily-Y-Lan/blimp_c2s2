@@ -3,10 +3,10 @@
 //========================================================================
 // A wrapper around a binary instruction for functional-level operations
 
-#include "test/asm/assemble.h"
-#include "test/asm/fields.h"
-#include "test/asm/inst.h"
-#include "test/fl_proc/FLInst.h"
+#include "asm/assemble.h"
+#include "asm/fields.h"
+#include "asm/inst.h"
+#include "fl/FLInst.h"
 
 //------------------------------------------------------------------------
 // Constructors

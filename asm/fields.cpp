@@ -3,7 +3,7 @@
 //========================================================================
 // Utility functions for our assembler to get instruction fields
 
-#include "test/asm/fields.h"
+#include "asm/fields.h"
 #include <format>
 #include <iostream>
 #include <map>

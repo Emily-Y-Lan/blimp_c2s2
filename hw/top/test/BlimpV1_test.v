@@ -3,10 +3,10 @@
 //========================================================================
 // The top-level testing module for a basic implementation of Blimp
 
+`include "asm/assemble.v"
 `include "hw/top/BlimpV1.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
-`include "test/asm/assemble.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/InstTraceSub.v"
 

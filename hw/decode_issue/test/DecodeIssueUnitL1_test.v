@@ -3,9 +3,9 @@
 //========================================================================
 // A testbench for our basic decode-issue unit
 
+`include "asm/assemble.v"
 `include "defs/UArch.v"
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL1.v"
-`include "test/asm/assemble.v"
 `include "test/fl/TestPub.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"

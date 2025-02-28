@@ -6,10 +6,10 @@
 #ifndef FL_PROC_H
 #define FL_PROC_H
 
-#include "test/fl_proc/FLInst.h"
-#include "test/fl_proc/FLMem.h"
-#include "test/fl_proc/FLRegfile.h"
-#include "test/fl_proc/FLTrace.h"
+#include "fl/FLInst.h"
+#include "fl/FLMem.h"
+#include "fl/FLRegfile.h"
+#include "fl/FLTrace.h"
 #include <cstdint>
 
 class FLProc {

@@ -3,7 +3,7 @@
 //========================================================================
 // Definitions for our processor trace
 
-#include "test/fl_proc/FLTrace.h"
+#include "fl/FLTrace.h"
 #include <format>
 #include <string>
 

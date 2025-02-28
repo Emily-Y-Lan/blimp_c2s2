@@ -3,7 +3,7 @@
 //========================================================================
 // Functions that operate on instruction specifications
 
-#include "test/asm/inst.h"
+#include "asm/inst.h"
 #include <algorithm>
 #include <cstdio>
 #include <format>
