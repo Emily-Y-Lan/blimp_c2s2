@@ -77,11 +77,15 @@ module BlimpV1TestSuite #(
     .*
   );
 
+  logic [31:0] asm_binary;
+  
   task asm(
     input logic [31:0] addr,
     input string       inst
   );
-    fl_mem.init_mem( addr, assemble( inst, addr ) );
+    asm_binary = assemble( inst, addr );
+    fl_mem.init_mem( addr, asm_binary );
+    fl_init        ( addr, asm_binary );
   endtask
 
   //----------------------------------------------------------------------
@@ -110,6 +114,23 @@ module BlimpV1TestSuite #(
       wdata,
       wen
     );
+  endtask
+
+  logic      check_traces_success;
+  inst_trace check_traces_fl_trace;
+
+  task check_traces();
+    while( 1 ) begin
+      check_traces_success = fl_trace( check_traces_fl_trace );
+      if( !check_traces_success ) return;
+      
+      check_trace(
+        check_traces_fl_trace.pc,
+        check_traces_fl_trace.waddr,
+        check_traces_fl_trace.wdata,
+        check_traces_fl_trace.wen
+      );
+    end
   endtask
 
   //----------------------------------------------------------------------

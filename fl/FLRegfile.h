@@ -13,9 +13,8 @@ class FLRegfile {
   // Public accessor functions
   //----------------------------------------------------------------------
  public:
-  // Accessors
-  uint32_t& operator[]( uint32_t idx );        // write
-  uint32_t  operator[]( uint32_t idx ) const;  // read
+  // Accessor
+  uint32_t& operator[]( uint32_t idx );
 
   //----------------------------------------------------------------------
   // Protected attrributes

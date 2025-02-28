@@ -241,7 +241,7 @@ uint32_t imm_u_mask( const std::string& imm )
     throw std::invalid_argument( excp );
   }
 
-  uint32_t imm_encoding = (uint32_t) ( imm_val << 12 );
+  uint32_t imm_encoding = (uint32_t) ( imm_val & 0xFFFFF000 );
 
   return imm_encoding;
 }
@@ -271,13 +271,13 @@ uint32_t imm_j_mask( const std::string& imm )
 
 uint32_t get_imm_i( uint32_t binary )
 {
-  return binary >> 20;
+  return ( (int32_t) binary ) >> 20;
 }
 
 uint32_t get_imm_s( uint32_t binary )
 {
   uint32_t imm = 0;
-  imm |= ( binary >> 20 ) & 0xFFFFFFE0;
+  imm |= ( ( (int32_t) binary ) >> 20 ) & 0xFFFFFFE0;
   imm |= ( binary >> 7 ) & 0x0000001F;
   return imm;
 }
@@ -285,7 +285,7 @@ uint32_t get_imm_s( uint32_t binary )
 uint32_t get_imm_b( uint32_t binary )
 {
   uint32_t imm = 0;
-  imm |= ( binary >> 20 ) & 0xFFFFF7E0;
+  imm |= ( ( (int32_t) binary ) >> 20 ) & 0xFFFFF7E0;
   imm |= ( binary >> 7 ) & 0x0000001E;
   imm |= ( binary << 4 ) & 0x00000800;
   return imm;
@@ -293,13 +293,13 @@ uint32_t get_imm_b( uint32_t binary )
 
 uint32_t get_imm_u( uint32_t binary )
 {
-  return binary >> 12;
+  return binary & 0xFFFFF000;
 }
 
 uint32_t get_imm_j( uint32_t binary )
 {
   uint32_t imm = 0;
-  imm |= ( binary >> 20 ) & 0xFFF007FE;
+  imm |= ( ( (int32_t) binary ) >> 20 ) & 0xFFF007FE;
   imm |= ( binary ) & 0x000FF000;
   imm |= ( binary >> 9 ) & 0x00000800;
   return imm;

@@ -57,7 +57,8 @@ FLTrace FLProc::step()
     case ADD:
       regs[inst.rd()] = regs[inst.rs1()] + regs[inst.rs2()];
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // addi
@@ -66,7 +67,8 @@ FLTrace FLProc::step()
     case ADDI:
       regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // mul
@@ -75,7 +77,8 @@ FLTrace FLProc::step()
     case MUL:
       regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()], true );
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
 
       // TODO: Add more instructions!
 

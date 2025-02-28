@@ -12,14 +12,7 @@
 // Write
 uint32_t& FLRegfile::operator[]( uint32_t idx )
 {
-  return regs[idx];
-}
-
-// Read
-uint32_t FLRegfile::operator[]( uint32_t idx ) const
-{
-  if ( idx == 0 ) {
-    return 0;
-  }
+  // Always reset x0, so it's always read as 0
+  regs[0] = 0;
   return regs[idx];
 }
