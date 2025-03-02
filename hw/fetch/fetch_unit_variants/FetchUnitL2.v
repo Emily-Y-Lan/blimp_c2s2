@@ -1,15 +1,16 @@
 //========================================================================
-// FetchUnitL1.v
+// FetchUnitL2.v
 //========================================================================
-// A basic modular fetch unit for fetching instructions
+// A modular fetch unit for fetching instructions with sequence numbers
 
-`ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
-`define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
+`ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
+`define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
 
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
+`include "hw/fetch/SeqNumGenL2.v"
 
-module FetchUnitL1
+module FetchUnitL2
 #(
   parameter p_opaq_bits = 8
 )
@@ -34,7 +35,8 @@ module FetchUnitL1
   // Local Parameters
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  localparam p_rst_addr = 32'h200;
+  localparam p_rst_addr     = 32'h200;
+  localparam p_seq_num_bits = D.p_seq_num_bits;
   
   localparam logic [p_opaq_bits:0] p_max_in_flight = 2 ** p_opaq_bits;
   localparam type t_req_msg  = type(mem.req_msg);
@@ -154,4 +156,4 @@ module FetchUnitL1
 
 endmodule
 
-`endif // HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
+`endif // HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
