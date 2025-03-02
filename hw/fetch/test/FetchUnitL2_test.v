@@ -31,6 +31,8 @@ module FetchUnitL2TestSuite #(
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay,
                                 p_D_recv_intv_delay);
 
+  localparam p_num_seq_nums = 2 ** p_seq_num_bits;
+
   //----------------------------------------------------------------------
   // Setup
   //----------------------------------------------------------------------
@@ -187,6 +189,7 @@ module FetchUnitL2TestSuite #(
   //----------------------------------------------------------------------
 
   `include "hw/fetch/test/test_cases/basic_test_cases.v"
+  `include "hw/fetch/test/test_cases/seq_num_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -196,7 +199,7 @@ module FetchUnitL2TestSuite #(
     t.test_suite_begin( suite_name );
 
     run_basic_test_cases();
-
+    run_seq_num_test_cases();
   endtask
 endmodule
 
@@ -210,9 +213,9 @@ module FetchUnitL2_test;
   FetchUnitL2TestSuite #(3, 1, 2, 0, 0, 0) suite_3();
   FetchUnitL2TestSuite #(4, 8, 3, 3, 0, 0) suite_4();
   FetchUnitL2TestSuite #(5, 8, 4, 0, 3, 0) suite_5();
-  FetchUnitL2TestSuite #(6, 8, 6, 0, 0, 3) suite_6();
-  FetchUnitL2TestSuite #(7, 4, 5, 3, 3, 3) suite_7();
-  FetchUnitL2TestSuite #(8, 1, 7, 9, 9, 9) suite_8();
+  FetchUnitL2TestSuite #(6, 8, 2, 0, 0, 3) suite_6();
+  FetchUnitL2TestSuite #(7, 4, 3, 3, 3, 3) suite_7();
+  FetchUnitL2TestSuite #(8, 1, 4, 9, 9, 9) suite_8();
 
   int s;
 
