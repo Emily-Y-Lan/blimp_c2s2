@@ -16,10 +16,10 @@ task test_case_1_basic();
   fl_mem.init_mem( 'h204, 32'hcafef00d );
   fl_mem.init_mem( 'h208, 32'hbaadb0ba );
 
-  //    inst          pc
-  recv( 32'hdeadbeef, 'h200 );
-  recv( 32'hcafef00d, 'h204 );
-  recv( 32'hbaadb0ba, 'h208 );
+  //    inst          pc     seq_num
+  recv( 32'hdeadbeef, 'h200, 0 );
+  recv( 32'hcafef00d, 'h204, 1 );
+  recv( 32'hbaadb0ba, 'h208, 2 );
 
   t.test_case_end();
 endtask

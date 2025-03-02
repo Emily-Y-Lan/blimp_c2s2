@@ -6,13 +6,15 @@
 `ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
 `define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
 
+`include "intf/CommitNotif.v"
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
 `include "hw/fetch/SeqNumGenL2.v"
 
 module FetchUnitL2
 #(
-  parameter p_opaq_bits = 8
+  parameter p_opaq_bits     = 8,
+  parameter p_reclaim_width = 2
 )
 ( 
   input  logic    clk,
@@ -28,7 +30,13 @@ module FetchUnitL2
   // F <-> D Interface
   //----------------------------------------------------------------------
 
-  F__DIntf.F_intf D
+  F__DIntf.F_intf D,
+
+  //----------------------------------------------------------------------
+  // Commit Interface
+  //----------------------------------------------------------------------
+
+  CommitNotif.sub commit
 );
   
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,13 +122,30 @@ module FetchUnitL2
   // Response
   //----------------------------------------------------------------------
 
+  logic                      alloc_val;
+  logic [p_seq_num_bits-1:0] alloc_seq_num;
+
   always_comb begin
-    mem.resp_rdy = D.rdy;
-    D.val        = mem.resp_val;
+    mem.resp_rdy = D.rdy & alloc_val;
+    D.val        = mem.resp_val & alloc_val;
     D.inst       = mem.resp_msg.data;
     D.pc         = mem.resp_msg.addr;
-    D.seq_num    = '0;
+    D.seq_num    = alloc_seq_num;
   end
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Allocate sequence numbers
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  logic alloc_rdy;
+  assign alloc_rdy = D.rdy & mem.resp_val;
+
+  SeqNumGenL2 #(
+    .p_seq_num_bits  (p_seq_num_bits),
+    .p_reclaim_width (p_reclaim_width)
+  ) seq_num_gen (
+    .*
+  );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Unused signals

@@ -1,5 +1,5 @@
 //========================================================================
-// Fetch_test.v
+// FetchUnitL1_test.v
 //========================================================================
 // A testbench for our fetch unit
 
@@ -8,7 +8,6 @@
 `include "intf/MemIntf.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/TestOstream.v"
-// `include "test/fl/TestPub.v"
 
 import TestEnv::*;
 
@@ -104,8 +103,11 @@ module FetchUnitL1TestSuite #(
   t_f__d_msg msg_to_recv;
 
   task recv(
-    input logic [31:0] inst,
-    input logic [31:0] pc
+    input logic               [31:0] inst,
+    input logic               [31:0] pc,
+    // verilator lint_off UNUSEDSIGNAL
+    input logic [p_seq_num_bits-1:0] seq_num
+    // verilator lint_on UNUSEDSIGNAL
   );
     msg_to_recv.inst = inst;
     msg_to_recv.pc   = pc;

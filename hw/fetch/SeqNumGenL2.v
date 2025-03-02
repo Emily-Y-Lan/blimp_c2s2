@@ -30,9 +30,6 @@ module SeqNumGenL2 #(
   CommitNotif.sub commit
 );
 
-  // Derived parameters
-  localparam p_num_entries = 2 ** p_seq_num_bits;
-
   //----------------------------------------------------------------------
   // Sequence Number List
   //----------------------------------------------------------------------
@@ -41,7 +38,7 @@ module SeqNumGenL2 #(
   localparam ALLOC = 1'b1;
   localparam FREE  = 1'b0;
 
-  logic seq_num_list [p_num_entries];
+  logic seq_num_list [2 ** p_seq_num_bits];
   logic [p_seq_num_bits-1:0] curr_head_ptr, curr_tail_ptr;
   logic is_alloc, is_free;
 
