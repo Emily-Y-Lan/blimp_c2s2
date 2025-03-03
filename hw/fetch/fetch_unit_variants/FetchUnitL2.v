@@ -164,6 +164,10 @@ module FetchUnitL2
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  function int ceil_div_4( int val );
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
+  endfunction
+
   function string trace();
     if( memreq_xfer )
       trace = $sformatf("%h", mem.req_msg.addr);
@@ -173,9 +177,9 @@ module FetchUnitL2
     trace = {trace, " > "};
 
     if( memresp_xfer )
-      trace = {trace, $sformatf("%h", mem.resp_msg.addr)};
+      trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, D.seq_num)};
     else
-      trace = {trace, {8{" "}}};
+      trace = {trace, {(11 + ceil_div_4(p_seq_num_bits)){" "}}};
   endfunction
 `endif
 

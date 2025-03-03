@@ -47,7 +47,7 @@ FLTrace FLProc::step()
   // Fetch the instruction
   FLInst      inst( mem[pc] );
   inst_name_t inst_name = inst.name();
-  uint32_t    old_pc    = pc;
+  uint32_t    inst_pc   = pc;
 
   switch ( inst_name ) {
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +57,7 @@ FLTrace FLProc::step()
     case ADD:
       regs[inst.rd()] = regs[inst.rs1()] + regs[inst.rs2()];
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +67,7 @@ FLTrace FLProc::step()
     case ADDI:
       regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,7 +77,7 @@ FLTrace FLProc::step()
     case MUL:
       regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,7 +87,7 @@ FLTrace FLProc::step()
     case LW:
       regs[inst.rd()] = mem[regs[inst.rs1()] + inst.imm_i()];
       pc              = pc + 4;
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,7 +97,7 @@ FLTrace FLProc::step()
     case SW:
       mem[regs[inst.rs1()] + inst.imm_i()] = regs[inst.rs2()];
       pc                                   = pc + 4;
-      return FLTrace( old_pc, 0, 0, 0 );
+      return FLTrace( inst_pc, 0, 0, 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // jal
@@ -106,7 +106,7 @@ FLTrace FLProc::step()
     case JAL:
       regs[inst.rd()] = pc + 4;
       pc              = pc + inst.imm_u();
-      return FLTrace( old_pc, 0, 0, 0 );
+      return FLTrace( inst_pc, 0, 0, 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // bne
@@ -119,7 +119,7 @@ FLTrace FLProc::step()
       else {
         pc = pc + 4;
       }
-      return FLTrace( old_pc, 0, 0, 0 );
+      return FLTrace( inst_pc, 0, 0, 0 );
 
       // TODO: Add more instructions!
 

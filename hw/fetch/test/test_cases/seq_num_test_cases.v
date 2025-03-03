@@ -28,9 +28,6 @@ endtask
 // test_case_seq_num_2_capacity
 //----------------------------------------------------------------------
 
-logic [31:0] capacity_wraparound_addr;
-assign capacity_wraparound_addr = 'h200 + (4 * p_num_seq_nums);
-
 task test_case_seq_num_2_capacity();
   t.test_case_begin( "test_case_seq_num_2_capacity" );
   if( !t.run_test ) return;
