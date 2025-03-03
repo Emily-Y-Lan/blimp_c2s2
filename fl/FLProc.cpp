@@ -106,8 +106,7 @@ FLTrace FLProc::step()
     case JAL:
       regs[inst.rd()] = pc + 4;
       pc              = pc + inst.imm_u();
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
-                      inst.rd() != 0 );
+      return FLTrace( old_pc, 0, 0, 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // bne
@@ -120,8 +119,7 @@ FLTrace FLProc::step()
       else {
         pc = pc + 4;
       }
-      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
-                      inst.rd() != 0 );
+      return FLTrace( old_pc, 0, 0, 0 );
 
       // TODO: Add more instructions!
 
