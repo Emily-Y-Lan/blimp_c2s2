@@ -80,6 +80,49 @@ FLTrace FLProc::step()
       return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // lw
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case LW:
+      regs[inst.rd()] = mem[regs[inst.rs1()] + inst.imm_i()];
+      pc              = pc + 4;
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sw
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SW:
+      mem[regs[inst.rs1()] + inst.imm_i()] = regs[inst.rs2()];
+      pc                                   = pc + 4;
+      return FLTrace( old_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // jal
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case JAL:
+      regs[inst.rd()] = pc + 4;
+      pc              = pc + inst.imm_u();
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // bne
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case BNE:
+      if ( regs[inst.rs1()] != regs[inst.rs2()] ) {
+        pc = pc + inst.imm_b();
+      }
+      else {
+        pc = pc + 4;
+      }
+      return FLTrace( old_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
       // TODO: Add more instructions!
 
     default:
