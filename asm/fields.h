@@ -47,4 +47,17 @@ std::string get_imm_b_id( uint32_t binary );
 std::string get_imm_u_id( uint32_t binary );
 std::string get_imm_j_id( uint32_t binary );
 
+//------------------------------------------------------------------------
+// Address Specifiers
+//------------------------------------------------------------------------
+
+uint32_t addr_b_mask( const std::string& addr, uint32_t pc );
+uint32_t addr_u_mask( const std::string& addr, uint32_t pc );
+
+uint32_t get_addr_b( uint32_t binary, uint32_t pc );
+uint32_t get_addr_u( uint32_t binary, uint32_t pc );
+
+std::string get_addr_b_id( uint32_t binary, uint32_t pc );
+std::string get_addr_u_id( uint32_t binary, uint32_t pc );
+
 #endif  // FIELDSS_H

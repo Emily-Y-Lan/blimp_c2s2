@@ -24,8 +24,11 @@ std::map<std::string, std::function<std::string( uint32_t )>>
         { "rs1", get_rs1_id },     { "rs2", get_rs2_id },
         { "rd", get_rd_id },       { "imm_i", get_imm_i_id },
         { "imm_s", get_imm_s_id }, { "imm_b", get_imm_b_id },
-        { "imm_u", get_imm_u_id }, { "imm_j", get_imm_j_id },
-};
+        { "imm_u", get_imm_u_id }, { "imm_j", get_imm_j_id } };
+
+std::map<std::string, std::function<std::string( uint32_t, uint32_t )>>
+    disasm_pc_field_map = { { "addr_b", get_addr_b_id },
+                            { "addr_u", get_addr_u_id } };
 
 //------------------------------------------------------------------------
 // disassemble
@@ -35,17 +38,14 @@ std::map<std::string, std::function<std::string( uint32_t )>>
 
 std::string instruction;
 
-const char* disassemble( const uint32_t* vbinary, const uint32_t* pc )
+const char* disassemble( const uint32_t* vbinary, const uint32_t* vpc )
 {
-  // pc unused currently - use the following to silence compiler,
-  // remove when used
-  (void) pc;
-
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Get the appropriate instruction specification
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   uint32_t           binary = *vbinary;
+  uint32_t           pc     = *vpc;
   const inst_spec_t* spec;
   try {
     spec = get_inst_spec( binary );
@@ -61,8 +61,14 @@ const char* disassemble( const uint32_t* vbinary, const uint32_t* pc )
   instruction = spec->assembly;
 
   for ( std::size_t i = 1; i < spec_tokens.size(); i++ ) {
-    std::string spec_token  = spec_tokens[i];
-    std::string replacement = disasm_field_map[spec_token]( binary );
+    std::string spec_token = spec_tokens[i];
+    std::string replacement;
+    if ( disasm_pc_field_map.contains( spec_token ) ) {
+      replacement = disasm_pc_field_map[spec_token]( binary, pc );
+    }
+    else {
+      replacement = disasm_field_map[spec_token]( binary );
+    }
 
     instruction.replace( instruction.find( spec_token ),
                          spec_token.length(), replacement );
