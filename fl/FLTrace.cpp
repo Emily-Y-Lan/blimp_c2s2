@@ -15,6 +15,21 @@ FLTrace::FLTrace( uint32_t pc, uint32_t waddr, uint32_t wdata, bool wen )
     : pc( pc ), waddr( waddr ), wdata( wdata ), wen( wen ) {};
 
 //------------------------------------------------------------------------
+// Equality
+//------------------------------------------------------------------------
+
+bool FLTrace::operator==( const FLTrace &other )
+{
+  return ( pc == other.pc ) && ( waddr == other.waddr ) &&
+         ( wdata == other.wdata ) && ( wen == other.wen );
+}
+
+bool FLTrace::operator!=( const FLTrace &other )
+{
+  return !( *this == other );
+}
+
+//------------------------------------------------------------------------
 // Stream representation
 //------------------------------------------------------------------------
 

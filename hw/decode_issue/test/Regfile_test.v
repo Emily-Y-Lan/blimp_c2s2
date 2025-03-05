@@ -46,23 +46,27 @@ module RegfileTestSuite #(
   logic                   dut_wen;
   logic [p_addr_bits-1:0] dut_pending_set_addr;
   logic                   dut_pending_set_val;
-  logic                   dut_pending [1:0];
+  logic                   dut_read_pending [1:0];
+  logic [p_addr_bits-1:0] dut_check_addr;
+  logic                   dut_check_addr_pending;
 
 
   Regfile #(
     .t_entry    (t_entry),
     .p_num_regs (p_num_regs)
   ) DUT (
-    .clk              (clk),
-    .rst              (rst | dut_rst),
-    .raddr            (dut_raddr),
-    .rdata            (dut_rdata),
-    .waddr            (dut_waddr),
-    .wdata            (dut_wdata),
-    .wen              (dut_wen),
-    .pending_set_addr (dut_pending_set_addr),
-    .pending_set_val  (dut_pending_set_val),
-    .pending          (dut_pending)
+    .clk                (clk),
+    .rst                (rst | dut_rst),
+    .raddr              (dut_raddr),
+    .rdata              (dut_rdata),
+    .waddr              (dut_waddr),
+    .wdata              (dut_wdata),
+    .wen                (dut_wen),
+    .pending_set_addr   (dut_pending_set_addr),
+    .pending_set_val    (dut_pending_set_val),
+    .read_pending       (dut_read_pending),
+    .check_addr         (dut_check_addr),
+    .check_addr_pending (dut_check_addr_pending)
   );
 
   //----------------------------------------------------------------------
@@ -76,13 +80,15 @@ module RegfileTestSuite #(
     input logic                   _rst,
     input logic [p_addr_bits-1:0] raddr0,
     input t_entry                 rdata0,
-    input logic                   pending0,
+    input logic                   read_pending0,
     input logic [p_addr_bits-1:0] raddr1,
     input t_entry                 rdata1,
-    input logic                   pending1,
+    input logic                   read_pending1,
     input logic [p_addr_bits-1:0] waddr,
     input t_entry                 wdata,
     input logic                   wen,
+    input logic [p_addr_bits-1:0] check_addr,
+    input logic                   check_addr_pending,
     input logic [p_addr_bits-1:0] pending_set_addr,
     input logic                   pending_set_val
   );
@@ -93,24 +99,27 @@ module RegfileTestSuite #(
       dut_waddr            = waddr;
       dut_wdata            = wdata;
       dut_wen              = wen;
+      dut_check_addr       = check_addr;
       dut_pending_set_addr = pending_set_addr;
       dut_pending_set_val  = pending_set_val;
 
       #8;
 
       if ( t.verbose ) begin
-        $display( "%3d: %b %d %d %b %d(%h) (%d (%b)) > %h (%b) %h (%b)", t.cycles,
+        $display( "%3d: %b %d %d %b %d(%h) %d (%d (%b)) > %h (%b) %h (%b) (%b)", t.cycles,
                   dut_rst, dut_raddr[0], dut_raddr[1],
-                  dut_wen, dut_waddr, dut_wdata,
+                  dut_wen, dut_waddr, dut_wdata, dut_check_addr,
                   dut_pending_set_addr, dut_pending_set_val,
-                  dut_rdata[0], dut_pending[0],
-                  dut_rdata[1], dut_pending[1] );
+                  dut_rdata[0], dut_read_pending[0],
+                  dut_rdata[1], dut_read_pending[1],
+                  dut_check_addr_pending );
       end
 
-      `CHECK_EQ( dut_rdata[0],   rdata0 );
-      `CHECK_EQ( dut_rdata[1],   rdata1 );
-      `CHECK_EQ( dut_pending[0], pending0 );
-      `CHECK_EQ( dut_pending[1], pending1 );
+      `CHECK_EQ( dut_rdata[0],           rdata0             );
+      `CHECK_EQ( dut_rdata[1],           rdata1             );
+      `CHECK_EQ( dut_read_pending[0],    read_pending0      );
+      `CHECK_EQ( dut_read_pending[1],    read_pending1      );
+      `CHECK_EQ( dut_check_addr_pending, check_addr_pending );
 
       #2;
 
@@ -125,10 +134,10 @@ module RegfileTestSuite #(
     t.test_case_begin( "test_case_1_basic" );
     if( !t.run_test ) return;
 
-    //    rst raddr0              rdata0            p0 raddr1              rdata1            p1 waddr               waddr            wen paddr pval
-    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
-    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h01), t_entry'('habcd), 1, '0,   0 );
-    check( 0, p_addr_bits'('h01), t_entry'('habcd), 0, p_addr_bits'('h01), t_entry'('habcd), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
+    //    rst raddr0 rdata0 p0 raddr1 rdata1 p1 waddr waddr  wen caddr cpend paddr pval
+    check( 0, 0,     'h00,  0, 0,     'h00,  0, 0,   'h00,   0,  0,    0,    '0,   0 );
+    check( 0, 0,     'h00,  0, 0,     'h00,  0, 1,   'hab,   1,  0,    0,    '0,   0 );
+    check( 0, 1,     'hab,  0, 1,     'hab,  0, 0,   'h00,   0,  0,    0,    '0,   0 );
 
     t.test_case_end();
   endtask
@@ -141,10 +150,10 @@ module RegfileTestSuite #(
     t.test_case_begin( "test_case_2_reset" );
     if( !t.run_test ) return;
 
-    //    rst raddr0              rdata0            p0 raddr1              rdata1            p1 waddr               waddr            wen paddr pval
-    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h05), t_entry'('hf00d), 1, '0,   0 );
-    check( 1, p_addr_bits'('h05), t_entry'('hf00d), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
-    check( 0, p_addr_bits'('h05), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
+    //    rst raddr0 rdata0 p0 raddr1 rdata1 p1 waddr waddr wen caddr cpend paddr pval
+    check( 0, 0,     'h00,  0, 0,     'h00,  0, 5,    'hf0, 1,  0,    0,    '0,   0 );
+    check( 1, 5,     'hf0,  0, 0,     'h00,  0, 0,    'h00, 0,  0,    0,    '0,   0 );
+    check( 0, 5,     'h00,  0, 0,     'h00,  0, 0,    'h00, 0,  0,    0,    '0,   0 );
 
     t.test_case_end();
   endtask
@@ -157,10 +166,10 @@ module RegfileTestSuite #(
     t.test_case_begin( "test_case_3_zero" );
     if( !t.run_test ) return;
 
-    //    rst raddr0              rdata0            p0 raddr1              rdata1            p1 waddr               waddr            wen paddr pval
-    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('hbaad), 1, '0,   0 );
-    check( 1, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h4321), 1, '0,   0 );
-    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
+    //    rst raddr0              rdata0            p0 raddr1              rdata1            p1 waddr               waddr            wen caddr cpend paddr pval
+    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('hbaad), 1, 0,    0,    '0,   0 );
+    check( 1, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h4321), 1, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, 0,    0,    '0,   0 );
 
     t.test_case_end();
   endtask
@@ -185,13 +194,13 @@ module RegfileTestSuite #(
       curr_addr = p_addr_bits'(i);
       curr_data = t_entry'($urandom());
 
-      check( 0, prev_addr, prev_data, 0, prev_addr, prev_data, 0, curr_addr, curr_data, 1, '0, 0 );
+      check( 0, prev_addr, prev_data, 0, prev_addr, prev_data, 0, curr_addr, curr_data, 1, 0, 0, '0, 0 );
 
       prev_addr = curr_addr;
       prev_data = curr_data;
     end
 
-    check( 0, prev_addr, prev_data, 0, prev_addr, prev_data, 0, p_addr_bits'('0), t_entry'('0), 0, '0, 0 );
+    check( 0, prev_addr, prev_data, 0, prev_addr, prev_data, 0, p_addr_bits'('0), t_entry'('0), 0, 0, 0, '0, 0 );
 
     t.test_case_end();
   endtask
@@ -204,17 +213,34 @@ module RegfileTestSuite #(
     t.test_case_begin( "test_case_5_multi_read" );
     if( !t.run_test ) return;
 
-    //    rst raddr0              rdata0            p0 raddr1              rdata1            p0 waddr               waddr            wen paddr pval
-    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h06), t_entry'('h1234), 1, '0,   0 );
-    check( 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h07), t_entry'('h5678), 1, '0,   0 );
-    check( 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h07), t_entry'('h5678), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
-    check( 0, p_addr_bits'('h07), t_entry'('h5678), 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h00), t_entry'('h0000), 0, '0,   0 );
+    //    rst raddr0              rdata0            p0 raddr1              rdata1            p1 waddr               waddr            wen caddr cpend paddr pval
+    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h06), t_entry'('h1234), 1, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h07), t_entry'('h5678), 1, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h07), t_entry'('h5678), 0, p_addr_bits'('h00), t_entry'('h0000), 0, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h07), t_entry'('h5678), 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h00), t_entry'('h0000), 0, 0,    0,    '0,   0 );
 
     t.test_case_end();
   endtask
 
   //----------------------------------------------------------------------
-  // test_case_6_random
+  // test_case_6_pending
+  //----------------------------------------------------------------------
+
+  task test_case_6_pending();
+    t.test_case_begin( "test_case_6_pending" );
+    if( !t.run_test ) return;
+
+    //    rst raddr0              rdata0            p0 raddr1              rdata1            p1 waddr               waddr            wen caddr cpend paddr pval
+    check( 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h01), t_entry'('h0000), 0, p_addr_bits'('h06), t_entry'('h1234), 1, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h00), t_entry'('h0000), 0, p_addr_bits'('h07), t_entry'('h5678), 1, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h07), t_entry'('h5678), 0, p_addr_bits'('h00), t_entry'('h0000), 0, 0,    0,    '0,   0 );
+    check( 0, p_addr_bits'('h07), t_entry'('h5678), 0, p_addr_bits'('h06), t_entry'('h1234), 0, p_addr_bits'('h00), t_entry'('h0000), 0, 0,    0,    '0,   0 );
+
+    t.test_case_end();
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_7_random
   //----------------------------------------------------------------------
 
   t_entry rand_regs [p_num_regs-1:0];
@@ -235,12 +261,14 @@ module RegfileTestSuite #(
   logic                   exp_pending1;
   logic [p_addr_bits-1:0] rand_paddr;
   logic                   rand_pval;
+  logic [p_addr_bits-1:0] rand_caddr;
+  logic                   exp_cpend;
 
-  task test_case_6_random();
-    t.test_case_begin( "test_case_6_random" );
+  task test_case_7_random();
+    t.test_case_begin( "test_case_7_random" );
     if( !t.run_test ) return;
 
-    for ( int i = 0; i < 20; i = i + 1 ) begin
+    for ( int i = 0; i < 30; i = i + 1 ) begin
       rand_raddr0 = p_addr_bits'($urandom());
       rand_raddr1 = p_addr_bits'($urandom());
       rand_waddr  = p_addr_bits'($urandom());
@@ -248,15 +276,20 @@ module RegfileTestSuite #(
       rand_wen    = 1'($urandom());
       rand_paddr  = p_addr_bits'($urandom());
       rand_pval   = 1'($urandom());
+      rand_caddr  = p_addr_bits'($urandom());
 
-      exp_rdata0   = rand_wen & ( rand_waddr == rand_raddr0 ) ? rand_wdata : rand_regs[rand_raddr0];
-      exp_rdata1   = rand_wen & ( rand_waddr == rand_raddr1 ) ? rand_wdata : rand_regs[rand_raddr1];
+      exp_rdata0   = rand_wen & ( rand_waddr == rand_raddr0 ) & ( rand_waddr != '0 )
+                     ? rand_wdata : rand_regs[rand_raddr0];
+      exp_rdata1   = rand_wen & ( rand_waddr == rand_raddr1 ) & ( rand_waddr != '0 )
+                     ? rand_wdata : rand_regs[rand_raddr1];
       exp_pending0 = !( rand_wen & ( rand_waddr == rand_raddr0 )) & pbits[rand_raddr0];
       exp_pending1 = !( rand_wen & ( rand_waddr == rand_raddr1 )) & pbits[rand_raddr1];
+      exp_cpend    = pbits[rand_caddr] & (rand_caddr != '0) & (rand_caddr != rand_waddr);
 
       check( 0, rand_raddr0, exp_rdata0, exp_pending0,
              rand_raddr1, exp_rdata1, exp_pending1,
-             rand_waddr, rand_wdata, rand_wen,
+             rand_waddr, rand_wdata, rand_wen, 
+             rand_caddr, exp_cpend,
              rand_paddr, rand_pval );
 
       if ( rand_wen & ( rand_waddr != '0 ) ) rand_regs[rand_waddr] = rand_wdata;
@@ -283,7 +316,8 @@ module RegfileTestSuite #(
     test_case_3_zero();
     test_case_4_all();
     test_case_5_multi_read();
-    test_case_6_random();
+    test_case_6_pending();
+    test_case_7_random();
 
   endtask
 endmodule

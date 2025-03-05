@@ -12,6 +12,7 @@ set(V_TEST_FILES
   hw/common/test/PriorityEncoder_test.v
   hw/common/test/RRArb_test.v
   hw/decode_issue/test/DecodeIssueUnitL1_test.v
+  hw/decode_issue/test/DecodeIssueUnitL2_test.v
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/Regfile_test.v
   hw/execute/test/l1/ALU_test.v

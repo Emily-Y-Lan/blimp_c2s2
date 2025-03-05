@@ -1,10 +1,10 @@
 //========================================================================
-// DecodeIssueUnitL1.v
+// DecodeIssueUnitL2.v
 //========================================================================
 // A basic in-order, single-issue decoder that implements TinyRV1
 
-`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V
-`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V
+`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL2_V
+`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL2_V
 
 `include "asm/disassemble.v"
 `include "defs/ISA.v"
@@ -18,7 +18,7 @@
 
 import ISA::*;
 
-module DecodeIssueUnitL1 #(
+module DecodeIssueUnitL2 #(
   parameter p_isa_subset                               = p_tinyrv1,
   parameter p_num_pipes                                = 1,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
@@ -111,31 +111,28 @@ module DecodeIssueUnitL1 #(
 
   logic [31:0] rdata0, rdata1;
   logic pending [1:0];
+  logic write_pending;
 
   Regfile #(
     .t_entry (logic [31:0]),
     .p_num_regs (32)
   ) regfile (
-    .clk              (clk),
-    .rst              (rst),
-    .raddr            ({decoder_raddr1, decoder_raddr0}),
-    .rdata            ({rdata1, rdata0}),
-    .waddr            (complete.waddr),
-    .wdata            (complete.wdata),
-    .wen              (complete.wen & complete.val),
-    .pending_set_addr (decoder_waddr),
-    .pending_set_val  (decoder_wen & X_xfer),
-    .read_pending     (pending),
-
-    // Don't use the check_addr
-    // verilator lint_off PINCONNECTEMPTY
-    .check_addr         (),
-    .check_addr_pending ()
-    // verilator lint_on PINCONNECTEMPTY
+    .clk                (clk),
+    .rst                (rst),
+    .raddr              ({decoder_raddr1, decoder_raddr0}),
+    .rdata              ({rdata1, rdata0}),
+    .waddr              (complete.waddr),
+    .wdata              (complete.wdata),
+    .wen                (complete.wen & complete.val),
+    .pending_set_addr   (decoder_waddr),
+    .pending_set_val    (decoder_wen & X_xfer),
+    .read_pending       (pending),
+    .check_addr         (decoder_waddr),
+    .check_addr_pending (write_pending)
   );
 
   logic stall_pending;
-  assign stall_pending = pending[0] | pending[1];
+  assign stall_pending = pending[0] | pending[1] | write_pending;
 
   logic [31:0] imm;
 

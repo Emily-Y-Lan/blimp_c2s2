@@ -22,6 +22,9 @@ module Regfile #(
   input  logic [p_addr_bits-1:0] raddr   [1:0],
   output t_entry                 rdata   [1:0],
 
+  // Include checking whether the instruction's write address is pending
+  input  logic [p_addr_bits-1:0] check_addr,
+
   //----------------------------------------------------------------------
   // Write Interface
   //----------------------------------------------------------------------
@@ -36,7 +39,8 @@ module Regfile #(
 
   input  logic [p_addr_bits-1:0] pending_set_addr,
   input  logic                   pending_set_val,
-  output logic                   pending [1:0]
+  output logic                   read_pending [1:0],
+  output logic                   check_addr_pending
 );
 
   //----------------------------------------------------------------------
@@ -104,15 +108,19 @@ module Regfile #(
 
   always_comb begin
     if ( raddr[0] == '0 )
-      pending[0] = 1'b0;
+      read_pending[0] = 1'b0;
     else
-      pending[0] = !forward_write[0] & pending_regs[raddr[0]];
+      read_pending[0] = !forward_write[0] & pending_regs[raddr[0]];
 
     if ( raddr[1] == '0 )
-      pending[1] = 1'b0;
+      read_pending[1] = 1'b0;
     else
-      pending[1] = !forward_write[1] & pending_regs[raddr[1]];
+      read_pending[1] = !forward_write[1] & pending_regs[raddr[1]];
   end
+
+  assign check_addr_pending = pending_regs[check_addr] &
+                              (check_addr != waddr)    &
+                              (check_addr != '0);
 
 endmodule
 

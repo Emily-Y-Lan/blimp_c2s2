@@ -17,6 +17,10 @@ class FLTrace {
   // Constructors
   FLTrace( uint32_t pc, uint32_t waddr, uint32_t wdata, bool wen );
 
+  // Equality for comparing traces
+  bool operator==( const FLTrace &other );
+  bool operator!=( const FLTrace &other );
+
   // String representation for stream output
   friend std::ostream &operator<<( std::ostream  &out,
                                    const FLTrace &trace );

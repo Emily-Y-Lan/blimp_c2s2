@@ -15,13 +15,17 @@ task test_case_basic();
   fork
     begin
       //   addr   inst               seq_num
-      send('h200, "mul x1, x0, x0",  0);
+      send('h200, "mul  x1, x0, x0", 0);
       send('h204, "addi x1, x0, 10", 1);
     end
 
     begin
       //   pc     seq_num op1 op2  waddr uop
       recv('h200, 0,      0,   0,  1,    OP_MUL);
+
+      //  seq_num waddr wdata wen
+      pub(0,      1,    0,    1);
+
       recv('h204, 1,      0,  10,  1,    OP_ADD);
     end
   join

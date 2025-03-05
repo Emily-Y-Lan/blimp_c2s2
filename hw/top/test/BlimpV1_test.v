@@ -158,8 +158,8 @@ module BlimpV1TestSuite #(
   // Include Tests
   //----------------------------------------------------------------------
 
-  `include "hw/top/test/test_cases/add_test_cases.v"
-  `include "hw/top/test/test_cases/mul_test_cases.v"
+  `include "hw/top/test/test_cases/directed/add_test_cases.v"
+  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
