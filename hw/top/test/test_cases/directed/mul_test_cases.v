@@ -10,6 +10,7 @@
 task test_case_mul_1_basic();
   t.test_case_begin( "test_case_mul_1_basic" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -33,6 +34,7 @@ endtask
 task test_case_mul_2_x0();
   t.test_case_begin( "test_case_mul_2_x0" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -64,6 +66,7 @@ endtask
 task test_case_mul_3_regs();
   t.test_case_begin( "test_case_mul_3_regs" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -135,6 +138,7 @@ endtask
 task test_case_mul_4_deps();
   t.test_case_begin( "test_case_mul_4_deps" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -162,6 +166,7 @@ endtask
 task test_case_mul_5_pos();
   t.test_case_begin( "test_case_mul_5_pos" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -213,6 +218,7 @@ endtask
 task test_case_mul_6_neg();
   t.test_case_begin( "test_case_mul_6_neg" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -264,6 +270,7 @@ endtask
 task test_case_mul_7_overflow();
   t.test_case_begin( "test_case_mul_7_overflow" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
@@ -287,6 +294,7 @@ endtask
 task test_case_mul_8_mix();
   t.test_case_begin( "test_case_mul_8_mix" );
   if( !t.run_test ) return;
+  fl_reset();
 
   // Write assembly program into memory
 
