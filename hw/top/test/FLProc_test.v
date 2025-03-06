@@ -31,6 +31,13 @@ module FLProc_test;
     fl_init( addr, assemble( inst, addr ) );
   endtask
 
+  task data(
+    input logic [31:0] addr,
+    input logic [31:0] data
+  );
+    fl_init( addr, data );
+  endtask
+
   logic      dut_success;
   inst_trace dut_trace;
 
@@ -59,8 +66,11 @@ module FLProc_test;
   // Include test cases
   //----------------------------------------------------------------------
 
+  `include "hw/top/test/test_cases/directed/addi_test_cases.v"
   `include "hw/top/test/test_cases/directed/add_test_cases.v"
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
+  `include "hw/top/test/test_cases/directed/lw_test_cases.v"
+  `include "hw/top/test/test_cases/directed/sw_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_tests
@@ -70,8 +80,11 @@ module FLProc_test;
     test_bench_begin( `__FILE__ );
 
     t.test_suite_begin( "FLProc_test" );
-    run_add_tests();
-    run_mul_tests();
+    run_directed_addi_tests();
+    run_directed_add_tests();
+    run_directed_mul_tests();
+    run_directed_lw_tests();
+    run_directed_sw_tests();
 
     test_bench_end();
   endtask

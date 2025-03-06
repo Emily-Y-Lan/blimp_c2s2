@@ -158,8 +158,13 @@ module BlimpV1TestSuite #(
   // Include Tests
   //----------------------------------------------------------------------
 
+  `include "hw/top/test/test_cases/directed/addi_test_cases.v"
   `include "hw/top/test/test_cases/directed/add_test_cases.v"
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
+
+  `include "hw/top/test/test_cases/golden/addi_test_cases.v"
+  `include "hw/top/test/test_cases/golden/add_test_cases.v"
+  `include "hw/top/test/test_cases/golden/mul_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -168,8 +173,13 @@ module BlimpV1TestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    run_add_tests();
-    run_mul_tests();
+    run_directed_addi_tests();
+    run_directed_add_tests();
+    run_directed_mul_tests();
+
+    run_golden_addi_tests();
+    run_golden_add_tests();
+    run_golden_mul_tests();
 
   endtask
 endmodule
