@@ -25,6 +25,7 @@ set(V_TEST_FILES
   hw/top/test/FLProc_test.v
   hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
+  hw/writeback_commit/test/ROB_test.v
 )
 
 set(ASM_FILES
