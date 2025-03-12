@@ -13,7 +13,7 @@
 interface CompleteNotif
 #(
   parameter p_seq_num_bits  = 5,
-  parameter p_phys_reg_bits = 6
+  parameter p_phys_addr_bits = 6
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,15 +26,17 @@ interface CompleteNotif
   logic                      val;
 
   // verilator lint_off UNUSEDSIGNAL
+  // verilator lint_off UNDRIVEN
 
   // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
 
   // Added in v3
-  logic [p_phys_reg_bits-1:0] preg;
-  logic [p_phys_reg_bits-1:0] ppreg;
+  logic [p_phys_addr_bits-1:0] preg;
+  logic [p_phys_addr_bits-1:0] ppreg;
 
   // verilator lint_on UNUSEDSIGNAL
+  // verilator lint_on UNDRIVEN
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports

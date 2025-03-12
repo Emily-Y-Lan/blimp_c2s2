@@ -29,9 +29,6 @@ module TestPub #(
     input t_msg dut_msg
   );
 
-    val      = 1'b0;
-    msg      = 'x;
-
     val = 1'b1;
     msg = dut_msg;
 

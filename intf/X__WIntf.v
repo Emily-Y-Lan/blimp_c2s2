@@ -12,7 +12,8 @@
 
 interface X__WIntf
 #(
-  parameter p_seq_num_bits = 5
+  parameter p_seq_num_bits  = 5,
+  parameter p_phys_addr_bits = 6
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,6 +32,10 @@ interface X__WIntf
   // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
 
+  // Added in v3
+  logic [p_phys_addr_bits-1:0] preg;
+  logic [p_phys_addr_bits-1:0] ppreg;
+
   // verilator lint_on UNUSEDSIGNAL
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +51,11 @@ interface X__WIntf
     input  rdy,
 
     // v2
-    output seq_num
+    output seq_num,
+
+    // v3
+    output preg,
+    output ppreg
   );
 
   modport W_intf (
@@ -58,7 +67,11 @@ interface X__WIntf
     output rdy,
 
     // v2
-    input  seq_num
+    input  seq_num,
+
+    // v3
+    input  preg,
+    input  ppreg
   );
 
 endinterface

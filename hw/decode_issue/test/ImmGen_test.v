@@ -3,8 +3,8 @@
 //========================================================================
 // A testbench for our immediate generator
 
-`include "test/TestUtils.v"
 `include "hw/decode_issue/ImmGen.v"
+`include "test/TestUtils.v"
 
 import TestEnv::*;
 

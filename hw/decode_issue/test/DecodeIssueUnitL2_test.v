@@ -49,8 +49,6 @@ module DecodeIssueUnitL2TestSuite #(
   //----------------------------------------------------------------------
   // Instantiate design under test
   //----------------------------------------------------------------------
-  // Here, we additionally use virtual fl_X interfaces to allow for
-  // non-constant indexing
 
   F__DIntf #(
     .p_seq_num_bits (p_seq_num_bits)

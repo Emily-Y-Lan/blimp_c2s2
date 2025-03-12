@@ -9,10 +9,9 @@
 `include "hw/common/PriorityEncoder.v"
 
 module RenameTable #(
-  parameter p_num_phys_regs  = 36,
-  parameter p_num_read_bits  = 2,
+  parameter p_num_phys_regs = 36,
 
-  parameter p_phys_addr_bits = $clog( p_num_phys_regs )
+  parameter p_phys_addr_bits = $clog2( p_num_phys_regs )
 ) (
   input  logic clk,
   input  logic rst,
@@ -36,10 +35,10 @@ module RenameTable #(
   input  logic                        lookup_en   [2],
 
   // ---------------------------------------------------------------------
-  // Commit
+  // Complete
   // ---------------------------------------------------------------------
   
-  CommitNotif.sub commit;
+  CompleteNotif.sub complete
 );
 
   // ---------------------------------------------------------------------
@@ -66,7 +65,7 @@ module RenameTable #(
 
   genvar i;
   generate
-    for( int i = 1; i < 32; i = i + 1 ) begin
+    for( i = 1; i < 32; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
         if( rst ) begin
           rename_table[i] <= '{pending: 1'b0, preg: p_phys_addr_bits'(i)};
@@ -84,11 +83,11 @@ module RenameTable #(
 
   always_ff @( posedge clk ) begin
     if( rst ) begin
-      for( int i = 1; i < 32; i = i + 1 ) begin
-        free_list[i] <= 1'b0;
+      for( int j = 1; j < 32; j = j + 1 ) begin
+        free_list[j] <= 1'b0;
       end
-      for( int i = 32; i < p_num_phys_regs; i = i + 1 ) begin
-        free_list[i] <= 1'b1;
+      for( int j = 32; j < p_num_phys_regs; j = j + 1 ) begin
+        free_list[j] <= 1'b1;
       end
     end else begin
       if( free_val & ( free_ppreg != 0 ) ) begin
@@ -124,8 +123,8 @@ module RenameTable #(
 
   generate
     for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin
-      preg_alloc_mask[i] = ( preg_alloc_sel_out[i] ) ? p_phys_addr_bits'(i)
-                                                     : '0;
+      assign preg_alloc_mask[i] = ( preg_alloc_sel_out[i] ) ? p_phys_addr_bits'(i)
+                                                            : '0;
     end
   endgenerate
 
@@ -145,26 +144,26 @@ module RenameTable #(
   assign unused_lookup_en[1] = lookup_en[1];
 
   always_comb begin
-    if( lookup_areg[0] == '0 ){
+    if( lookup_areg[0] == '0 ) begin
       lookup_preg[0] = '0;
-    } else {
+    end else begin
       lookup_preg[0] = rename_table[lookup_areg[0]].preg;
-    }
+    end
 
-    if( lookup_areg[1] == '0 ){
+    if( lookup_areg[1] == '0 ) begin
       lookup_preg[1] = '0;
-    } else {
+    end else begin
       lookup_preg[1] = rename_table[lookup_areg[1]].preg;
-    }
+    end
   end
 
   // ---------------------------------------------------------------------
   // Free on commit
   // ---------------------------------------------------------------------
 
-  assign free_val   = commit.val;
-  assign free_preg  = commit.preg;
-  assign free_ppreg = commit.ppreg;
+  assign free_val   = complete.val;
+  assign free_preg  = complete.preg;
+  assign free_ppreg = complete.ppreg;
 
 endmodule
 

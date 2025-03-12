@@ -17,7 +17,7 @@ module TestSub #(
   input logic val
 );
   
-  FLTestUtils t( .rst( 1'b0), .* );
+  FLTestUtils t( .rst( 1'b0 ), .* );
 
   //----------------------------------------------------------------------
   // sub

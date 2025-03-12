@@ -16,7 +16,8 @@ import UArch::*;
 
 interface D__XIntf
 #(
-  parameter p_seq_num_bits = 5
+  parameter p_seq_num_bits  = 5,
+  parameter p_phys_addr_bits = 6
 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,6 +37,10 @@ interface D__XIntf
   // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
 
+  // Added in v3
+  logic [p_phys_addr_bits-1:0] preg;
+  logic [p_phys_addr_bits-1:0] ppreg;
+
   // verilator lint_on UNUSEDSIGNAL
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +57,11 @@ interface D__XIntf
     input  rdy,
 
     // v2
-    output seq_num
+    output seq_num,
+
+    // v3
+    output preg,
+    output ppreg
   );
 
   modport X_intf (
@@ -65,7 +74,11 @@ interface D__XIntf
     output rdy,
 
     // v2
-    input  seq_num
+    input  seq_num,
+
+    // v3
+    input  preg,
+    input  ppreg
   );
 
 endinterface
