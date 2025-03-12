@@ -99,12 +99,12 @@ module ROBTestSuite #(
   // FL Ostreams
   //----------------------------------------------------------------------
 
-  logic dummy_deq_front_en;  
+  logic unused_deq_front_en;  
 
   TestOstream #(t_entry) deq_front_stream (
     .msg(deq_front_intf.deq_front_data),
     .val(deq_front_intf.deq_front_cpl),
-    .rdy(dummy_deq_front_en),
+    .rdy(unused_deq_front_en),
     .*
   );
 

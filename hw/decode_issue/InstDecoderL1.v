@@ -1,10 +1,10 @@
 //========================================================================
-// InstDecoder.v
+// InstDecodeL1.v
 //========================================================================
-// A parametrized decoder to linearize opcodes
+// A parametrized decoder to linearize arithmetic opcodes
 
-`ifndef HW_DECODE_ISSUE_INSTDECODER_V
-`define HW_DECODE_ISSUE_INSTDECODER_V
+`ifndef HW_DECODE_ISSUE_INSTDECODERL1_V
+`define HW_DECODE_ISSUE_INSTDECODERL1_V
 
 `include "defs/ISA.v"
 `include "defs/UArch.v"
@@ -12,7 +12,7 @@
 import ISA::*;
 import UArch::*;
 
-module InstDecoder #(
+module InstDecoderL1 #(
   parameter p_isa_subset = p_tinyrv1
 ) (
   input  logic [31:0] inst,

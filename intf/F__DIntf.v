@@ -15,11 +15,17 @@ interface F__DIntf
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic               [31:0] inst;
+  logic [31:0] inst;
+  logic [31:0] pc;
+  logic        val;
+  logic        rdy;
+
+  // verilator lint_off UNUSEDSIGNAL
+
+  // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
-  logic               [31:0] pc;
-  logic                      val;
-  logic                      rdy;
+
+  // verilator lint_on UNUSEDSIGNAL
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -27,18 +33,22 @@ interface F__DIntf
 
   modport F_intf (
     output inst,
-    output seq_num,
     output pc,
     output val,
-    input  rdy
+    input  rdy,
+
+    // v2
+    output seq_num
   );
 
   modport D_intf (
     input  inst,
-    output seq_num,
     input  pc,
     input  val,
-    output rdy
+    output rdy,
+    
+    // v2
+    output seq_num
   );
 
 endinterface

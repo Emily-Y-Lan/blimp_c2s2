@@ -7,6 +7,7 @@
 #include "asm/inst.h"
 #include "fl/FLProc.h"
 #include <format>
+#include <iostream>
 #include <stdexcept>
 
 //------------------------------------------------------------------------
@@ -95,7 +96,7 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case SW:
-      mem[regs[inst.rs1()] + inst.imm_i()] = regs[inst.rs2()];
+      mem[regs[inst.rs1()] + inst.imm_s()] = regs[inst.rs2()];
       pc                                   = pc + 4;
       return FLTrace( inst_pc, 0, 0, 0 );
 

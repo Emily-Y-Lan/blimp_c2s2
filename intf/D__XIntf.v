@@ -23,14 +23,20 @@ interface D__XIntf
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic               [31:0] pc;
+  logic  [31:0] pc;
+  logic  [31:0] op1;
+  logic  [31:0] op2;
+  logic   [4:0] waddr;
+  rv_uop        uop;
+  logic         val;
+  logic         rdy;
+
+  // verilator lint_off UNUSEDSIGNAL
+
+  // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
-  logic               [31:0] op1;
-  logic               [31:0] op2;
-  logic                [4:0] waddr;
-  rv_uop                     uop;
-  logic                      val;
-  logic                      rdy;
+
+  // verilator lint_on UNUSEDSIGNAL
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -38,24 +44,28 @@ interface D__XIntf
 
   modport D_intf (
     output pc,
-    output seq_num,
     output op1,
     output op2,
     output uop,
     output waddr,
     output val,
-    input  rdy
+    input  rdy,
+
+    // v2
+    output seq_num
   );
 
   modport X_intf (
     input  pc,
-    input  seq_num,
     input  op1,
     input  op2,
     input  uop,
     input  waddr,
     input  val,
-    output rdy
+    output rdy,
+
+    // v2
+    input  seq_num
   );
 
 endinterface

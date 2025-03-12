@@ -19,13 +19,19 @@ interface X__WIntf
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic               [31:0] pc;
+  logic [31:0] pc;
+  logic  [4:0] waddr;
+  logic [31:0] wdata;
+  logic        wen;
+  logic        val;
+  logic        rdy;
+
+  // verilator lint_off UNUSEDSIGNAL
+
+  // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
-  logic                [4:0] waddr;
-  logic               [31:0] wdata;
-  logic                      wen;
-  logic                      val;
-  logic                      rdy;
+
+  // verilator lint_on UNUSEDSIGNAL
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Module-facing Ports
@@ -33,22 +39,26 @@ interface X__WIntf
 
   modport X_intf (
     output pc,
-    output seq_num,
     output waddr,
     output wdata,
     output wen,
     output val,
-    input  rdy
+    input  rdy,
+
+    // v2
+    output seq_num
   );
 
   modport W_intf (
     input  pc,
-    input  seq_num,
     input  waddr,
     input  wdata,
     input  wen,
     input  val,
-    output rdy
+    output rdy,
+
+    // v2
+    input  seq_num
   );
 
 endinterface
