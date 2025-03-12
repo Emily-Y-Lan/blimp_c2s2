@@ -91,10 +91,10 @@ module RenameTable #(
       end
     end else begin
       if( free_val & ( free_ppreg != 0 ) ) begin
-        free_list[free_ppreg] <= 1'b0;
+        free_list[free_ppreg] <= 1'b1;
       end
       if( alloc_xfer & ( alloc_preg != 0 ) ) begin
-        free_list[alloc_preg] <= 1'b1;
+        free_list[alloc_preg] <= 1'b0;
       end
     end
   end
@@ -164,6 +164,58 @@ module RenameTable #(
   assign free_val   = complete.val;
   assign free_preg  = complete.preg;
   assign free_ppreg = complete.ppreg;
+
+  // ---------------------------------------------------------------------
+  // Linetracing
+  // ---------------------------------------------------------------------
+
+`ifndef SYNTHESIS
+
+  string test_trace;
+  int    alloc_len;
+  int    lookup_len;
+  int    free_len;
+
+  initial begin
+    test_trace = $sformatf("%x > %x (%x)", alloc_areg, alloc_preg, alloc_ppreg);
+    alloc_len  = test_trace.len();
+
+    test_trace = $sformatf("%x > %x", lookup_areg, lookup_preg);
+    lookup_len = test_trace.len();
+
+    test_trace = $sformatf("%x (%x)", free_preg, free_ppreg);
+    free_len   = test_trace.len();
+  end
+
+  function string trace();
+    trace = "[";
+    if( alloc_en & alloc_rdy )
+      trace = {trace, $sformatf("%x > %x (%x)", alloc_areg, alloc_preg, alloc_ppreg)};
+    else
+      trace = {trace, {(alloc_len){" "}}};
+
+    trace = {trace, "] ["};
+
+    if( lookup_en[0] )
+      trace = {trace, $sformatf("%x > %x", lookup_areg[0], lookup_preg[0])};
+    else
+      trace = {trace, {(lookup_len){" "}}};
+    trace = {trace, ", "};
+    if( lookup_en[1] )
+      trace = {trace, $sformatf("%x > %x", lookup_areg[1], lookup_preg[1])};
+    else
+      trace = {trace, {(lookup_len){" "}}};
+
+    trace = {trace, "] ["};
+
+    if( free_val )
+      trace = {trace, $sformatf("%x (%x)", free_preg, free_ppreg)};
+    else
+      trace = {trace, {(free_len){" "}}};
+
+    trace = {trace, "]"};
+  endfunction
+`endif
 
 endmodule
 

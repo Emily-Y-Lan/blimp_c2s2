@@ -66,7 +66,6 @@ module TestIstream #(
   // Linetracing
   //----------------------------------------------------------------------
 
-
   string test_trace;
   int trace_len;
   initial begin
