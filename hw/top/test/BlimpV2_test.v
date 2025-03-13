@@ -16,7 +16,7 @@ import TestEnv::*;
 //========================================================================
 // BlimpV2TestSuite
 //========================================================================
-// A test suite for a particular parametrization of the basic Blimp unit
+// A test suite for a particular parametrization of the Blimp V2 module
 
 module BlimpV2TestSuite #(
   parameter p_suite_num    = 0,

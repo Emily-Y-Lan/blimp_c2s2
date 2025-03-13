@@ -8,7 +8,7 @@
 
 `include "asm/disassemble.v"
 `include "defs/ISA.v"
-`include "hw/decode_issue/InstDecoderL1.v"
+`include "hw/decode_issue/InstDecoder.v"
 `include "hw/decode_issue/ImmGen.v"
 `include "hw/decode_issue/InstRouter.v"
 `include "hw/decode_issue/Regfile.v"
@@ -100,7 +100,7 @@ module DecodeIssueUnitL3 #(
   logic       decoder_wen;
   // verilator lint_on UNUSEDSIGNAL
   
-  InstDecoderL1 #(
+  InstDecoder #(
     .p_isa_subset (p_isa_subset)
   ) decoder (
     .val     (decoder_val),
@@ -195,14 +195,15 @@ module DecodeIssueUnitL3 #(
   genvar k;
   generate
     for( k = 0; k < p_num_pipes; k = k + 1 ) begin: pipe_signals
-      assign Ex[k].pc      = F_reg.pc;
-      assign Ex[k].op1     = op1;
-      assign Ex[k].op2     = op2;
-      assign Ex[k].uop     = decoder_uop;
-      assign Ex[k].waddr   = decoder_waddr;
-      assign Ex[k].seq_num = F_reg.seq_num;
-      assign Ex[k].preg    = alloc_preg;
-      assign Ex[k].ppreg   = alloc_ppreg;
+      assign Ex[k].pc       = F_reg.pc;
+      assign Ex[k].op1      = op1;
+      assign Ex[k].op2      = op2;
+      assign Ex[k].uop      = decoder_uop;
+      assign Ex[k].waddr    = decoder_waddr;
+      assign Ex[k].seq_num  = F_reg.seq_num;
+      assign Ex[k].preg     = alloc_preg;
+      assign Ex[k].ppreg    = alloc_ppreg;
+      assign Ex[k].mem_data = rdata1;
     end
   endgenerate
 

@@ -1,10 +1,10 @@
 //========================================================================
-// InstDecodeL1.v
+// InstDecode.v
 //========================================================================
-// A parametrized decoder to linearize arithmetic opcodes
+// A parametrized decoder to linearize opcodes
 
-`ifndef HW_DECODE_ISSUE_INSTDECODERL1_V
-`define HW_DECODE_ISSUE_INSTDECODERL1_V
+`ifndef HW_DECODE_ISSUE_INSTDECODER_V
+`define HW_DECODE_ISSUE_INSTDECODER_V
 
 `include "defs/ISA.v"
 `include "defs/UArch.v"
@@ -12,7 +12,7 @@
 import ISA::*;
 import UArch::*;
 
-module InstDecoderL1 #(
+module InstDecoder #(
   parameter p_isa_subset = p_tinyrv1
 ) (
   input  logic [31:0] inst,
@@ -65,9 +65,10 @@ module InstDecoderL1 #(
 
   // raddr
   logic [4:0] rs1, rs2, rd;
-  assign rs1 = inst[19:15];
-  assign rs2 = inst[24:20];
-  assign rd  = inst[11:7];
+  assign rs1    = inst[19:15];
+  assign rs2    = inst[24:20];
+  assign rd     = inst[11:7];
+  localparam rx = 5'b0; // Never stalls
 
   //----------------------------------------------------------------------
   // Control Signal Table
@@ -86,13 +87,29 @@ module InstDecoderL1 #(
       if ( ( p_isa_subset & OP_ADD_VEC ) > 0 ) begin
         casez ( inst ) //        uop     raddr0 raddr1 waddr wen imm_sel op2_sel
           `RVI_INST_ADD:  cs( y, OP_ADD, rs1,   rs2,   rd,   y,  'x,     op2_rf  );
-          `RVI_INST_ADDI: cs( y, OP_ADD, rs1,   'x,    rd,   y,  IMM_I,  op2_imm );
+          `RVI_INST_ADDI: cs( y, OP_ADD, rs1,   rx,    rd,   y,  IMM_I,  op2_imm );
         endcase
       end
 
       if ( ( p_isa_subset & OP_MUL_VEC ) > 0 ) begin
         casez ( inst ) //        uop     raddr0 raddr1 waddr wen imm_sel op2_sel
           `RVI_INST_MUL:  cs( y, OP_MUL, rs1,   rs2,   rd,   y,  'x,     op2_rf  );
+        endcase
+      end
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // Memory
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      if ( ( p_isa_subset & OP_LW_VEC ) > 0 ) begin
+        casez ( inst ) //       uop    raddr0 raddr1 waddr wen imm_sel op2_sel
+          `RVI_INST_LW:  cs( y, OP_LW, rs1,   rx,    rd,   y,  IMM_I,  op2_imm );
+        endcase
+      end
+
+      if ( ( p_isa_subset & OP_SW_VEC ) > 0 ) begin
+        casez ( inst ) //       uop    raddr0 raddr1 waddr wen imm_sel op2_sel
+          `RVI_INST_SW:  cs( y, OP_SW, rs1,   rs2,   rx,   n,  IMM_S,  op2_imm );
         endcase
       end
 

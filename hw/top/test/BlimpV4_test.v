@@ -1,33 +1,34 @@
 //========================================================================
-// BlimpV1_test.v
+// BlimpV4_test.v
 //========================================================================
-// The top-level testing module for a basic implementation of Blimp
+// The top-level testing module for Blimp V4
 
 `include "asm/assemble.v"
-`include "hw/top/BlimpV1.v"
+`include "hw/top/BlimpV4.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
-`include "test/fl/MemIntfTestServer.v"
+`include "test/fl/MemIntfTestServer_2Port.v"
 `include "test/fl/InstTraceSub.v"
 `include "fl/fl_vtrace.v"
 
 import TestEnv::*;
 
 //========================================================================
-// BlimpV1TestSuite
+// BlimpV4TestSuite
 //========================================================================
-// A test suite for a particular parametrization of the Blimp V1 module
+// A test suite for a particular parametrization of the Blimp V4 module
 
-module BlimpV1TestSuite #(
-  parameter p_suite_num    = 0,
-  parameter p_opaq_bits    = 8,
-  parameter p_seq_num_bits = 5,
+module BlimpV4TestSuite #(
+  parameter p_suite_num     = 0,
+  parameter p_opaq_bits     = 8,
+  parameter p_seq_num_bits  = 5,
+  parameter p_num_phys_regs = 36,
 
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1
 );
 
-  string suite_name = $sformatf("%0d: BlimpV1TestSuite_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: BlimpV4TestSuite_%0d_%0d_%0d_%0d", 
                                 p_suite_num,
                                 p_opaq_bits, p_seq_num_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay);
@@ -49,15 +50,17 @@ module BlimpV1TestSuite #(
   MemIntf #(
     .t_req_msg  (`MEM_REQ ( p_opaq_bits )),
     .t_resp_msg (`MEM_RESP( p_opaq_bits ))
-  ) mem_intf();
+  ) mem_intf[2]();
 
   InstTraceNotif inst_trace_notif();
 
-  BlimpV1 #(
-    .p_opaq_bits    (p_opaq_bits),
-    .p_seq_num_bits (p_seq_num_bits)
+  BlimpV4 #(
+    .p_opaq_bits     (p_opaq_bits),
+    .p_seq_num_bits  (p_seq_num_bits),
+    .p_num_phys_regs (p_num_phys_regs)
   ) dut (
-    .inst_mem   (mem_intf),
+    .inst_mem   (mem_intf[0]),
+    .data_mem   (mem_intf[1]),
     .inst_trace (inst_trace_notif),
     .*
   );
@@ -66,7 +69,7 @@ module BlimpV1TestSuite #(
   // FL Memory
   //----------------------------------------------------------------------
 
-  MemIntfTestServer #(
+  MemIntfTestServer_2Port #(
     .t_req_msg         (`MEM_REQ ( p_opaq_bits )),
     .t_resp_msg        (`MEM_RESP( p_opaq_bits )),
     .p_send_intv_delay (p_mem_send_intv_delay),
@@ -86,6 +89,14 @@ module BlimpV1TestSuite #(
     asm_binary = assemble( inst, addr );
     fl_mem.init_mem( addr, asm_binary );
     fl_init        ( addr, asm_binary );
+  endtask
+
+  task data(
+    input logic [31:0] addr,
+    input logic [31:0] data
+  );
+    fl_mem.init_mem( addr, data );
+    fl_init        ( addr, data );
   endtask
 
   //----------------------------------------------------------------------
@@ -161,10 +172,14 @@ module BlimpV1TestSuite #(
   `include "hw/top/test/test_cases/directed/addi_test_cases.v"
   `include "hw/top/test/test_cases/directed/add_test_cases.v"
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
+  `include "hw/top/test/test_cases/directed/lw_test_cases.v"
+  `include "hw/top/test/test_cases/directed/sw_test_cases.v"
 
   `include "hw/top/test/test_cases/golden/addi_test_cases.v"
   `include "hw/top/test/test_cases/golden/add_test_cases.v"
   `include "hw/top/test/test_cases/golden/mul_test_cases.v"
+  `include "hw/top/test/test_cases/golden/lw_test_cases.v"
+  `include "hw/top/test/test_cases/golden/sw_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -176,10 +191,14 @@ module BlimpV1TestSuite #(
     run_directed_addi_tests();
     run_directed_add_tests();
     run_directed_mul_tests();
+    run_directed_lw_tests();
+    run_directed_sw_tests();
 
     run_golden_addi_tests();
     run_golden_add_tests();
     run_golden_mul_tests();
+    run_golden_lw_tests();
+    run_golden_sw_tests();
 
   endtask
 endmodule
@@ -188,15 +207,15 @@ endmodule
 // BlimpV1_test
 //========================================================================
 
-module BlimpV1_test;
-  BlimpV1TestSuite #(1)             suite_1();
-  BlimpV1TestSuite #(2, 8, 5, 1, 1) suite_2();
-  BlimpV1TestSuite #(3, 8, 5, 1, 1) suite_3();
-  BlimpV1TestSuite #(4, 4, 5, 1, 1) suite_4();
-  BlimpV1TestSuite #(4, 4, 3, 1, 1) suite_5();
-  BlimpV1TestSuite #(5,32, 4, 3, 1) suite_6();
-  BlimpV1TestSuite #(6, 2, 2, 1, 3) suite_7();
-  BlimpV1TestSuite #(7, 4, 6, 3, 3) suite_8();
+module BlimpV4_test;
+  BlimpV4TestSuite #(1)                  suite_1();
+  BlimpV4TestSuite #(2,  8, 5, 36, 1, 1) suite_2();
+  BlimpV4TestSuite #(3,  8, 5, 50, 1, 1) suite_3();
+  BlimpV4TestSuite #(4,  4, 5, 48, 1, 1) suite_4();
+  BlimpV4TestSuite #(4,  4, 3, 33, 1, 1) suite_5();
+  BlimpV4TestSuite #(5, 32, 4, 48, 3, 1) suite_6();
+  BlimpV4TestSuite #(6,  2, 2, 64, 1, 3) suite_7();
+  BlimpV4TestSuite #(7,  4, 6, 52, 3, 3) suite_8();
 
   int s;
 

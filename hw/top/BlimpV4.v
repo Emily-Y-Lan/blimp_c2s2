@@ -1,17 +1,18 @@
 //========================================================================
-// BlimpV3.v
+// BlimpV4.v
 //========================================================================
 // A top-level implementation of the Blimp processor with OOO completion
-// and register renaming
+// and register renaming supporting memory operations
 
-`ifndef HW_TOP_BLIMPV3_V
-`define HW_TOP_BLIMPV3_V
+`ifndef HW_TOP_BLIMPV4_V
+`define HW_TOP_BLIMPV4_V
 
 `include "defs/UArch.v"
 `include "hw/fetch/fetch_unit_variants/FetchUnitL2.v"
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL3.v"
 `include "hw/execute/execute_units_l1/ALU.v"
 `include "hw/execute/execute_units_l2/PipelinedMultiplier.v"
+`include "hw/execute/execute_units_l4/LoadStoreUnit.v"
 `include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL3.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"
@@ -21,7 +22,7 @@
 `include "intf/CommitNotif.v"
 `include "intf/InstTraceNotif.v"
 
-module BlimpV3 #(
+module BlimpV4 #(
   parameter p_opaq_bits     = 8,
   parameter p_seq_num_bits  = 5,
   parameter p_num_phys_regs = 36
@@ -34,6 +35,12 @@ module BlimpV3 #(
   //----------------------------------------------------------------------
 
   MemIntf.client inst_mem,
+
+  //----------------------------------------------------------------------
+  // Data Memory
+  //----------------------------------------------------------------------
+
+  MemIntf.client data_mem,
 
   //----------------------------------------------------------------------
   // Instruction Trace
@@ -55,12 +62,12 @@ module BlimpV3 #(
   D__XIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) d__x_intfs[2]();
+  ) d__x_intfs[3]();
 
   X__WIntf #(
     .p_seq_num_bits (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) x__w_intfs[2]();
+  ) x__w_intfs[3]();
 
   CompleteNotif #(
     .p_seq_num_bits   (p_seq_num_bits),
@@ -94,12 +101,13 @@ module BlimpV3 #(
   );
 
   DecodeIssueUnitL3 #(
-    .p_isa_subset    (p_tinyrv1_arith),
-    .p_num_pipes     (2),
+    .p_isa_subset    (p_tinyrv1_mem),
+    .p_num_pipes     (3),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets ({
-      OP_ADD_VEC, // ALU
-      OP_MUL_VEC  // Multiplier
+      OP_ADD_VEC,           // ALU
+      OP_MUL_VEC,           // Multiplier
+      OP_LW_VEC | OP_SW_VEC // Memory
     })
   ) DIU (
     .F        (f__d_intf),
@@ -122,8 +130,17 @@ module BlimpV3 #(
     .*
   );
 
+  LoadStoreUnit #(
+    .p_opaq_bits (p_opaq_bits)
+  ) MEM_XU (
+    .D   (d__x_intfs[2]),
+    .W   (x__w_intfs[2]),
+    .mem (data_mem),
+    .*
+  );
+
   WritebackCommitUnitL3 #(
-    .p_num_pipes (2)
+    .p_num_pipes (3)
   ) WCU (
     .Ex       (x__w_intfs),
     .complete (complete_notif),
@@ -146,6 +163,8 @@ module BlimpV3 #(
       " | ",
       MUL_XU.trace(),
       " | ",
+      MEM_XU.trace(),
+      " | ",
       WCU.trace()
     };
   endfunction
@@ -153,4 +172,4 @@ module BlimpV3 #(
 
 endmodule
 
-`endif // HW_TOP_BLIMPV3_V
+`endif // HW_TOP_BLIMPV4_V

@@ -278,7 +278,7 @@ module LoadStoreUnit #(
 
     if( W.val & W.rdy )
       trace = {trace, $sformatf("%11s:%h:%h:%h",
-                      (stage2_reg.wen ? "OP_SW" : "OP_LW"),
+                      (stage2_reg.wen ? "OP_LW" : "OP_SW"),
                       stage2_reg.seq_num, mem.resp_msg.addr, W.wdata )};
     else
       trace = {trace, {resp_len{" "}}};

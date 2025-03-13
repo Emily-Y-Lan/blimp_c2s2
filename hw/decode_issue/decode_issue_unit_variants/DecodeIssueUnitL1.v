@@ -9,7 +9,7 @@
 
 `include "asm/disassemble.v"
 `include "defs/ISA.v"
-`include "hw/decode_issue/InstDecoderL1.v"
+`include "hw/decode_issue/InstDecoder.v"
 `include "hw/decode_issue/ImmGen.v"
 `include "hw/decode_issue/InstRouter.v"
 `include "hw/decode_issue/RegfilePending.v"
@@ -98,7 +98,7 @@ module DecodeIssueUnitL1 #(
   logic       decoder_wen;
   // verilator lint_on UNUSEDSIGNAL
   
-  InstDecoderL1 #(
+  InstDecoder #(
     .p_isa_subset (p_isa_subset)
   ) decoder (
     .val     (decoder_val),
