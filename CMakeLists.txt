@@ -24,6 +24,7 @@ set(V_TEST_FILES
   hw/fetch/test/FetchUnitL2_test.v
   hw/fetch/test/SeqNumGenL2_test.v
   hw/top/test/BlimpV1_test.v
+  hw/top/test/BlimpV2_test.v
   hw/top/test/FLProc_test.v
   hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
