@@ -41,6 +41,9 @@ interface D__XIntf
   logic [p_phys_addr_bits-1:0] preg;
   logic [p_phys_addr_bits-1:0] ppreg;
 
+  // Added in v4
+  logic                 [31:0] mem_data;
+
   // verilator lint_on UNUSEDSIGNAL
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,7 +64,10 @@ interface D__XIntf
 
     // v3
     output preg,
-    output ppreg
+    output ppreg,
+
+    // v4
+    output mem_data
   );
 
   modport X_intf (
@@ -78,7 +84,10 @@ interface D__XIntf
 
     // v3
     input  preg,
-    input  ppreg
+    input  ppreg,
+
+    // v4
+    input  mem_data
   );
 
 endinterface

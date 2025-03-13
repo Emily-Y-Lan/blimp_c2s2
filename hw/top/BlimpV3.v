@@ -94,7 +94,7 @@ module BlimpV3 #(
   );
 
   DecodeIssueUnitL3 #(
-    .p_isa_subset    (OP_ADD_VEC | OP_MUL_VEC),
+    .p_isa_subset    (p_tinyrv1_arith),
     .p_num_pipes     (2),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets ({

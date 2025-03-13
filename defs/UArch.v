@@ -51,6 +51,13 @@ package UArch;
                       | OP_JAL_VEC
                       | OP_JALR_VEC
                       | OP_BNE_VEC;
+
+  // Useful subsets for incremental development
+  parameter p_tinyrv1_arith = OP_ADD_VEC | OP_MUL_VEC;
+
+  parameter p_tinyrv1_mem   = p_tinyrv1_arith
+                            | OP_LW_VEC
+                            | OP_SW_VEC;
   // verilator lint_on UNUSEDPARAM
 
   function logic in_subset( 

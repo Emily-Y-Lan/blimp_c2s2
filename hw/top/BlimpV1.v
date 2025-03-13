@@ -84,7 +84,7 @@ module BlimpV1 #(
   );
 
   DecodeIssueUnitL1 #(
-    .p_isa_subset   (OP_ADD_VEC | OP_MUL_VEC),
+    .p_isa_subset   (p_tinyrv1_arith),
     .p_num_pipes    (2),
     .p_pipe_subsets ({
       OP_ADD_VEC, // ALU
