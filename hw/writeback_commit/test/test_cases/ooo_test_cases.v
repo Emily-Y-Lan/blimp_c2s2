@@ -13,21 +13,21 @@ task test_case_ooo_basic();
 
   fork
     begin
-      //   pipe pc  seq_num addr  data          wen
-      send(0,   '0, 1,      5'h1, 32'hdeadbeef, 1'b1);
-      send(0,   '1, 0,      5'h2, 32'hcafecafe, 1'b1);
+      //   pipe pc  seq_num addr  data          wen preg ppreg
+      send(0,   '0, 1,      5'h1, 32'hdeadbeef, 1,  32,  1 );
+      send(0,   '1, 0,      5'h2, 32'hcafecafe, 1,  33,  2 );
     end
 
     begin
-      //           seq_num addr  data          wen
-      complete_sub(1,      5'h1, 32'hdeadbeef, 1'b1);
-      complete_sub(0,      5'h2, 32'hcafecafe, 1'b1);
+      //           seq_num addr  data          wen preg ppreg
+      complete_sub(1,      5'h1, 32'hdeadbeef, 1,  32,  1 );
+      complete_sub(0,      5'h2, 32'hcafecafe, 1,  33,  2 );
     end
 
     begin
       //         pc  seq_num addr  data          wen
-      commit_sub('1, 0,      5'h2, 32'hcafecafe, 1'b1);
-      commit_sub('0, 1,      5'h1, 32'hdeadbeef, 1'b1);
+      commit_sub('1, 0,      5'h2, 32'hcafecafe, 1 );
+      commit_sub('0, 1,      5'h1, 32'hdeadbeef, 1 );
     end
   join
 

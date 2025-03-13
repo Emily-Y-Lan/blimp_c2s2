@@ -1,9 +1,9 @@
 //========================================================================
-// WritebackCommitUnitL2_test.v
+// WritebackCommitUnitL3_test.v
 //========================================================================
-// A testbench for our reordering writeback-commit unit
+// A testbench for our reordering writeback-commit unit with renaming
 
-`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL2.v"
+`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL3.v"
 `include "test/fl/TestSub.v"
 `include "test/fl/TestIstream.v"
 `include "intf/CompleteNotif.v"
@@ -13,20 +13,21 @@
 import TestEnv::*;
 
 //========================================================================
-// WritebackCommitUnitL2TestSuite
+// WritebackCommitUnitL3TestSuite
 //========================================================================
 // A test suite for the reordering writeback-commit unit
 
-module WritebackCommitUnitL2TestSuite #(
-  parameter p_suite_num    = 0,
-  parameter p_num_pipes    = 1,
-  parameter p_seq_num_bits = 3,
+module WritebackCommitUnitL3TestSuite #(
+  parameter p_suite_num      = 0,
+  parameter p_num_pipes      = 1,
+  parameter p_seq_num_bits   = 3,
+  parameter p_phys_addr_bits = 6,
 
   parameter p_X_send_intv_delay = 0
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: WritebackCommitUnitL2TestSuite_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: WritebackCommitUnitL3TestSuite_%0d_%0d_%0d", 
                                 p_suite_num, p_num_pipes, p_seq_num_bits,
                                 p_X_send_intv_delay);
   //verilator lint_on UNUSEDSIGNAL
@@ -43,18 +44,20 @@ module WritebackCommitUnitL2TestSuite #(
   //----------------------------------------------------------------------
 
   X__WIntf #(
-    .p_seq_num_bits (p_seq_num_bits)
+    .p_seq_num_bits   (p_seq_num_bits),
+    .p_phys_addr_bits (p_phys_addr_bits)
   ) X__W_intfs [p_num_pipes-1:0]();
 
   CompleteNotif #(
-    .p_seq_num_bits (p_seq_num_bits)
+    .p_seq_num_bits   (p_seq_num_bits),
+    .p_phys_addr_bits (p_phys_addr_bits)
   ) complete_notif();
 
   CommitNotif #(
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif();
 
-  WritebackCommitUnitL2 #(
+  WritebackCommitUnitL3 #(
     .p_num_pipes (p_num_pipes)
   ) dut (
     .Ex        (X__W_intfs),
@@ -68,11 +71,13 @@ module WritebackCommitUnitL2TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic                [4:0] waddr;
-    logic               [31:0] wdata;
-    logic                      wen;
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
+    logic [p_phys_addr_bits-1:0] preg;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } t_x__w_msg;
 
   t_x__w_msg x__w_msgs[p_num_pipes];
@@ -85,6 +90,8 @@ module WritebackCommitUnitL2TestSuite #(
       assign X__W_intfs[i].waddr   = x__w_msgs[i].waddr;
       assign X__W_intfs[i].wdata   = x__w_msgs[i].wdata;
       assign X__W_intfs[i].wen     = x__w_msgs[i].wen;
+      assign X__W_intfs[i].preg    = x__w_msgs[i].preg;
+      assign X__W_intfs[i].ppreg   = x__w_msgs[i].ppreg;
     end
   endgenerate
 
@@ -130,20 +137,21 @@ module WritebackCommitUnitL2TestSuite #(
     input int                        pipe_num,
     // verilator lint_on UNUSEDSIGNAL
 
-    input logic               [31:0] pc,
-    input logic [p_seq_num_bits-1:0] seq_num,
-    input logic                [4:0] waddr,
-    input logic               [31:0] wdata,
-    input logic                      wen,
-
-    input logic [5:0] unused_preg,
-    input logic [5:0] unused_ppreg
+    input logic                 [31:0] pc,
+    input logic   [p_seq_num_bits-1:0] seq_num,
+    input logic                  [4:0] waddr,
+    input logic                 [31:0] wdata,
+    input logic                        wen,
+    input logic [p_phys_addr_bits-1:0] preg,
+    input logic [p_phys_addr_bits-1:0] ppreg
   );
     pipe_msg.pc      = pc;
     pipe_msg.seq_num = seq_num;
     pipe_msg.waddr   = waddr;
     pipe_msg.wdata   = wdata;
     pipe_msg.wen     = wen;
+    pipe_msg.preg    = preg;
+    pipe_msg.ppreg   = ppreg;
 
     msgs_to_send[pipe_num]     = pipe_msg;
     msgs_to_send_val[pipe_num] = 1'b1;
@@ -156,10 +164,12 @@ module WritebackCommitUnitL2TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic                [4:0] waddr;
-    logic               [31:0] wdata;
-    logic                      wen;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
+    logic [p_phys_addr_bits-1:0] preg;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } t_complete_msg;
 
   t_complete_msg complete_msg;
@@ -168,6 +178,8 @@ module WritebackCommitUnitL2TestSuite #(
   assign complete_msg.waddr   = complete_notif.waddr;
   assign complete_msg.wdata   = complete_notif.wdata;
   assign complete_msg.wen     = complete_notif.wen;
+  assign complete_msg.preg    = complete_notif.preg;
+  assign complete_msg.ppreg   = complete_notif.ppreg;
 
   TestSub #(
     t_complete_msg
@@ -180,18 +192,19 @@ module WritebackCommitUnitL2TestSuite #(
   t_complete_msg msg_to_complete_sub;
 
   task complete_sub(
-    input logic [p_seq_num_bits-1:0] seq_num,
-    input logic                [4:0] waddr,
-    input logic               [31:0] wdata,
-    input logic                      wen,
-
-    input logic [5:0] unused_preg,
-    input logic [5:0] unused_ppreg
+    input logic   [p_seq_num_bits-1:0] seq_num,
+    input logic                  [4:0] waddr,
+    input logic                 [31:0] wdata,
+    input logic                        wen,
+    input logic [p_phys_addr_bits-1:0] preg,
+    input logic [p_phys_addr_bits-1:0] ppreg
   );
     msg_to_complete_sub.seq_num = seq_num;
     msg_to_complete_sub.waddr   = waddr;
     msg_to_complete_sub.wdata   = wdata;
     msg_to_complete_sub.wen     = wen;
+    msg_to_complete_sub.preg    = preg;
+    msg_to_complete_sub.ppreg   = ppreg;
 
     CompleteSub.sub( msg_to_complete_sub );
   endtask
@@ -314,8 +327,8 @@ endmodule
 // WritebackCommitUnitL1_test
 //========================================================================
 
-module WritebackCommitUnitL2_test;
-  WritebackCommitUnitL2TestSuite #(1) suite_1();
+module WritebackCommitUnitL3_test;
+  WritebackCommitUnitL3TestSuite #(1) suite_1();
 
   int s;
 

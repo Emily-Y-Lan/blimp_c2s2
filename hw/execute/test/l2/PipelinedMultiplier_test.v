@@ -80,6 +80,9 @@ module PipelinedMultiplierTestSuite #(
   assign D__X_intf.waddr   = d__x_msg.waddr;
   assign D__X_intf.uop     = d__x_msg.uop;
 
+  assign D__X_intf.preg    = 'x;
+  assign D__X_intf.ppreg   = 'x;
+
   TestIstream #( t_d__x_msg, p_D_send_intv_delay ) D_Istream (
     .msg (d__x_msg),
     .val (D__X_intf.val),
