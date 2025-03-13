@@ -99,19 +99,26 @@ module WritebackCommitUnitL1TestSuite #(
     end
   endgenerate
 
-  t_x__w_msg msgs_to_send [p_num_pipes-1:0][$];
+  t_x__w_msg msgs_to_send     [p_num_pipes];
+  logic      msgs_to_send_val [p_num_pipes];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
         #1;
-        foreach (msgs_to_send[i][j]) begin
+        if (msgs_to_send_val[i]) begin
           X_Istreams[i].X_Istream.send(
-            msgs_to_send[i][j]
+            msgs_to_send[i]
           );
         end
         
-        msgs_to_send[i].delete();
+        // verilator lint_off BLKSEQ
+        msgs_to_send_val[i] = 1'b0;
+        // verilator lint_on BLKSEQ
+      end
+
+      initial begin
+        msgs_to_send_val[i] = 1'b0;
       end
     end
   endgenerate
@@ -135,7 +142,10 @@ module WritebackCommitUnitL1TestSuite #(
     pipe_msg.wdata   = wdata;
     pipe_msg.wen     = wen;
 
-    msgs_to_send[pipe_num].push_back( pipe_msg );
+    msgs_to_send[pipe_num]     = pipe_msg;
+    msgs_to_send_val[pipe_num] = 1'b1;
+
+    wait(msgs_to_send_val[pipe_num] == 1'b0);
   endtask
 
   //----------------------------------------------------------------------
