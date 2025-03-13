@@ -182,6 +182,9 @@ module DecodeIssueUnitL1 #(
       assign Ex[k].uop     = decoder_uop;
       assign Ex[k].waddr   = decoder_waddr;
       assign Ex[k].seq_num = F_reg.seq_num;
+
+      assign Ex[k].preg    = 'x;
+      assign Ex[k].ppreg   = 'x;
     end
   endgenerate
 

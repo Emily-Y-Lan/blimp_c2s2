@@ -29,7 +29,7 @@ module Multiplier (
   X__WIntf.X_intf W
 );
 
-  localparam p_seq_num_bits = D.p_seq_num_bits;
+  localparam p_seq_num_bits   = D.p_seq_num_bits;
   
   //----------------------------------------------------------------------
   // Register inputs

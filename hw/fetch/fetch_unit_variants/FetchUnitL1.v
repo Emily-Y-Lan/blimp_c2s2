@@ -117,7 +117,7 @@ module FetchUnitL1
     D.val        = mem.resp_val;
     D.inst       = mem.resp_msg.data;
     D.pc         = mem.resp_msg.addr;
-    D.seq_num    = '0;
+    D.seq_num    = 'x;
   end
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

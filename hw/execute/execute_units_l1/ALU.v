@@ -29,20 +29,23 @@ module ALU (
   X__WIntf.X_intf W
 );
 
-  localparam p_seq_num_bits = D.p_seq_num_bits;
+  localparam p_seq_num_bits   = D.p_seq_num_bits;
+  localparam p_phys_addr_bits = D.p_phys_addr_bits;
   
   //----------------------------------------------------------------------
   // Register inputs
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic                      val;
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic               [31:0] op1;
-    logic               [31:0] op2;
-    logic                [4:0] waddr;
-    rv_uop                     uop;
+    logic                        val;
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                 [31:0] op1;
+    logic                 [31:0] op2;
+    logic                  [4:0] waddr;
+    rv_uop                       uop;
+    logic [p_phys_addr_bits-1:0] preg;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } D_input;
 
   D_input D_reg;
@@ -54,15 +57,7 @@ module ALU (
 
   always_ff @( posedge clk ) begin
     if ( rst )
-      D_reg <= '{ 
-        val:     1'b0, 
-        pc:      'x,
-        seq_num: 'x,
-        op1:     'x, 
-        op2:     'x,
-        waddr:   'x,
-        uop:     'x
-      };
+      D_reg <= '0;
     else
       D_reg <= D_reg_next;
   end
@@ -79,18 +74,12 @@ module ALU (
         op1:     D.op1, 
         op2:     D.op2,
         waddr:   D.waddr,
-        uop:     D.uop
+        uop:     D.uop,
+        preg:    D.preg,
+        ppreg:   D.ppreg
       };
     else if ( W_xfer )
-      D_reg_next = '{ 
-        val:     1'b0, 
-        pc:      'x,
-        seq_num: 'x,
-        op1:     'x, 
-        op2:     'x,
-        waddr:   'x,
-        uop:     'x
-      };
+      D_reg_next = '0;
     else
       D_reg_next = D_reg;
   end
@@ -126,6 +115,8 @@ module ALU (
   assign W.wen     = 1'b1;
   assign W.seq_num = D_reg.seq_num;
   assign W.waddr   = D_reg.waddr;
+  assign W.preg    = D_reg.preg;
+  assign W.ppreg   = D_reg.ppreg;
 
   //----------------------------------------------------------------------
   // Linetracing
