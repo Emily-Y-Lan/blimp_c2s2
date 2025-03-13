@@ -170,7 +170,7 @@ module PipelinedMultiplier #(
           pipeline_outputs[i] <= '0; // Invalid
       end
       assign pipeline_rdy[i - 1] = pipeline_rdy[i] |
-                                   !( pipeline_outputs[i - 1].val );
+                                   !( pipeline_outputs[i].val );
     end
   endgenerate
 
@@ -193,7 +193,7 @@ module PipelinedMultiplier #(
 
   function string trace();
     if( W.val & W.rdy )
-      trace = $sformatf("%11s:%h:%h:%h:%h:%h", D_reg.uop.name(), 
+      trace = $sformatf("%11s:%h:%h:%h:%h:%h", "OP_MUL", 
                         W.seq_num, W.waddr, op1, op2, W.wdata );
     else
       trace = {str_len{" "}};

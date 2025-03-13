@@ -86,6 +86,7 @@ module DecodeIssueUnitL2 #(
   // Instantiate Decoder, Regfile, ImmGen
   //----------------------------------------------------------------------
 
+  logic       decoder_val;
   rv_uop      decoder_uop;
   logic [4:0] decoder_raddr0;
   logic [4:0] decoder_raddr1;
@@ -100,6 +101,7 @@ module DecodeIssueUnitL2 #(
   InstDecoderL1 #(
     .p_isa_subset (p_isa_subset)
   ) decoder (
+    .val     (decoder_val),
     .inst    (F_reg.inst),
     .uop     (decoder_uop),
     .raddr0  (decoder_raddr0),
@@ -149,12 +151,12 @@ module DecodeIssueUnitL2 #(
 
   InstRouter #(p_num_pipes, p_pipe_subsets) inst_router (
     .uop   (decoder_uop),
-    .val   (F_reg.val & !stall_pending),
+    .val   (F_reg.val & !stall_pending & decoder_val),
     .Ex    (Ex),
     .xfer  (X_xfer)
   );
 
-  assign F.rdy = (X_xfer & !stall_pending) | (!F_reg.val);
+  assign F.rdy = (X_xfer & !stall_pending & decoder_val) | (!F_reg.val);
 
   //----------------------------------------------------------------------
   // Pass remaining signals to pipes
