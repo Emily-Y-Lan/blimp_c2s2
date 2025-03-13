@@ -1,18 +1,18 @@
 //========================================================================
-// WritebackCommitUnitL1.v
+// WritebackCommitUnitL2.v
 //========================================================================
-// A basic writeback unit that writes back one result at a time, with
-// no separate commit
+// A writeback unit that reorders messages based on sequence number
 
-`ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V
-`define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V
+`ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V
+`define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V
 
 `include "hw/common/RRArb.v"
+`include "hw/writeback_commit/ROB.v"
 `include "intf/CompleteNotif.v"
 `include "intf/CommitNotif.v"
 `include "intf/X__WIntf.v"
 
-module WritebackCommitUnitL1 #(
+module WritebackCommitUnitL2 #(
   parameter p_num_pipes = 1
 )(
   input  logic clk,
@@ -178,12 +178,45 @@ module WritebackCommitUnitL1 #(
   assign complete.wdata   = Ex_wdata_sel;
   assign complete.wen     = ( Ex_waddr_sel == '0 ) ? 0 : Ex_wen_sel;
 
-  assign commit.val     = X_reg.val;
-  assign commit.pc      = X_reg.pc;
-  assign commit.seq_num = X_reg.seq_num;
-  assign commit.waddr   = X_reg.waddr;
-  assign commit.wdata   = X_reg.wdata;
-  assign commit.wen     = ( X_reg.waddr == '0 ) ? 0 : X_reg.wen;
+  //----------------------------------------------------------------------
+  // ROB
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic               [31:0] pc;
+    logic                [4:0] waddr;
+    logic               [31:0] wdata;
+    logic                      wen;
+  } t_rob_msg;
+
+  t_rob_msg rob_input, rob_output;
+
+  assign rob_input.pc      = X_reg.pc;
+  assign rob_input.waddr   = X_reg.waddr;
+  assign rob_input.wdata   = X_reg.wdata;
+  assign rob_input.wen     = ( X_reg.waddr == '0 ) ? 0 : X_reg.wen;
+
+  localparam p_rob_depth = 2 ** p_seq_num_bits;
+
+  ROB #(
+    .p_depth (p_rob_depth),
+    .t_msg   (t_rob_msg)
+  ) rob (
+    .ins_idx (X_reg.seq_num),
+    .ins_msg (rob_input),
+    .ins_en  (X_reg.val),
+
+    .deq_idx (commit.seq_num),
+    .deq_msg (rob_output),
+    .deq_en  (commit.val),
+    .deq_rdy (commit.val),
+    .*
+  );
+
+  assign commit.pc      = rob_output.pc;
+  assign commit.waddr   = rob_output.waddr;
+  assign commit.wdata   = rob_output.wdata;
+  assign commit.wen     = rob_output.wen;
 
   //----------------------------------------------------------------------
   // Linetracing
@@ -209,4 +242,4 @@ module WritebackCommitUnitL1 #(
 
 endmodule
 
-`endif // HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V
+`endif // HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V

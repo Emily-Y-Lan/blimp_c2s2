@@ -1,0 +1,315 @@
+//========================================================================
+// WritebackCommitUnitL2_test.v
+//========================================================================
+// A testbench for our reordering writeback-commit unit
+
+`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL2.v"
+`include "test/fl/TestSub.v"
+`include "test/fl/TestIstream.v"
+`include "intf/CompleteNotif.v"
+`include "intf/X__WIntf.v"
+`include "test/TestUtils.v"
+
+import TestEnv::*;
+
+//========================================================================
+// WritebackCommitUnitL2TestSuite
+//========================================================================
+// A test suite for the reordering writeback-commit unit
+
+module WritebackCommitUnitL2TestSuite #(
+  parameter p_suite_num    = 0,
+  parameter p_num_pipes    = 1,
+  parameter p_seq_num_bits = 3,
+
+  parameter p_X_send_intv_delay = 0
+);
+
+  //verilator lint_off UNUSEDSIGNAL
+  string suite_name = $sformatf("%0d: WritebackCommitUnitL2TestSuite_%0d_%0d_%0d", 
+                                p_suite_num, p_num_pipes, p_seq_num_bits,
+                                p_X_send_intv_delay);
+  //verilator lint_on UNUSEDSIGNAL
+
+  //----------------------------------------------------------------------
+  // Setup
+  //----------------------------------------------------------------------
+
+  logic clk, rst;
+  TestUtils t( .* );
+
+  //----------------------------------------------------------------------
+  // Instantiate design under test
+  //----------------------------------------------------------------------
+
+  X__WIntf #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) X__W_intfs [p_num_pipes-1:0]();
+
+  CompleteNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) complete_notif();
+
+  CommitNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) commit_notif();
+
+  WritebackCommitUnitL2 #(
+    .p_num_pipes (p_num_pipes)
+  ) dut (
+    .Ex        (X__W_intfs),
+    .complete  (complete_notif),
+    .commit    (commit_notif),
+    .*
+  );
+
+  //----------------------------------------------------------------------
+  // FL X Istreams
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic               [31:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic               [31:0] wdata;
+    logic                      wen;
+  } t_x__w_msg;
+
+  t_x__w_msg x__w_msgs[p_num_pipes];
+
+  genvar i;
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      assign X__W_intfs[i].pc      = x__w_msgs[i].pc;
+      assign X__W_intfs[i].seq_num = x__w_msgs[i].seq_num;
+      assign X__W_intfs[i].waddr   = x__w_msgs[i].waddr;
+      assign X__W_intfs[i].wdata   = x__w_msgs[i].wdata;
+      assign X__W_intfs[i].wen     = x__w_msgs[i].wen;
+    end
+  endgenerate
+
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: X_Istreams
+      TestIstream #( t_x__w_msg, p_X_send_intv_delay ) X_Istream (
+        .msg (x__w_msgs[i]),
+        .val (X__W_intfs[i].val),
+        .rdy (X__W_intfs[i].rdy),
+        .*
+      );
+    end
+  endgenerate
+
+  t_x__w_msg msgs_to_send [p_num_pipes-1:0][$];
+
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      always_ff @( posedge clk ) begin
+        #1;
+        foreach (msgs_to_send[i][j]) begin
+          X_Istreams[i].X_Istream.send(
+            msgs_to_send[i][j]
+          );
+        end
+        
+        msgs_to_send[i].delete();
+      end
+    end
+  endgenerate
+
+  t_x__w_msg pipe_msg;
+
+  task send(
+    // verilator lint_off UNUSEDSIGNAL
+    input int                        pipe_num,
+    // verilator lint_on UNUSEDSIGNAL
+
+    input logic               [31:0] pc,
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic                [4:0] waddr,
+    input logic               [31:0] wdata,
+    input logic                      wen
+  );
+    pipe_msg.pc      = pc;
+    pipe_msg.seq_num = seq_num;
+    pipe_msg.waddr   = waddr;
+    pipe_msg.wdata   = wdata;
+    pipe_msg.wen     = wen;
+
+    msgs_to_send[pipe_num].push_back( pipe_msg );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Completion Test Subscriber
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic               [31:0] wdata;
+    logic                      wen;
+  } t_complete_msg;
+
+  t_complete_msg complete_msg;
+
+  assign complete_msg.seq_num = complete_notif.seq_num;
+  assign complete_msg.waddr   = complete_notif.waddr;
+  assign complete_msg.wdata   = complete_notif.wdata;
+  assign complete_msg.wen     = complete_notif.wen;
+
+  TestSub #(
+    t_complete_msg
+  ) CompleteSub (
+    .msg (complete_msg),
+    .val (complete_notif.val),
+    .*
+  );
+
+  t_complete_msg msg_to_complete_sub;
+
+  task complete_sub(
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic                [4:0] waddr,
+    input logic               [31:0] wdata,
+    input logic                      wen
+  );
+    msg_to_complete_sub.seq_num = seq_num;
+    msg_to_complete_sub.waddr   = waddr;
+    msg_to_complete_sub.wdata   = wdata;
+    msg_to_complete_sub.wen     = wen;
+
+    CompleteSub.sub( msg_to_complete_sub );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Commit Test Subscriber
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic               [31:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic               [31:0] wdata;
+    logic                      wen;
+  } t_commit_msg;
+
+  t_commit_msg commit_msg;
+
+  assign commit_msg.pc      = commit_notif.pc;
+  assign commit_msg.seq_num = commit_notif.seq_num;
+  assign commit_msg.waddr   = commit_notif.waddr;
+  assign commit_msg.wdata   = commit_notif.wdata;
+  assign commit_msg.wen     = commit_notif.wen;
+
+  TestSub #(
+    t_commit_msg
+  ) CommitSub (
+    .msg (commit_msg),
+    .val (commit_notif.val),
+    .*
+  );
+
+  t_commit_msg msg_to_commit_sub;
+
+  task commit_sub(
+    input logic               [31:0] pc,
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic                [4:0] waddr,
+    input logic               [31:0] wdata,
+    input logic                      wen
+  );
+    msg_to_commit_sub.pc      = pc;
+    msg_to_commit_sub.seq_num = seq_num;
+    msg_to_commit_sub.waddr   = waddr;
+    msg_to_commit_sub.wdata   = wdata;
+    msg_to_commit_sub.wen     = wen;
+
+    CommitSub.sub( msg_to_commit_sub );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Linetracing
+  //----------------------------------------------------------------------
+
+  string X_traces [p_num_pipes-1:0];
+  generate
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+      // verilator lint_off BLKSEQ
+      always_ff @( posedge clk ) begin
+        #2;
+        X_traces[i] = X_Istreams[i].X_Istream.trace();
+      end
+      // verilator lint_on BLKSEQ
+    end
+  endgenerate
+
+  // Need to store other traces, to be aligned with X_Istream traces
+  string trace;
+  string dut_trace;
+  string CompleteSub_trace;
+  string CommitSub_trace;
+
+  // verilator lint_off BLKSEQ
+  always_ff @( posedge clk ) begin
+    #2;
+    dut_trace         = dut.trace();
+    CompleteSub_trace = CompleteSub.trace();
+    CommitSub_trace   = CommitSub.trace();
+
+    // Wait until X_Istream traces are ready
+    #1;
+    trace = "";
+
+    for( int j = 0; j < p_num_pipes; j++ ) begin
+      if( j > 0 )
+        trace = {trace, " "};
+      trace = {trace, X_traces[j]};
+    end
+    trace = {trace, " | "};
+    trace = {trace, dut_trace};
+    trace = {trace, " | "};
+    trace = {trace, CompleteSub_trace};
+    trace = {trace, " - "};
+    trace = {trace, CommitSub_trace};
+    
+    t.trace( trace );
+  end
+  // verilator lint_on BLKSEQ
+
+  //----------------------------------------------------------------------
+  // Include test cases
+  //----------------------------------------------------------------------
+
+  `include "hw/writeback_commit/test/test_cases/basic_test_cases.v"
+  `include "hw/writeback_commit/test/test_cases/ooo_test_cases.v"
+
+  //----------------------------------------------------------------------
+  // run_test_suite
+  //----------------------------------------------------------------------
+
+  task run_test_suite();
+    t.test_suite_begin( suite_name );
+
+    run_basic_test_cases();
+    run_ooo_test_cases();
+  endtask
+endmodule
+
+//========================================================================
+// WritebackCommitUnitL1_test
+//========================================================================
+
+module WritebackCommitUnitL2_test;
+  WritebackCommitUnitL2TestSuite #(1) suite_1();
+
+  int s;
+
+  initial begin
+    test_bench_begin( `__FILE__ );
+    s = get_test_suite();
+
+    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
+
+    test_bench_end();
+  end
+endmodule
+
