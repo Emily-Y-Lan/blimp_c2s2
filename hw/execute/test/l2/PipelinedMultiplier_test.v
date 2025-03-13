@@ -51,7 +51,6 @@ module PipelinedMultiplierTestSuite #(
   ) X__W_intf();
 
   PipelinedMultiplier #(
-    .p_seq_num_bits    (p_seq_num_bits),
     .p_pipeline_stages (p_pipeline_stages)
   ) dut (
     .D (D__X_intf),

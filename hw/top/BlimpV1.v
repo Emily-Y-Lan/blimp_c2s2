@@ -97,17 +97,13 @@ module BlimpV1 #(
     .*
   );
 
-  ALU #(
-    .p_seq_num_bits (p_seq_num_bits)
-  ) ALU_XU (
+  ALU ALU_XU (
     .D (d__x_intfs[0]),
     .W (x__w_intfs[0]),
     .*
   );
 
-  Multiplier #(
-    .p_seq_num_bits (p_seq_num_bits)
-  ) MUL_XU (
+  Multiplier MUL_XU (
     .D (d__x_intfs[1]),
     .W (x__w_intfs[1]),
     .*

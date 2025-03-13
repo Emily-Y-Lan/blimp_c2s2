@@ -13,7 +13,6 @@
 import UArch::*;
 
 module PipelinedMultiplier #(
-  parameter p_seq_num_bits    = 5, // Bug with interface arrays - must pass directly
   parameter p_pipeline_stages = 1
 )(
   input  logic clk,
@@ -31,6 +30,8 @@ module PipelinedMultiplier #(
 
   X__WIntf.X_intf W
 );
+
+  localparam p_seq_num_bits = D.p_seq_num_bits;
   
   //----------------------------------------------------------------------
   // Register inputs
