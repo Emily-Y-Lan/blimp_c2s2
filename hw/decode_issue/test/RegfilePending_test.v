@@ -1,24 +1,24 @@
 //========================================================================
-// Regfile_test.v
+// RegfilePending_test.v
 //========================================================================
-// A testbench for our parametrized register
+// A testbench for our parametrized pending register file
 
 `include "test/TestUtils.v"
-`include "hw/decode_issue/Regfile.v"
+`include "hw/decode_issue/RegfilePending.v"
 
 import TestEnv::*;
 
 //========================================================================
-// RegfileTestSuite
+// RegfilePendingTestSuite
 //========================================================================
-// A test suite for a particular parametrization of the regfile
+// A test suite for a particular parametrization of the pending regfile
 
-module RegfileTestSuite #(
+module RegfilePendingTestSuite #(
   parameter p_suite_num  = 0,
   parameter type t_entry = logic [31:0],
   parameter p_num_regs   = 32
 );
-  string suite_name = $sformatf("%0d: RegfileTestSuite_%0d_%s", 
+  string suite_name = $sformatf("%0d: RegfilePendingTestSuite_%0d_%s", 
                                 p_suite_num, p_num_regs, 
                                 $typename( t_entry ));
 
@@ -51,7 +51,7 @@ module RegfileTestSuite #(
   logic                   dut_check_addr_pending;
 
 
-  Regfile #(
+  RegfilePending #(
     .t_entry    (t_entry),
     .p_num_regs (p_num_regs)
   ) DUT (
@@ -323,14 +323,14 @@ module RegfileTestSuite #(
 endmodule
 
 //========================================================================
-// Regfile_test
+// RegfilePending_test
 //========================================================================
 
-module Regfile_test;
-  RegfileTestSuite #(1)                  suite_1();
-  RegfileTestSuite #(2, logic[15:0], 32) suite_2();
-  RegfileTestSuite #(3, logic[31:0], 8 ) suite_3();
-  RegfileTestSuite #(4, logic[ 7:0], 64) suite_4();
+module RegfilePending_test;
+  RegfilePendingTestSuite #(1)                  suite_1();
+  RegfilePendingTestSuite #(2, logic[15:0], 32) suite_2();
+  RegfilePendingTestSuite #(3, logic[31:0], 8 ) suite_3();
+  RegfilePendingTestSuite #(4, logic[ 7:0], 64) suite_4();
 
   int s;
 

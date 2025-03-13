@@ -1,7 +1,8 @@
 //========================================================================
 // DecodeIssueUnitL1.v
 //========================================================================
-// A basic in-order, single-issue decoder that implements TinyRV1
+// A basic in-order, single-issue decoder that implements arithmetic
+// operations
 
 `ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V
 `define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL1_V
@@ -11,7 +12,7 @@
 `include "hw/decode_issue/InstDecoderL1.v"
 `include "hw/decode_issue/ImmGen.v"
 `include "hw/decode_issue/InstRouter.v"
-`include "hw/decode_issue/Regfile.v"
+`include "hw/decode_issue/RegfilePending.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 `include "intf/CompleteNotif.v"
@@ -112,7 +113,7 @@ module DecodeIssueUnitL1 #(
   logic [31:0] rdata0, rdata1;
   logic pending [1:0];
 
-  Regfile #(
+  RegfilePending #(
     .t_entry (logic [31:0]),
     .p_num_regs (32)
   ) regfile (

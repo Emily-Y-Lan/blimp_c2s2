@@ -9,9 +9,7 @@
 `include "hw/common/PriorityEncoder.v"
 
 module RenameTable #(
-  parameter p_num_phys_regs = 36,
-
-  parameter p_phys_addr_bits = $clog2( p_num_phys_regs )
+  parameter p_num_phys_regs = 36
 ) (
   input  logic clk,
   input  logic rst,
@@ -30,9 +28,10 @@ module RenameTable #(
   // Lookup
   // ---------------------------------------------------------------------
 
-  input  logic                  [4:0] lookup_areg [2],
-  output logic [p_phys_addr_bits-1:0] lookup_preg [2],
-  input  logic                        lookup_en   [2],
+  input  logic                  [4:0] lookup_areg    [2],
+  output logic [p_phys_addr_bits-1:0] lookup_preg    [2],
+  output logic                        lookup_pending [2],
+  input  logic                        lookup_en      [2],
 
   // ---------------------------------------------------------------------
   // Complete
@@ -40,6 +39,8 @@ module RenameTable #(
   
   CompleteNotif.sub complete
 );
+
+  localparam p_phys_addr_bits = complete.p_phys_addr_bits;
 
   // ---------------------------------------------------------------------
   // Data Structures
@@ -114,7 +115,9 @@ module RenameTable #(
     end
   endgenerate
 
-  PriorityEncoder #( p_num_phys_regs - 1 ) preg_sel (
+  PriorityEncoder #( 
+    .p_width (p_num_phys_regs - 1)
+  ) preg_sel (
     .in  (preg_alloc_sel_in),
     .out (preg_alloc_sel_out)
   );
@@ -145,15 +148,19 @@ module RenameTable #(
 
   always_comb begin
     if( lookup_areg[0] == '0 ) begin
-      lookup_preg[0] = '0;
+      lookup_preg[0]    = '0;
+      lookup_pending[0] = 0;
     end else begin
-      lookup_preg[0] = rename_table[lookup_areg[0]].preg;
+      lookup_preg[0]    = rename_table[lookup_areg[0]].preg;
+      lookup_pending[0] = rename_table[lookup_areg[0]].pending;
     end
 
     if( lookup_areg[1] == '0 ) begin
-      lookup_preg[1] = '0;
+      lookup_preg[1]    = '0;
+      lookup_pending[1] = 0;
     end else begin
-      lookup_preg[1] = rename_table[lookup_areg[1]].preg;
+      lookup_preg[1]    = rename_table[lookup_areg[1]].preg;
+      lookup_pending[1] = rename_table[lookup_areg[0]].pending;
     end
   end
 

@@ -13,9 +13,10 @@ set(V_TEST_FILES
   hw/common/test/RRArb_test.v
   hw/decode_issue/test/DecodeIssueUnitL1_test.v
   hw/decode_issue/test/DecodeIssueUnitL2_test.v
+  hw/decode_issue/test/DecodeIssueUnitL3_test.v
   hw/decode_issue/test/ImmGen_test.v
-  hw/decode_issue/test/Regfile_test.v
-  hw/decode_issue/test/rename_table/RenameTable_test.v
+  hw/decode_issue/test/RegfilePending_test.v
+  hw/decode_issue/test/RenameTable_test.v
   hw/execute/test/l1/ALU_test.v
   hw/execute/test/l1/Multiplier_test.v
   hw/execute/test/l2/PipelinedMultiplier_test.v

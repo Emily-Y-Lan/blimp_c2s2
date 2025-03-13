@@ -3,7 +3,7 @@
 //========================================================================
 // A testbench for our rename table
 
-`include "hw/decode_issue/rename_table/RenameTable.v"
+`include "hw/decode_issue/RenameTable.v"
 `include "intf/CompleteNotif.v"
 `include "test/fl/TestCaller.v"
 `include "test/fl/TestPub.v"
@@ -43,9 +43,10 @@ module RenameTableTestSuite #(
   logic                        dut_alloc_en;
   logic                        dut_alloc_rdy;
 
-  logic                  [4:0] dut_lookup_areg [2];
-  logic [p_phys_addr_bits-1:0] dut_lookup_preg [2];
-  logic                        dut_lookup_en   [2];
+  logic                  [4:0] dut_lookup_areg    [2];
+  logic [p_phys_addr_bits-1:0] dut_lookup_preg    [2];
+  logic                        dut_lookup_pending [2];
+  logic                        dut_lookup_en      [2];
 
   CompleteNotif #(
     .p_phys_addr_bits (p_phys_addr_bits)
@@ -60,9 +61,10 @@ module RenameTableTestSuite #(
     .alloc_en    (dut_alloc_en),
     .alloc_rdy   (dut_alloc_rdy),
 
-    .lookup_areg (dut_lookup_areg),
-    .lookup_preg (dut_lookup_preg),
-    .lookup_en   (dut_lookup_en),
+    .lookup_areg    (dut_lookup_areg),
+    .lookup_preg    (dut_lookup_preg),
+    .lookup_en      (dut_lookup_en),
+    .lookup_pending (dut_lookup_pending),
 
     .complete    (complete_notif),
     .*
@@ -75,13 +77,13 @@ module RenameTableTestSuite #(
   typedef logic [4:0] t_alloc_call_msg;
 
   typedef struct packed {
-    logic [p_phys_addr_bits-1:0] alloc_preg;
-    logic [p_phys_addr_bits-1:0] alloc_ppreg;
+    logic [p_phys_addr_bits-1:0] preg;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } t_alloc_ret_msg;
 
   t_alloc_ret_msg alloc_ret_msg;
-  assign alloc_ret_msg.alloc_preg  = dut_alloc_preg;
-  assign alloc_ret_msg.alloc_ppreg = dut_alloc_ppreg;
+  assign alloc_ret_msg.preg  = dut_alloc_preg;
+  assign alloc_ret_msg.ppreg = dut_alloc_ppreg;
 
   TestCaller #(
     .t_call_msg (t_alloc_call_msg),
@@ -101,8 +103,8 @@ module RenameTableTestSuite #(
     input logic [p_phys_addr_bits-1:0] alloc_preg,
     input logic [p_phys_addr_bits-1:0] alloc_ppreg
   );
-    msg_from_alloc.alloc_preg  = alloc_preg;
-    msg_from_alloc.alloc_ppreg = alloc_ppreg;
+    msg_from_alloc.preg  = alloc_preg;
+    msg_from_alloc.ppreg = alloc_ppreg;
 
     alloc_caller.call( alloc_areg, msg_from_alloc );
   endtask
@@ -111,19 +113,53 @@ module RenameTableTestSuite #(
   // Lookup
   //----------------------------------------------------------------------
 
-  typedef logic                  [4:0] t_lookup_call_msg;
-  typedef logic [p_phys_addr_bits-1:0] t_lookup_ret_msg;
+  typedef logic [4:0] t_lookup_call_msg;
+  typedef struct packed {
+    logic [p_phys_addr_bits-1:0] preg;
+    logic                        pending;
+  } t_lookup_ret_msg;
+
+  t_lookup_ret_msg lookup_ret_msg [2];
+  assign lookup_ret_msg[0].preg    = dut_lookup_preg   [0];
+  assign lookup_ret_msg[0].pending = dut_lookup_pending[0];
+  assign lookup_ret_msg[1].preg    = dut_lookup_preg   [1];
+  assign lookup_ret_msg[1].pending = dut_lookup_pending[1];
 
   TestCaller #(
     .t_call_msg (t_lookup_call_msg),
     .t_ret_msg  (t_lookup_ret_msg)
   ) lookup_caller[2] (
     .call_msg (dut_lookup_areg),
-    .ret_msg  (dut_lookup_preg),
+    .ret_msg  (lookup_ret_msg),
     .en       (dut_lookup_en),
     .rdy      (1'b1),
     .*
   );
+
+  t_lookup_ret_msg msg_from_lookup_0;
+  t_lookup_ret_msg msg_from_lookup_1;
+
+  task lookup_0(
+    input logic                  [4:0] lookup_areg,
+    input logic [p_phys_addr_bits-1:0] lookup_preg,
+    input logic                        lookup_pending
+  );
+    msg_from_lookup_0.preg    = lookup_preg;
+    msg_from_lookup_0.pending = lookup_pending;
+
+    lookup_caller[0].call( lookup_areg, msg_from_lookup_0 );
+  endtask
+
+  task lookup_1(
+    input logic                  [4:0] lookup_areg,
+    input logic [p_phys_addr_bits-1:0] lookup_preg,
+    input logic                        lookup_pending
+  );
+    msg_from_lookup_1.preg    = lookup_preg;
+    msg_from_lookup_1.pending = lookup_pending;
+
+    lookup_caller[1].call( lookup_areg, msg_from_lookup_1 );
+  endtask
 
   //----------------------------------------------------------------------
   // Complete
@@ -146,6 +182,16 @@ module RenameTableTestSuite #(
   assign complete_notif.wen     = complete_msg.wen;
   assign complete_notif.preg    = complete_msg.preg;
   assign complete_notif.ppreg   = complete_msg.ppreg;
+
+  logic  [4:0] unused_seq_num;
+  logic  [4:0] unused_waddr;
+  logic [31:0] unused_wdata;
+  logic        unused_wen;
+
+  assign unused_seq_num = complete_notif.seq_num;
+  assign unused_waddr   = complete_notif.waddr;
+  assign unused_wdata   = complete_notif.wdata;
+  assign unused_wen     = complete_notif.wen;
 
   TestPub #(
     t_complete_msg
@@ -208,9 +254,9 @@ module RenameTableTestSuite #(
     //     areg preg ppreg
     alloc( 1,   32,  1 );
 
-    //                     areg preg
-    lookup_caller[0].call( 1,   32 );
-    lookup_caller[1].call( 1,   32 );
+    //        areg preg pend
+    lookup_0( 1,   32,  1 );
+    lookup_1( 1,   32,  1 );
 
     t.test_case_end();
   endtask
@@ -225,8 +271,8 @@ module RenameTableTestSuite #(
     if( !t.run_test ) return;
 
     for( int i = 0; i < 32; i = i + 1 ) begin
-      lookup_caller[0].call( 5'(i), p_phys_addr_bits'(i) );
-      lookup_caller[1].call( 5'(i), p_phys_addr_bits'(i) );
+      lookup_0( 5'(i), p_phys_addr_bits'(i), 0 );
+      lookup_1( 5'(i), p_phys_addr_bits'(i), 0 );
     end
 
     t.test_case_end();
@@ -248,8 +294,8 @@ module RenameTableTestSuite #(
     for( int i = 1; i <= capacity_num_to_check; i = i + 1 ) begin
       alloc( 5'(i), 31 + p_phys_addr_bits'(i), p_phys_addr_bits'(i) );
 
-      lookup_caller[0].call( 5'(i), 31 + p_phys_addr_bits'(i) );
-      lookup_caller[1].call( 5'(i), 31 + p_phys_addr_bits'(i) );
+      lookup_0( 5'(i), 31 + p_phys_addr_bits'(i), 1 );
+      lookup_1( 5'(i), 31 + p_phys_addr_bits'(i), 1 );
     end
 
     t.test_case_end();

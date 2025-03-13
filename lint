@@ -50,13 +50,14 @@ success() {
 
 if command -v verilator 2>&1 >/dev/null; then
   info "Linting with Verilator..."
-  verilator --lint-only -Wall --timing -sv --quiet-stats verilator_waivers.vlt $VERILOG_TESTS
-  if [ $? == 0 ]; then
-      success "Lint clean!"
-  else
+  for TEST in $VERILOG_TESTS; do
+    verilator --lint-only -Wall --timing -sv --quiet-stats verilator_waivers.vlt $TEST
+    if [ $? != 0 ]; then
       error "Not lint clean"
       exit 1
-  fi
+    fi
+  done
+  success "Lint clean!"
 else
   info "Not linting with Verilator (couldn't find)"
 fi
