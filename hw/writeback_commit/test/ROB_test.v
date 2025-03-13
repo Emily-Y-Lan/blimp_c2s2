@@ -147,15 +147,12 @@ module ROBTestSuite #(
   // Linetracing
   //----------------------------------------------------------------------
 
-  string trace, test_trace;
-  int trace_len;
+  string trace;
 
   // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     trace = "";
-    test_trace = $sformatf("t:%x, d:%x", ins_data, ins_data);
-    trace_len = test_trace.len();
 
     trace = {trace, ins_caller.trace()};
     trace = {trace, " | "};
