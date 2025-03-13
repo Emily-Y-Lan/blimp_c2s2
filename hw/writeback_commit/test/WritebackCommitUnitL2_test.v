@@ -1,9 +1,9 @@
 //========================================================================
-// WritebackCommitUnitL1_test.v
+// WritebackCommitUnitL2_test.v
 //========================================================================
-// A testbench for our basic writeback-commit unit
+// A testbench for our reordering writeback-commit unit
 
-`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL1.v"
+`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL2.v"
 `include "test/fl/TestSub.v"
 `include "test/fl/TestIstream.v"
 `include "intf/CompleteNotif.v"
@@ -13,11 +13,11 @@
 import TestEnv::*;
 
 //========================================================================
-// WritebackCommitUnitL1TestSuite
+// WritebackCommitUnitL2TestSuite
 //========================================================================
-// A test suite for the writeback-commit unit
+// A test suite for the reordering writeback-commit unit
 
-module WritebackCommitUnitL1TestSuite #(
+module WritebackCommitUnitL2TestSuite #(
   parameter p_suite_num    = 0,
   parameter p_num_pipes    = 1,
   parameter p_seq_num_bits = 3,
@@ -26,7 +26,7 @@ module WritebackCommitUnitL1TestSuite #(
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: WritebackCommitUnitL1TestSuite_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: WritebackCommitUnitL2TestSuite_%0d_%0d_%0d", 
                                 p_suite_num, p_num_pipes, p_seq_num_bits,
                                 p_X_send_intv_delay);
   //verilator lint_on UNUSEDSIGNAL
@@ -54,7 +54,7 @@ module WritebackCommitUnitL1TestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif();
 
-  WritebackCommitUnitL1 #(
+  WritebackCommitUnitL2 #(
     .p_num_pipes (p_num_pipes)
   ) dut (
     .Ex        (X__W_intfs),
@@ -296,6 +296,7 @@ module WritebackCommitUnitL1TestSuite #(
   //----------------------------------------------------------------------
 
   `include "hw/writeback_commit/test/test_cases/basic_test_cases.v"
+  `include "hw/writeback_commit/test/test_cases/ooo_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -305,6 +306,7 @@ module WritebackCommitUnitL1TestSuite #(
     t.test_suite_begin( suite_name );
 
     run_basic_test_cases();
+    run_ooo_test_cases();
   endtask
 endmodule
 
@@ -312,8 +314,8 @@ endmodule
 // WritebackCommitUnitL1_test
 //========================================================================
 
-module WritebackCommitUnitL1_test;
-  WritebackCommitUnitL1TestSuite #(1) suite_1();
+module WritebackCommitUnitL2_test;
+  WritebackCommitUnitL2TestSuite #(1) suite_1();
 
   int s;
 

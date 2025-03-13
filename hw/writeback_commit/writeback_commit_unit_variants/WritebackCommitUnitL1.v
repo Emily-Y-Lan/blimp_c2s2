@@ -2,7 +2,7 @@
 // WritebackCommitUnitL1.v
 //========================================================================
 // A basic writeback unit that writes back one result at a time, with
-// no separate comit
+// no separate commit
 
 `ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V
 `define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL1_V

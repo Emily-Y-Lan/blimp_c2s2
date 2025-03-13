@@ -103,6 +103,35 @@ task test_case_golden_mul_3_mix();
 endtask
 
 //------------------------------------------------------------------------
+// test_case_golden_mul_4_latency
+//------------------------------------------------------------------------
+// Check that OOO backends can handle potentially increased multiplier
+// latency
+
+task test_case_golden_mul_4_latency();
+  t.test_case_begin( "test_case_golden_mul_4_latency" );
+  if( !t.run_test ) return;
+  fl_reset();
+
+  // Write assembly program into memory
+
+  asm( 'h200, "addi x1,  x0, 1"     );
+  asm( 'h204, "addi x2,  x0, 2"     );
+  asm( 'h208, "addi x3,  x0, 3"     );
+
+  // mul may complete later
+  asm( 'h20c, "mul  x4,  x2, x3"     );
+  asm( 'h210, "add  x5,  x1, x2"     );
+  asm( 'h214, "add  x6,  x3, x3"     );
+
+  asm( 'h218, "add  x7,  x4, x5"     );
+
+  check_traces();
+
+  t.test_case_end();
+endtask
+
+//------------------------------------------------------------------------
 // run_mul_tests
 //------------------------------------------------------------------------
 
@@ -110,4 +139,5 @@ task run_golden_mul_tests();
   test_case_golden_mul_1_regs();
   test_case_golden_mul_2_deps();
   test_case_golden_mul_3_mix();
+  test_case_golden_mul_4_latency();
 endtask

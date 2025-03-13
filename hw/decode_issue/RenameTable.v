@@ -131,9 +131,10 @@ module RenameTable #(
     end
   endgenerate
 
-  assign alloc_preg  = preg_alloc_mask.or();
+  assign alloc_preg  = ( alloc_areg != 0 ) ? preg_alloc_mask.or()
+                                           : 0;
   assign alloc_ppreg = ( alloc_areg != 0 ) ? rename_table[alloc_areg].preg
-                                            : 0;
+                                           : 0;
   
   // Only allocate when we have an entry to give
   assign alloc_rdy = |preg_alloc_sel_in;
@@ -152,7 +153,10 @@ module RenameTable #(
       lookup_pending[0] = 0;
     end else begin
       lookup_preg[0]    = rename_table[lookup_areg[0]].preg;
-      lookup_pending[0] = rename_table[lookup_areg[0]].pending;
+      if( free_preg == lookup_preg[0] )
+        lookup_pending[0] = 1'b0; // Bypass
+      else
+        lookup_pending[0] = rename_table[lookup_areg[0]].pending;
     end
 
     if( lookup_areg[1] == '0 ) begin
@@ -160,7 +164,10 @@ module RenameTable #(
       lookup_pending[1] = 0;
     end else begin
       lookup_preg[1]    = rename_table[lookup_areg[1]].preg;
-      lookup_pending[1] = rename_table[lookup_areg[0]].pending;
+      if( free_preg == lookup_preg[1] )
+        lookup_pending[0] = 1'b0; // Bypass
+      else
+        lookup_pending[1] = rename_table[lookup_areg[1]].pending;
     end
   end
 

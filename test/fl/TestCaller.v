@@ -38,14 +38,15 @@ module TestCaller #(
     input t_call_msg dut_call_msg,
     input t_ret_msg  exp_ret_msg
   );
+    call_msg = dut_call_msg;
+    
     while( !rdy ) begin
       @( posedge clk );
       #1;
     end
 
     // Interface is ready - can call message
-    en       = 1'b1;
-    call_msg = dut_call_msg;
+    en = 1'b1;
 
     #2;
     dut_ret_msg = ret_msg;

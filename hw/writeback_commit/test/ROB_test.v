@@ -1,9 +1,10 @@
 //========================================================================
 // ROB_test.v
 //========================================================================
-// A testbench for our basic writeback-commit unit
+// A testbench for our ROB
 
 `include "hw/writeback_commit/ROB.v"
+`include "test/fl/TestCaller.v"
 `include "test/TestUtils.v"
 
 import TestEnv::*;
@@ -14,15 +15,15 @@ import TestEnv::*;
 // A test suite for the ROB
 
 module ROBTestSuite #(
-  parameter p_suite_num      = 0,
-  parameter type t_entry     = t_rob_data,
-  parameter p_depth          = 4
+  parameter p_suite_num = 0,
+  parameter type t_msg  = logic [31:0],
+  parameter p_depth     = 4
 );
 
-  //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: ROBTestSuite_%0d_%0d", 
-                                p_suite_num, $bits(t_rob_data), p_depth);
-  //verilator lint_on UNUSEDSIGNAL
+  localparam p_addr_bits = $clog2( p_depth );
+  
+  string suite_name = $sformatf("%0d: ROBTestSuite_%s_%0d", 
+                                p_suite_num, $typename(t_msg), p_depth);
 
   //----------------------------------------------------------------------
   // Setup
@@ -35,65 +36,111 @@ module ROBTestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  logic                  deq_front_en;
-  logic                  deq_front_rdy;
-  t_entry deq_front_data;
+  logic [p_addr_bits-1:0] dut_ins_idx;
+  t_msg                   dut_ins_msg;
+  logic                   dut_ins_en;
 
-  logic   ins_en;
-  logic   ins_rdy;
-  t_entry ins_data;
+  logic [p_addr_bits-1:0] dut_deq_idx;
+  t_msg                   dut_deq_msg;
+  logic                   dut_deq_en;
+  logic                   dut_deq_rdy;
 
   ROB #(
+    .t_msg   (t_msg),
     .p_depth (p_depth)
   ) dut (
+    .clk     (clk),
+    .rst     (rst),
+    
+    .ins_idx (dut_ins_idx),
+    .ins_msg (dut_ins_msg),
+    .ins_en  (dut_ins_en),
+
+    .deq_idx (dut_deq_idx),
+    .deq_msg (dut_deq_msg),
+    .deq_en  (dut_deq_en),
+    .deq_rdy (dut_deq_rdy)
+  );
+
+  //----------------------------------------------------------------------
+  // Insertion
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    t_msg                   msg;
+    logic [p_addr_bits-1:0] idx;
+  } t_ins_msg;
+
+  t_ins_msg ins_msg;
+
+  assign dut_ins_msg = ins_msg.msg;
+  assign dut_ins_idx = ins_msg.idx;
+
+  // Unused output message
+  logic unused_dut_ins_output;
+  assign unused_dut_ins_output = 1'b1;
+
+  TestCaller #(
+    .t_call_msg (t_ins_msg),
+    .t_ret_msg  (logic)
+  ) ins_caller (
+    .call_msg (ins_msg),
+    .ret_msg  (unused_dut_ins_output),
+    .en       (dut_ins_en),
+    .rdy      (1'b1),
     .*
   );
 
-  //----------------------------------------------------------------------
-  // FL Istreams
-  //----------------------------------------------------------------------
-
-  logic msg_sent;
+  t_ins_msg msg_to_send;
 
   task send(
-    t_entry      l_ins_data
+    t_msg                   msg,
+    logic [p_addr_bits-1:0] idx
   );
-    ins_data = l_ins_data;
-    ins_en   = 1'b1;
+    msg_to_send.msg = msg;
+    msg_to_send.idx = idx;
 
-    do begin
-      #2
-      msg_sent = ins_rdy;
-      @( posedge clk );
-      #1;
-    end while( !msg_sent );
-
-    ins_en = 1'b0;
+    ins_caller.call(msg_to_send, 1'b1);
   endtask
 
   //----------------------------------------------------------------------
-  // FL Ostreams
-  //---------------------------------------------------------------------- 
+  // Dequeue
+  //----------------------------------------------------------------------
 
-  logic msg_recv;
-  t_entry dut_msg;
+  typedef struct packed {
+    t_msg                   msg;
+    logic [p_addr_bits-1:0] idx;
+  } t_deq_msg;
+
+  t_deq_msg deq_msg;
+
+  assign deq_msg.msg = dut_deq_msg;
+  assign deq_msg.idx = dut_deq_idx;
+
+  // Unused input message
+  logic unused_dut_deq_input;
+
+  TestCaller #(
+    .t_call_msg (logic), 
+    .t_ret_msg  (t_deq_msg)
+  ) deq_caller (
+    .call_msg (unused_dut_deq_input),
+    .ret_msg  (deq_msg),
+    .en       (dut_deq_en),
+    .rdy      (dut_deq_rdy),
+    .*
+  );
+
+  t_deq_msg msg_to_recv;
 
   task recv(
-    input t_entry exp_deq_front_data
+    input t_msg                   msg,
+    input logic [p_addr_bits-1:0] idx
   );
-    deq_front_en = 1'b1;
+    msg_to_recv.msg = msg;
+    msg_to_recv.idx = idx;
 
-    do begin
-      #2
-      msg_recv = deq_front_rdy;
-      dut_msg  = deq_front_data;
-      @( posedge clk );
-      #1;
-    end while( !msg_recv );
-
-    `CHECK_EQ( dut_msg, exp_deq_front_data );
-    
-    deq_front_en = 1'b0;
+    deq_caller.call(1'bx, msg_to_recv);
   endtask
 
   //----------------------------------------------------------------------
@@ -110,35 +157,80 @@ module ROBTestSuite #(
     test_trace = $sformatf("t:%x, d:%x", ins_data, ins_data);
     trace_len = test_trace.len();
 
-    if( ins_en && ins_rdy )
-      trace = $sformatf("t:%x, d:%x", ins_data, ins_data);
-    else if( ins_rdy )
-      trace = {(trace_len){" "}};
-    else if( ins_en )
-      trace = {{(trace_len-1){" "}}, "#"};
-    else
-      trace = {{(trace_len-1){" "}}, "."};
+    trace = {trace, ins_caller.trace()};
     trace = {trace, " | "};
     trace = {trace, dut.trace()};
     trace = {trace, " | "};
-    if( deq_front_en & deq_front_rdy )
-      trace = {trace, $sformatf("%x", deq_front_data)};
-    else if( deq_front_rdy )
-      trace = {trace, {(trace_len){" "}}};
-    else if( deq_front_en )
-      trace = {trace, {{(trace_len-1){" "}}, "#"}};
-    else
-      trace = {trace, {{(trace_len-1){" "}}, "."}};
+    trace = {trace, deq_caller.trace()};
 
     t.trace( trace );
   end
   // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
-  // Include test cases
+  // test_case_basic
   //----------------------------------------------------------------------
 
-  `include "hw/writeback_commit/test/test_cases/rob_test_cases.v"
+  task test_case_basic();
+    t.test_case_begin( "test_case_basic" );
+    if( !t.run_test ) return;
+
+    fork
+      //    msg         idx
+      send( 'hdeadbeef, '0 );
+      recv( 'hdeadbeef, '0 );
+    join
+
+    t.test_case_end();
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_capacity
+  //----------------------------------------------------------------------
+
+  task test_case_capacity();
+    t.test_case_begin( "test_case_capacity" );
+    if( !t.run_test ) return;
+
+    for( int i = 0; i < p_depth; i = i + 1 ) begin
+      send( t_msg'(i), p_addr_bits'(i) );
+    end
+
+    for( int i = 0; i < p_depth; i = i + 1 ) begin
+      recv( t_msg'(i), p_addr_bits'(i) );
+    end
+
+    t.test_case_end();
+  endtask
+
+  //----------------------------------------------------------------------
+  // test_case_out_of_order
+  //----------------------------------------------------------------------
+
+  task test_case_out_of_order();
+    t.test_case_begin( "test_case_out_of_order" );
+    if( !t.run_test ) return;
+
+    fork
+      begin
+        //   ins_data    ins_tag
+        send('hFFFFFFFF, 'h3);
+        send('h87654321, 'h1);
+        send('h00000000, 'h2);
+        send('h12345678, 'h0);
+      end
+
+      begin
+        //   deq_front_data
+        recv('h12345678, 'h0);
+        recv('h87654321, 'h1);
+        recv('h00000000, 'h2);
+        recv('hFFFFFFFF, 'h3);
+      end
+    join
+
+    t.test_case_end();
+  endtask
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -147,9 +239,10 @@ module ROBTestSuite #(
   task run_test_suite();
     t.test_suite_begin( suite_name );
 
-    run_rob_test_cases();
+    test_case_basic();
+    test_case_capacity();
+    test_case_out_of_order();
   endtask
-
 
 endmodule
 

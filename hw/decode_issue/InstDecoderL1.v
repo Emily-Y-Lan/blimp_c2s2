@@ -17,6 +17,7 @@ module InstDecoderL1 #(
 ) (
   input  logic [31:0] inst,
 
+  output logic        val,
   output rv_uop       uop,
   output logic [4:0]  raddr0,
   output logic [4:0]  raddr1,
@@ -32,6 +33,7 @@ module InstDecoderL1 #(
   // A task to set control signals appropriately
 
   task automatic cs(
+    input logic       cs_val,
     input rv_uop      cs_uop,
     input logic [4:0] cs_raddr0,
     input logic [4:0] cs_raddr1,
@@ -40,6 +42,7 @@ module InstDecoderL1 #(
     input rv_imm_type cs_imm_sel,
     input logic       cs_op2_sel
   );
+    val     = cs_val;
     uop     = cs_uop;
     raddr0  = cs_raddr0;
     raddr1  = cs_raddr1;
@@ -74,22 +77,22 @@ module InstDecoderL1 #(
 
   generate
     always_comb begin
-      cs( 'x, 'x, 'x, 'x, n, 'x, 'x );
+      cs( n, 'x, 'x, 'x, 'x, n, 'x, 'x );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Arithmetic
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if ( ( p_isa_subset & OP_ADD_VEC ) > 0 ) begin
-        casez ( inst ) //     uop     raddr0 raddr1 waddr wen imm_sel op2_sel
-          `RVI_INST_ADD:  cs( OP_ADD, rs1,   rs2,   rd,   y,  'x,     op2_rf  );
-          `RVI_INST_ADDI: cs( OP_ADD, rs1,   'x,    rd,   y,  IMM_I,  op2_imm );
+        casez ( inst ) //        uop     raddr0 raddr1 waddr wen imm_sel op2_sel
+          `RVI_INST_ADD:  cs( y, OP_ADD, rs1,   rs2,   rd,   y,  'x,     op2_rf  );
+          `RVI_INST_ADDI: cs( y, OP_ADD, rs1,   'x,    rd,   y,  IMM_I,  op2_imm );
         endcase
       end
 
       if ( ( p_isa_subset & OP_MUL_VEC ) > 0 ) begin
-        casez ( inst ) //     uop     raddr0 raddr1 waddr wen imm_sel op2_sel
-          `RVI_INST_MUL:  cs( OP_MUL, rs1,   rs2,   rd,   y,  'x,     op2_rf  );
+        casez ( inst ) //        uop     raddr0 raddr1 waddr wen imm_sel op2_sel
+          `RVI_INST_MUL:  cs( y, OP_MUL, rs1,   rs2,   rd,   y,  'x,     op2_rf  );
         endcase
       end
 

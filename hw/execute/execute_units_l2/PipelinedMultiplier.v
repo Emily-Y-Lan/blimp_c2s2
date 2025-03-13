@@ -13,7 +13,6 @@
 import UArch::*;
 
 module PipelinedMultiplier #(
-  parameter p_seq_num_bits    = 5, // Bug with interface arrays - must pass directly
   parameter p_pipeline_stages = 1
 )(
   input  logic clk,
@@ -31,28 +30,35 @@ module PipelinedMultiplier #(
 
   X__WIntf.X_intf W
 );
+
+  localparam p_seq_num_bits   = D.p_seq_num_bits;
+  localparam p_phys_addr_bits = D.p_phys_addr_bits;
   
   //----------------------------------------------------------------------
   // Register inputs
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic                      val;
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic               [31:0] op1;
-    logic               [31:0] op2;
-    logic                [4:0] waddr;
-    rv_uop                     uop;
+    logic                        val;
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                 [31:0] op1;
+    logic                 [31:0] op2;
+    logic                  [4:0] waddr;
+    rv_uop                       uop;
+    logic [p_phys_addr_bits-1:0] preg;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } D_input;
 
   typedef struct packed {
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic                [4:0] waddr;
-    logic               [31:0] wdata;
-    logic                      wen;
     logic                      val;
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
+    logic [p_phys_addr_bits-1:0] preg;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } W_input;
 
   D_input D_reg;
@@ -73,7 +79,9 @@ module PipelinedMultiplier #(
         op1:     'x, 
         op2:     'x,
         waddr:   'x,
-        uop:     'x
+        uop:     'x,
+        preg:    'x,
+        ppreg:   'x
       };
     else
       D_reg <= D_reg_next;
@@ -91,7 +99,9 @@ module PipelinedMultiplier #(
         op1:     D.op1, 
         op2:     D.op2,
         waddr:   D.waddr,
-        uop:     D.uop
+        uop:     D.uop,
+        preg:    D.preg,
+        ppreg:   D.ppreg
       };
     else if ( W_xfer )
       D_reg_next = '{ 
@@ -101,7 +111,9 @@ module PipelinedMultiplier #(
         op1:     'x, 
         op2:     'x,
         waddr:   'x,
-        uop:     'x
+        uop:     'x,
+        preg:    'x,
+        ppreg:   'x
       };
     else
       D_reg_next = D_reg;
@@ -138,6 +150,8 @@ module PipelinedMultiplier #(
   assign mul_output.wen     = 1'b1;
   assign mul_output.seq_num = D_reg.seq_num;
   assign mul_output.waddr   = D_reg.waddr;
+  assign mul_output.preg    = D_reg.preg;
+  assign mul_output.ppreg   = D_reg.ppreg;
 
   //----------------------------------------------------------------------
   // Pipeline stages
@@ -154,6 +168,8 @@ module PipelinedMultiplier #(
   assign W.seq_num = pipeline_outputs[p_pipeline_stages-1].seq_num;
   assign W.waddr   = pipeline_outputs[p_pipeline_stages-1].waddr;
   assign W.wdata   = pipeline_outputs[p_pipeline_stages-1].wdata;
+  assign W.preg    = pipeline_outputs[p_pipeline_stages-1].preg;
+  assign W.ppreg   = pipeline_outputs[p_pipeline_stages-1].ppreg;
   assign W.wen     = pipeline_outputs[p_pipeline_stages-1].val;
   assign pipeline_rdy[p_pipeline_stages-1] = W.rdy;
 
@@ -169,7 +185,7 @@ module PipelinedMultiplier #(
           pipeline_outputs[i] <= '0; // Invalid
       end
       assign pipeline_rdy[i - 1] = pipeline_rdy[i] |
-                                   !( pipeline_outputs[i - 1].val );
+                                   !( pipeline_outputs[i].val );
     end
   endgenerate
 
@@ -192,7 +208,7 @@ module PipelinedMultiplier #(
 
   function string trace();
     if( W.val & W.rdy )
-      trace = $sformatf("%11s:%h:%h:%h:%h:%h", D_reg.uop.name(), 
+      trace = $sformatf("%11s:%h:%h:%h:%h:%h", "OP_MUL", 
                         W.seq_num, W.waddr, op1, op2, W.wdata );
     else
       trace = {str_len{" "}};

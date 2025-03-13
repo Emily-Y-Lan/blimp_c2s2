@@ -1,18 +1,17 @@
 //========================================================================
-// BlimpV1.v
+// BlimpV2.v
 //========================================================================
-// A top-level implementation of the Blimp processor with an ALU and
-// multiplier
+// A top-level implementation of the Blimp processor with OOO completion
 
-`ifndef HW_TOP_BLIMPV1_V
-`define HW_TOP_BLIMPV1_V
+`ifndef HW_TOP_BLIMPV2_V
+`define HW_TOP_BLIMPV2_V
 
 `include "defs/UArch.v"
-`include "hw/fetch/fetch_unit_variants/FetchUnitL1.v"
-`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL1.v"
+`include "hw/fetch/fetch_unit_variants/FetchUnitL2.v"
+`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL2.v"
 `include "hw/execute/execute_units_l1/ALU.v"
-`include "hw/execute/execute_units_l1/Multiplier.v"
-`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL1.v"
+`include "hw/execute/execute_units_l2/PipelinedMultiplier.v"
+`include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL2.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
@@ -21,7 +20,7 @@
 `include "intf/CommitNotif.v"
 `include "intf/InstTraceNotif.v"
 
-module BlimpV1 #(
+module BlimpV2 #(
   parameter p_opaq_bits    = 8,
   parameter p_seq_num_bits = 5
 ) (
@@ -75,15 +74,16 @@ module BlimpV1 #(
   // Units
   //----------------------------------------------------------------------
 
-  FetchUnitL1 #(
+  FetchUnitL2 #(
     .p_opaq_bits (p_opaq_bits)
   ) FU (
-    .mem (inst_mem),
-    .D   (f__d_intf),
+    .mem    (inst_mem),
+    .D      (f__d_intf),
+    .commit (commit_notif),
     .*
   );
 
-  DecodeIssueUnitL1 #(
+  DecodeIssueUnitL2 #(
     .p_isa_subset   (OP_ADD_VEC | OP_MUL_VEC),
     .p_num_pipes    (2),
     .p_pipe_subsets ({
@@ -103,13 +103,15 @@ module BlimpV1 #(
     .*
   );
 
-  Multiplier MUL_XU (
+  PipelinedMultiplier #(
+    .p_pipeline_stages (4)
+  ) MUL_XU (
     .D (d__x_intfs[1]),
     .W (x__w_intfs[1]),
     .*
   );
 
-  WritebackCommitUnitL1 #(
+  WritebackCommitUnitL2 #(
     .p_num_pipes (2)
   ) WCU (
     .Ex       (x__w_intfs),
@@ -117,9 +119,6 @@ module BlimpV1 #(
     .commit   (commit_notif),
     .*
   );
-
-  logic [p_seq_num_bits-1:0] unused_seq_num;
-  assign unused_seq_num = commit_notif.seq_num;
 
   //----------------------------------------------------------------------
   // Linetracing
@@ -143,4 +142,4 @@ module BlimpV1 #(
 
 endmodule
 
-`endif // HW_TOP_BLIMPV1_V
+`endif // HW_TOP_BLIMPV2_V

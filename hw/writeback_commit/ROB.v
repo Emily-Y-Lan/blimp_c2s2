@@ -1,152 +1,133 @@
 //========================================================================
 // ROB.v
 //========================================================================
-// ROB implementation
+// A basic reorder buffer to ensure in-order commit
 
-`ifndef HW_WRITEBACKCOMMIT_ROB_ROB_V
-`define HW_WRITEBACKCOMMIT_ROB_ROB_V
+`ifndef HW_WRITEBACK_ROB_V
+`define HW_WRITEBACK_ROB_V
 
-typedef struct packed {
-  logic [1:0]  seq_num;
-  logic [31:0] pc;
-  logic [4:0]  waddr;
-  logic [31:0] wdata;
-  logic wen;
-} t_rob_data;
+module ROB #(
+  parameter p_depth    = 32,
+  parameter type t_msg = logic [31:0],
 
-module ROB # (
-  parameter type t_entry     = t_rob_data,
-  parameter p_depth          = 4
+  parameter p_entry_bits = $clog2( p_depth )
 )(
-  input logic clk,
-  input logic rst,
+  input  logic clk,
+  input  logic rst,
 
   //----------------------------------------------------------------------
-  // Deq_front interface
+  // Insert
   //----------------------------------------------------------------------
 
-  input  logic   deq_front_en,
-  output logic   deq_front_rdy,
-  output t_entry deq_front_data,
+  input  logic [p_entry_bits-1:0] ins_idx,
+  input  t_msg                    ins_msg,
+  input  logic                    ins_en,
 
   //----------------------------------------------------------------------
-  // Insert interface
+  // Dequeue
   //----------------------------------------------------------------------
 
-  input  logic   ins_en,
-  output logic   ins_rdy,
-  input  t_entry ins_data 
+  output logic [p_entry_bits-1:0] deq_idx,
+  output t_msg                    deq_msg,
+  input  logic                    deq_en,
+  output logic                    deq_rdy
 );
 
-  logic               wr_data    [p_depth];
-  t_entry             wr_data_in;
-  t_entry             data_out   [p_depth];
-  logic               clr_occ    [p_depth];
-  logic [p_depth-1:0] occ;
-
   //----------------------------------------------------------------------
-  // Control unit
+  // Entries
   //----------------------------------------------------------------------
 
-  logic [$clog2(p_depth)-1:0] deq_ptr;
-  logic                       ins_and_deq;
-  assign ins_and_deq = (deq_ptr == ins_data.seq_num && ins_en);
+  typedef struct {
+    t_msg msg;
+    logic val;
+  } t_entry;
+
+  t_entry entries [p_depth];
 
   //----------------------------------------------------------------------
-  // Dequeue pointer update sequential logic
+  // Update Logic
   //----------------------------------------------------------------------
 
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      deq_ptr <= '{default: '0};
-    end else if ((occ[deq_ptr] || ins_and_deq) && deq_front_en) deq_ptr <= deq_ptr + $clog2(p_depth)'(1);
-  end
+  logic [p_entry_bits-1:0] deq_ptr;
+  logic                    bypass;
 
-  //----------------------------------------------------------------------
-  // Data out combinational logic
-  //----------------------------------------------------------------------
-
-  always_comb begin
-    if (rst) begin
-      deq_front_data = '{default: '0};
-    end else begin
-      if (occ[deq_ptr])     deq_front_data = data_out[deq_ptr];
-      else if (ins_and_deq) deq_front_data = ins_data;
-      else                  deq_front_data = '{default: '0};
-    end
-  end
-
-  //----------------------------------------------------------------------
-  // Operation completion combinational logic
-  //----------------------------------------------------------------------
-
-  always_comb begin
-    if (rst) begin
-      ins_rdy = 1'b0;
-      deq_front_rdy = 1'b0;
-    end else begin
-      ins_rdy       = 1'b1;
-      deq_front_rdy = occ[deq_ptr] || ins_and_deq;
-    end
-  end
-
-  //----------------------------------------------------------------------
-  // Register control combinational logic
-  //----------------------------------------------------------------------
-
-  always_comb begin
-    if (rst) begin
-      for (int i = 0; i < p_depth; i++) begin
-        wr_data[i]    = 1'b0;
-        clr_occ[i]    = 1'b0;
+  always_ff @( posedge clk ) begin
+    if( rst )
+      entries <= '{default: '{msg: 'x, val: 1'b0}};
+    else begin
+      if( ins_en & !bypass ) begin
+        entries[ins_idx] <= '{
+          msg: ins_msg,
+          val: 1'b1
+        };
       end
-      wr_data_in = '{default: '0};
-    end else begin
-      for (int i = 0; i < p_depth; i++) begin
-        wr_data[i]    = ($clog2(p_depth)'(i) == ins_data.seq_num && $clog2(p_depth)'(i) != deq_ptr && ins_en);
-        clr_occ[i]    = ($clog2(p_depth)'(i) == deq_ptr);
-      end
-      wr_data_in = ins_data;
-    end
-  end
-
-  //----------------------------------------------------------------------
-  // Datapath register collection
-  //----------------------------------------------------------------------
-
-  genvar i;
-  generate
-    for(i = 0; i < p_depth; i++) begin : reg_gen
-      always @(posedge clk) begin
-        if (rst) begin
-          data_out[i] <= '{default: '0};
-          occ[i]      <= 1'b0;
-        end else begin
-          if (wr_data[i]) begin
-            data_out[i] <= wr_data_in;
-            occ[i] <= 1'b1;
-          end else if (clr_occ[i]) occ[i] <= 1'b0;
-        end
+      if( deq_en & deq_rdy ) begin
+        entries[deq_ptr].val <= 1'b0;
       end
     end
-  endgenerate
+  end
+
+  //----------------------------------------------------------------------
+  // Bypass
+  //----------------------------------------------------------------------
+
+  logic can_bypass;
+  assign can_bypass = ( ins_idx == deq_ptr );
+
+  assign bypass = ins_en & deq_en & can_bypass;
+
+  //----------------------------------------------------------------------
+  // Dequeue
+  //----------------------------------------------------------------------
+
+  logic [p_entry_bits-1:0] deq_ptr_next;
+
+  always_ff @( posedge clk ) begin
+    if( rst )
+      deq_ptr <= '0;
+    else if( deq_en & deq_rdy )
+      deq_ptr <= deq_ptr_next;
+  end
+
+  always_comb begin
+    if( deq_ptr == p_entry_bits'(p_depth - 1) )
+      deq_ptr_next = '0;
+    else 
+      deq_ptr_next = deq_ptr + 1;
+  end
+
+  assign deq_rdy = entries[deq_ptr].val | ( can_bypass & ins_en );
+  assign deq_msg = ( bypass ) ? ins_msg : entries[deq_ptr].msg;
+  assign deq_idx = ( bypass ) ? ins_idx : deq_ptr;
 
   //----------------------------------------------------------------------
   // Linetracing
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  string test_trace;
+  int    msg_len;
+
+  initial begin
+    test_trace = $sformatf("%x:%x", ins_idx, ins_msg);
+    msg_len = test_trace.len();
+  end
+
   function string trace();
-    string trace_str;
-    trace_str = "";
-    for (int i = 0; i < p_depth; i++) begin
-      if (i == 0) trace_str = {trace_str, $sformatf("%x", data_out[i])};
-      else        trace_str = {trace_str, $sformatf(":%x", data_out[i])};
-    end
-    trace = trace_str;
+    if( ins_en )
+      trace = $sformatf("%x:%x", ins_idx, ins_msg);
+    else 
+      trace = {(msg_len){" "}};
+
+    trace = {trace, " > "};
+
+    if( deq_en & deq_rdy )
+      trace = $sformatf("%x:%x", deq_idx, deq_msg);
+    else 
+      trace = {(msg_len){" "}};
   endfunction
 `endif
 
 endmodule
 
-`endif
+`endif // HW_WRITEBACK_ROB_V

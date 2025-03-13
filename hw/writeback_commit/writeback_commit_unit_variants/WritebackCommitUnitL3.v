@@ -2,9 +2,10 @@
 // WritebackCommitUnitL2.v
 //========================================================================
 // A writeback unit that reorders messages based on sequence number
+// (including physical register specifiers)
 
-`ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V
-`define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V
+`ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL3_V
+`define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL3_V
 
 `include "hw/common/RRArb.v"
 `include "hw/writeback_commit/ROB.v"
@@ -12,7 +13,7 @@
 `include "intf/CommitNotif.v"
 `include "intf/X__WIntf.v"
 
-module WritebackCommitUnitL2 #(
+module WritebackCommitUnitL3 #(
   parameter p_num_pipes = 1
 )(
   input  logic clk,
@@ -37,19 +38,22 @@ module WritebackCommitUnitL2 #(
   CommitNotif.pub   commit
 );
 
-  localparam p_seq_num_bits = complete.p_seq_num_bits;
+  localparam p_seq_num_bits   = complete.p_seq_num_bits;
+  localparam p_phys_addr_bits = complete.p_phys_addr_bits;
 
   //----------------------------------------------------------------------
   // Select which pipe to get from
   //----------------------------------------------------------------------
 
-  logic               [31:0] Ex_pc      [p_num_pipes-1:0];
-  logic [p_seq_num_bits-1:0] Ex_seq_num [p_num_pipes-1:0];
-  logic                [4:0] Ex_waddr   [p_num_pipes-1:0];
-  logic               [31:0] Ex_wdata   [p_num_pipes-1:0];
-  logic                      Ex_wen     [p_num_pipes-1:0];
-  logic                      Ex_val     [p_num_pipes-1:0];
-  logic                      Ex_rdy     [p_num_pipes-1:0];
+  logic                 [31:0] Ex_pc      [p_num_pipes-1:0];
+  logic   [p_seq_num_bits-1:0] Ex_seq_num [p_num_pipes-1:0];
+  logic                  [4:0] Ex_waddr   [p_num_pipes-1:0];
+  logic                 [31:0] Ex_wdata   [p_num_pipes-1:0];
+  logic                        Ex_wen     [p_num_pipes-1:0];
+  logic [p_phys_addr_bits-1:0] Ex_preg    [p_num_pipes-1:0];
+  logic [p_phys_addr_bits-1:0] Ex_ppreg   [p_num_pipes-1:0];
+  logic                        Ex_val     [p_num_pipes-1:0];
+  logic                        Ex_rdy     [p_num_pipes-1:0];
 
   genvar i;
   generate
@@ -59,6 +63,8 @@ module WritebackCommitUnitL2 #(
       assign Ex_waddr[i]   = Ex[i].waddr;
       assign Ex_wdata[i]   = Ex[i].wdata;
       assign Ex_wen[i]     = Ex[i].wen;
+      assign Ex_preg[i]    = Ex[i].preg;
+      assign Ex_ppreg[i]   = Ex[i].ppreg;
       assign Ex_val[i]     = Ex[i].val;
       assign Ex[i].rdy     = Ex_rdy[i];
     end
@@ -82,12 +88,14 @@ module WritebackCommitUnitL2 #(
     .gnt (Ex_gnt_packed)
   );
 
-  logic               [31:0] Ex_pc_masked      [p_num_pipes-1:0];
-  logic [p_seq_num_bits-1:0] Ex_seq_num_masked [p_num_pipes-1:0];
-  logic                [4:0] Ex_waddr_masked   [p_num_pipes-1:0];
-  logic               [31:0] Ex_wdata_masked   [p_num_pipes-1:0];
-  logic                      Ex_wen_masked     [p_num_pipes-1:0];
-  logic                      Ex_val_masked     [p_num_pipes-1:0];
+  logic                 [31:0] Ex_pc_masked      [p_num_pipes-1:0];
+  logic   [p_seq_num_bits-1:0] Ex_seq_num_masked [p_num_pipes-1:0];
+  logic                  [4:0] Ex_waddr_masked   [p_num_pipes-1:0];
+  logic                 [31:0] Ex_wdata_masked   [p_num_pipes-1:0];
+  logic                        Ex_wen_masked     [p_num_pipes-1:0];
+  logic [p_phys_addr_bits-1:0] Ex_preg_masked    [p_num_pipes-1:0];
+  logic [p_phys_addr_bits-1:0] Ex_ppreg_masked   [p_num_pipes-1:0];
+  logic                        Ex_val_masked     [p_num_pipes-1:0];
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
@@ -96,22 +104,28 @@ module WritebackCommitUnitL2 #(
       assign Ex_waddr_masked[i]   = Ex_waddr[i]   & {5{Ex_gnt[i]}};
       assign Ex_wdata_masked[i]   = Ex_wdata[i]   & {32{Ex_gnt[i]}};
       assign Ex_wen_masked[i]     = Ex_wen[i]     & Ex_gnt[i];
+      assign Ex_preg_masked[i]    = Ex_preg[i]    & {p_phys_addr_bits{Ex_gnt[i]}};
+      assign Ex_ppreg_masked[i]   = Ex_ppreg[i]   & {p_phys_addr_bits{Ex_gnt[i]}};
       assign Ex_val_masked[i]     = Ex_val[i]     & Ex_gnt[i];
     end
   endgenerate
 
-  logic               [31:0] Ex_pc_sel;
-  logic [p_seq_num_bits-1:0] Ex_seq_num_sel;
-  logic                [4:0] Ex_waddr_sel;
-  logic               [31:0] Ex_wdata_sel;
-  logic                      Ex_wen_sel;
-  logic                      Ex_val_sel;
+  logic                 [31:0] Ex_pc_sel;
+  logic   [p_seq_num_bits-1:0] Ex_seq_num_sel;
+  logic                  [4:0] Ex_waddr_sel;
+  logic                 [31:0] Ex_wdata_sel;
+  logic                        Ex_wen_sel;
+  logic [p_phys_addr_bits-1:0] Ex_preg_sel;
+  logic [p_phys_addr_bits-1:0] Ex_ppreg_sel;
+  logic                        Ex_val_sel;
 
   assign Ex_pc_sel      = Ex_pc_masked.or();
   assign Ex_seq_num_sel = Ex_seq_num_masked.or();
   assign Ex_waddr_sel   = Ex_waddr_masked.or();
   assign Ex_wdata_sel   = Ex_wdata_masked.or();
   assign Ex_wen_sel     = Ex_wen_masked.or();
+  assign Ex_preg_sel    = Ex_preg_masked.or();
+  assign Ex_ppreg_sel   = Ex_ppreg_masked.or();
   assign Ex_val_sel     = Ex_val_masked.or();
 
   // No backpressure - always ready
@@ -126,12 +140,12 @@ module WritebackCommitUnitL2 #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic                      val;
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic                [4:0] waddr;
-    logic               [31:0] wdata;
-    logic                      wen;
+    logic                        val;
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
   } X_input;
 
   X_input X_reg;
@@ -177,6 +191,8 @@ module WritebackCommitUnitL2 #(
   assign complete.waddr   = Ex_waddr_sel;
   assign complete.wdata   = Ex_wdata_sel;
   assign complete.wen     = ( Ex_waddr_sel == '0 ) ? 0 : Ex_wen_sel;
+  assign complete.preg    = Ex_preg_sel;
+  assign complete.ppreg   = Ex_ppreg_sel;
 
   //----------------------------------------------------------------------
   // ROB

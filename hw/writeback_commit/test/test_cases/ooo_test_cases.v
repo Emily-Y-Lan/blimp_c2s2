@@ -1,32 +1,33 @@
 //========================================================================
-// basic_test_cases.v
+// ooo_test_cases.v
 //========================================================================
+// Check that our WCU can reorder instructions
 
 //----------------------------------------------------------------------
-// test_case_basic
+// test_case_ooo_basic
 //----------------------------------------------------------------------
 
-task test_case_basic();
-  t.test_case_begin( "test_case_basic" );
+task test_case_ooo_basic();
+  t.test_case_begin( "test_case_ooo_basic" );
   if( !t.run_test ) return;
 
   fork
     begin
       //   pipe pc  seq_num addr  data          wen preg ppreg
-      send(0,   '0, 0,      5'h1, 32'hdeadbeef, 1,  32,  1 );
-      send(0,   '1, 1,      5'h2, 32'hcafecafe, 1,  33,  2 );
+      send(0,   '0, 1,      5'h1, 32'hdeadbeef, 1,  32,  1 );
+      send(0,   '1, 0,      5'h2, 32'hcafecafe, 1,  33,  2 );
     end
 
     begin
       //           seq_num addr  data          wen preg ppreg
-      complete_sub(0,      5'h1, 32'hdeadbeef, 1,  32,  1 );
-      complete_sub(1,      5'h2, 32'hcafecafe, 1,  33,  2 );
+      complete_sub(1,      5'h1, 32'hdeadbeef, 1,  32,  1 );
+      complete_sub(0,      5'h2, 32'hcafecafe, 1,  33,  2 );
     end
 
     begin
       //         pc  seq_num addr  data          wen
-      commit_sub('0, 0,      5'h1, 32'hdeadbeef, 1 );
-      commit_sub('1, 1,      5'h2, 32'hcafecafe, 1 );
+      commit_sub('1, 0,      5'h2, 32'hcafecafe, 1 );
+      commit_sub('0, 1,      5'h1, 32'hdeadbeef, 1 );
     end
   join
 
@@ -37,6 +38,6 @@ endtask
 // run_basic_test_cases
 //----------------------------------------------------------------------
 
-task run_basic_test_cases();
-  test_case_basic();
+task run_ooo_test_cases();
+  test_case_ooo_basic();
 endtask

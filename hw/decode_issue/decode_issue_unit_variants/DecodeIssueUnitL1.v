@@ -86,6 +86,7 @@ module DecodeIssueUnitL1 #(
   // Instantiate Decoder, Regfile, ImmGen
   //----------------------------------------------------------------------
 
+  logic       decoder_val;
   rv_uop      decoder_uop;
   logic [4:0] decoder_raddr0;
   logic [4:0] decoder_raddr1;
@@ -100,6 +101,7 @@ module DecodeIssueUnitL1 #(
   InstDecoderL1 #(
     .p_isa_subset (p_isa_subset)
   ) decoder (
+    .val     (decoder_val),
     .inst    (F_reg.inst),
     .uop     (decoder_uop),
     .raddr0  (decoder_raddr0),
@@ -152,12 +154,12 @@ module DecodeIssueUnitL1 #(
 
   InstRouter #(p_num_pipes, p_pipe_subsets) inst_router (
     .uop   (decoder_uop),
-    .val   (F_reg.val & !stall_pending),
+    .val   (F_reg.val & !stall_pending & decoder_val),
     .Ex    (Ex),
     .xfer  (X_xfer)
   );
 
-  assign F.rdy = (X_xfer & !stall_pending) | (!F_reg.val);
+  assign F.rdy = (X_xfer & !stall_pending & decoder_val) | (!F_reg.val);
 
   //----------------------------------------------------------------------
   // Pass remaining signals to pipes
@@ -182,6 +184,9 @@ module DecodeIssueUnitL1 #(
       assign Ex[k].uop     = decoder_uop;
       assign Ex[k].waddr   = decoder_waddr;
       assign Ex[k].seq_num = F_reg.seq_num;
+
+      assign Ex[k].preg    = 'x;
+      assign Ex[k].ppreg   = 'x;
     end
   endgenerate
 
