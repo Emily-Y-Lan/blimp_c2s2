@@ -3,9 +3,7 @@
 //========================================================================
 // A testbench for our basic writeback-commit unit
 
-`include "hw/writeback_commit/rob/ROB.v"
-`include "test/fl/TestIstream.v"
-`include "test/fl/TestOstream.v"
+`include "hw/writeback_commit/ROB.v"
 `include "test/TestUtils.v"
 
 import TestEnv::*;
@@ -17,16 +15,13 @@ import TestEnv::*;
 
 module ROBTestSuite #(
   parameter p_suite_num      = 0,
-  parameter type t_entry     = logic [31:0],
-  parameter p_depth          = 4,
-  parameter type t_depth_arr = logic [p_depth-1:0],
-  parameter type t_addr      = logic [$clog2(p_depth)-1:0],
-  parameter p_ins_send_intv_delay = 0
+  parameter type t_entry     = t_rob_data,
+  parameter p_depth          = 4
 );
 
   //verilator lint_off UNUSEDSIGNAL
   string suite_name = $sformatf("%0d: ROBTestSuite_%0d_%0d", 
-                                p_suite_num, 32, p_depth);
+                                p_suite_num, $bits(t_rob_data), p_depth);
   //verilator lint_on UNUSEDSIGNAL
 
   //----------------------------------------------------------------------
@@ -40,25 +35,17 @@ module ROBTestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  OpDeqFrontIntf #(
-    .t_entry     (t_entry)
-  ) deq_front_intf();
+  logic                  deq_front_en;
+  logic                  deq_front_rdy;
+  t_entry deq_front_data;
 
-  OpInsIntf #(
-    .t_entry     (t_entry),
-    .t_addr      (t_addr)
-  ) ins_intf();
+  logic   ins_en;
+  logic   ins_rdy;
+  t_entry ins_data;
 
-  rob_ROB #(
-    .t_entry     (t_entry),
-    .p_depth     (p_depth),
-    .t_depth_arr (t_depth_arr),
-    .t_addr      (t_addr)
+  ROB #(
+    .p_depth (p_depth)
   ) dut (
-    .clk            (clk),
-    .rst            (rst),
-    .deq_front_intf (deq_front_intf),
-    .ins_intf       (ins_intf),
     .*
   );
 
@@ -66,74 +53,82 @@ module ROBTestSuite #(
   // FL Istreams
   //----------------------------------------------------------------------
 
-  typedef struct packed {
-    t_entry ins_data;
-    t_addr  ins_tag;
-  } t_ins_msg;
-
-  t_ins_msg ins_msg;
-
-  assign ins_intf.ins_data = ins_msg.ins_data;
-  assign ins_intf.ins_tag  = ins_msg.ins_tag;
-
-  TestIstream #(t_ins_msg, p_ins_send_intv_delay) ins_stream (
-    .msg(ins_msg),
-    .val(ins_intf.ins_en),
-    .rdy(ins_intf.ins_cpl),
-    .*
-  );
-
-  t_ins_msg msg_to_send;
+  logic msg_sent;
 
   task send(
-    t_entry ins_data,
-    t_addr  ins_tag
+    t_entry      l_ins_data
   );
-    msg_to_send.ins_data = ins_data;
-    msg_to_send.ins_tag  = ins_tag;
+    ins_data = l_ins_data;
+    ins_en   = 1'b1;
 
-    ins_stream.send(msg_to_send);
+    do begin
+      #2
+      msg_sent = ins_rdy;
+      @( posedge clk );
+      #1;
+    end while( !msg_sent );
+
+    ins_en = 1'b0;
   endtask
 
   //----------------------------------------------------------------------
   // FL Ostreams
-  //----------------------------------------------------------------------
+  //---------------------------------------------------------------------- 
 
-  logic unused_deq_front_en;  
-
-  TestOstream #(t_entry) deq_front_stream (
-    .msg(deq_front_intf.deq_front_data),
-    .val(deq_front_intf.deq_front_cpl),
-    .rdy(unused_deq_front_en),
-    .*
-  );
-
-  t_entry msg_to_recv;
+  logic msg_recv;
+  t_entry dut_msg;
 
   task recv(
-    input t_entry deq_front_data
+    input t_entry exp_deq_front_data
   );
-    msg_to_recv = deq_front_data;
+    deq_front_en = 1'b1;
 
-    deq_front_stream.recv(msg_to_recv);
+    do begin
+      #2
+      msg_recv = deq_front_rdy;
+      dut_msg  = deq_front_data;
+      @( posedge clk );
+      #1;
+    end while( !msg_recv );
+
+    `CHECK_EQ( dut_msg, exp_deq_front_data );
+    
+    deq_front_en = 1'b0;
   endtask
 
   //----------------------------------------------------------------------
   // Linetracing
   //----------------------------------------------------------------------
 
-  string trace;
+  string trace, test_trace;
+  int trace_len;
 
   // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     trace = "";
+    test_trace = $sformatf("t:%x, d:%x", ins_data, ins_data);
+    trace_len = test_trace.len();
 
-    trace = {trace, ins_stream.trace()};
+    if( ins_en && ins_rdy )
+      trace = $sformatf("t:%x, d:%x", ins_data, ins_data);
+    else if( ins_rdy )
+      trace = {(trace_len){" "}};
+    else if( ins_en )
+      trace = {{(trace_len-1){" "}}, "#"};
+    else
+      trace = {{(trace_len-1){" "}}, "."};
     trace = {trace, " | "};
     trace = {trace, dut.trace()};
     trace = {trace, " | "};
-    trace = {trace, deq_front_stream.trace()};
+    if( deq_front_en & deq_front_rdy )
+      trace = {trace, $sformatf("%x", deq_front_data)};
+    else if( deq_front_rdy )
+      trace = {trace, {(trace_len){" "}}};
+    else if( deq_front_en )
+      trace = {trace, {{(trace_len-1){" "}}, "#"}};
+    else
+      trace = {trace, {{(trace_len-1){" "}}, "."}};
 
     t.trace( trace );
   end

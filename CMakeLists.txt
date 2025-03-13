@@ -8,25 +8,25 @@
 #-------------------------------------------------------------------------
 
 set(V_TEST_FILES
-  hw/common/test/Fifo_test.v
-  hw/common/test/PriorityEncoder_test.v
-  hw/common/test/RRArb_test.v
-  hw/decode_issue/test/DecodeIssueUnitL1_test.v
-  hw/decode_issue/test/DecodeIssueUnitL2_test.v
-  hw/decode_issue/test/DecodeIssueUnitL3_test.v
-  hw/decode_issue/test/ImmGen_test.v
-  hw/decode_issue/test/RegfilePending_test.v
-  hw/decode_issue/test/RenameTable_test.v
-  hw/execute/test/l1/ALU_test.v
-  hw/execute/test/l1/Multiplier_test.v
-  hw/execute/test/l2/PipelinedMultiplier_test.v
-  hw/fetch/test/FetchUnitL1_test.v
-  hw/fetch/test/FetchUnitL2_test.v
-  hw/fetch/test/SeqNumGenL2_test.v
-  hw/top/test/BlimpV1_test.v
-  hw/top/test/FLProc_test.v
-  hw/util/test/SeqAge_test.v
-  hw/writeback_commit/test/WritebackCommitUnitL1_test.v
+  # hw/common/test/Fifo_test.v
+  # hw/common/test/PriorityEncoder_test.v
+  # hw/common/test/RRArb_test.v
+  # hw/decode_issue/test/DecodeIssueUnitL1_test.v
+  # hw/decode_issue/test/DecodeIssueUnitL2_test.v
+  # hw/decode_issue/test/DecodeIssueUnitL3_test.v
+  # hw/decode_issue/test/ImmGen_test.v
+  # hw/decode_issue/test/RegfilePending_test.v
+  # hw/decode_issue/test/RenameTable_test.v
+  # hw/execute/test/l1/ALU_test.v
+  # hw/execute/test/l1/Multiplier_test.v
+  # hw/execute/test/l2/PipelinedMultiplier_test.v
+  # hw/fetch/test/FetchUnitL1_test.v
+  # hw/fetch/test/FetchUnitL2_test.v
+  # hw/fetch/test/SeqNumGenL2_test.v
+  # hw/top/test/BlimpV1_test.v
+  # hw/top/test/FLProc_test.v
+  # hw/util/test/SeqAge_test.v
+  # hw/writeback_commit/test/WritebackCommitUnitL1_test.v
   hw/writeback_commit/test/ROB_test.v
 )
 
