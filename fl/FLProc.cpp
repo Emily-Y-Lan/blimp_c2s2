@@ -107,7 +107,7 @@ FLTrace FLProc::step()
     case JAL:
       regs[inst.rd()] = pc + 4;
       pc              = pc + inst.imm_j();
-      return FLTrace( inst_pc, 0, 0, 0 );
+      return FLTrace( inst_pc, inst.rd(), inst_pc + 4, inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // jalr

@@ -1,27 +1,30 @@
 //========================================================================
-// DecodeIssueUnitL2.v
+// DecodeIssueUnitL4.v
 //========================================================================
-// A basic in-order, single-issue decoder that stalls to resolve WAW
-// hazards
+// An in-order, single-issue decoder with register renaming and
+// unconditional control flow
 
-`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL2_V
-`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL2_V
+`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL4_V
+`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL4_V
 
 `include "asm/disassemble.v"
 `include "defs/ISA.v"
 `include "hw/decode_issue/InstDecoder.v"
 `include "hw/decode_issue/ImmGen.v"
 `include "hw/decode_issue/InstRouter.v"
-`include "hw/decode_issue/RegfilePending.v"
+`include "hw/decode_issue/Regfile.v"
+`include "hw/decode_issue/RenameTable.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 `include "intf/CompleteNotif.v"
+`include "intf/SquashNotif.v"
 
 import ISA::*;
 
-module DecodeIssueUnitL2 #(
+module DecodeIssueUnitL4 #(
   parameter p_isa_subset                               = p_tinyrv1,
   parameter p_num_pipes                                = 1,
+  parameter p_num_phys_regs                            = 36,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 ) (
   input  logic clk,
@@ -43,10 +46,17 @@ module DecodeIssueUnitL2 #(
   // Completion Notification
   //----------------------------------------------------------------------
 
-  CompleteNotif.sub complete
+  CompleteNotif.sub complete,
+
+  //----------------------------------------------------------------------
+  // Squash Notification
+  //----------------------------------------------------------------------
+
+  SquashNotif.pub squash
 );
 
-  localparam p_seq_num_bits = F.p_seq_num_bits;
+  localparam p_seq_num_bits   = F.p_seq_num_bits;
+  localparam p_phys_addr_bits = $clog2( p_num_phys_regs );
   
   //----------------------------------------------------------------------
   // Pipeline registers for F interface
@@ -94,10 +104,7 @@ module DecodeIssueUnitL2 #(
   logic       decoder_wen;
   rv_imm_type decoder_imm_sel;
   logic       decoder_op2_sel;
-
-  // verilator lint_off UNUSEDSIGNAL
   logic [1:0] decoder_jal;
-  // verilator lint_on UNUSEDSIGNAL
   
   InstDecoder #(
     .p_isa_subset (p_isa_subset)
@@ -115,29 +122,47 @@ module DecodeIssueUnitL2 #(
   );
 
   logic [31:0] rdata0, rdata1;
-  logic pending [1:0];
-  logic write_pending;
 
-  RegfilePending #(
-    .t_entry (logic [31:0]),
-    .p_num_regs (32)
+  logic [p_phys_addr_bits-1:0] alloc_preg, alloc_ppreg;
+  logic                        alloc_rdy;
+  logic [p_phys_addr_bits-1:0] lookup_preg    [2];
+  logic                        lookup_pending [2];
+
+  RenameTable #(
+    .p_num_phys_regs (p_num_phys_regs)
+  ) rename_table (
+    .clk            (clk),
+    .rst            (rst),
+
+    .alloc_areg     (decoder_waddr),
+    .alloc_preg     (alloc_preg),
+    .alloc_ppreg    (alloc_ppreg),
+    .alloc_en       (alloc_rdy & decoder_wen & X_xfer),
+    .alloc_rdy      (alloc_rdy),
+
+    .lookup_areg    ({decoder_raddr1, decoder_raddr0}),
+    .lookup_preg    (lookup_preg),
+    .lookup_pending (lookup_pending),
+    .lookup_en      ({1'b1, 1'b1}),
+
+    .complete       (complete)
+  );
+
+  Regfile #(
+    .t_entry    (logic [31:0]),
+    .p_num_regs (p_num_phys_regs)
   ) regfile (
     .clk                (clk),
     .rst                (rst),
-    .raddr              ({decoder_raddr1, decoder_raddr0}),
+    .raddr              (lookup_preg),
     .rdata              ({rdata1, rdata0}),
-    .waddr              (complete.waddr),
+    .waddr              (complete.preg),
     .wdata              (complete.wdata),
-    .wen                (complete.wen & complete.val),
-    .pending_set_addr   (decoder_waddr),
-    .pending_set_val    (decoder_wen & X_xfer),
-    .read_pending       (pending),
-    .check_addr         (decoder_waddr),
-    .check_addr_pending (write_pending)
+    .wen                (complete.wen & complete.val)
   );
 
   logic stall_pending;
-  assign stall_pending = pending[0] | pending[1] | write_pending;
+  assign stall_pending = !alloc_rdy | lookup_pending[0] | lookup_pending[1];
 
   logic [31:0] imm;
 
@@ -146,6 +171,23 @@ module DecodeIssueUnitL2 #(
     .imm_sel (decoder_imm_sel),
     .imm     (imm)
   );
+
+  //----------------------------------------------------------------------
+  // Squashing
+  //----------------------------------------------------------------------
+
+  logic [31:0] jump_target;
+  always_comb begin
+    case( decoder_jal )
+      2'd1:    jump_target = F_reg.pc + imm;                // JAL
+      2'd2:    jump_target = (rdata0 + imm) & 32'hFFFFFFFE; // JALR
+      default: jump_target = 'x;
+    endcase
+  end
+
+  assign squash.val     = (decoder_jal != 0) & X_xfer;
+  assign squash.target  = jump_target;
+  assign squash.seq_num = F_reg.seq_num;
 
   //----------------------------------------------------------------------
   // Route the instruction (set val/rdy for pipes) based on uop
@@ -177,15 +219,15 @@ module DecodeIssueUnitL2 #(
   genvar k;
   generate
     for( k = 0; k < p_num_pipes; k = k + 1 ) begin: pipe_signals
-      assign Ex[k].pc      = F_reg.pc;
-      assign Ex[k].op1     = op1;
-      assign Ex[k].op2     = op2;
-      assign Ex[k].uop     = decoder_uop;
-      assign Ex[k].waddr   = decoder_waddr;
-      assign Ex[k].seq_num = F_reg.seq_num;
-
-      assign Ex[k].preg    = 'x;
-      assign Ex[k].ppreg   = 'x;
+      assign Ex[k].pc       = F_reg.pc;
+      assign Ex[k].op1      = op1;
+      assign Ex[k].op2      = op2;
+      assign Ex[k].uop      = decoder_uop;
+      assign Ex[k].waddr    = decoder_waddr;
+      assign Ex[k].seq_num  = F_reg.seq_num;
+      assign Ex[k].preg     = alloc_preg;
+      assign Ex[k].ppreg    = alloc_ppreg;
+      assign Ex[k].mem_data = rdata1;
     end
   endgenerate
 
@@ -207,4 +249,4 @@ module DecodeIssueUnitL2 #(
 
 endmodule
 
-`endif // HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL2_V
+`endif // HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL4_V

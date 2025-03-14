@@ -14,6 +14,7 @@ set(V_TEST_FILES
   hw/decode_issue/test/DecodeIssueUnitL1_test.v
   hw/decode_issue/test/DecodeIssueUnitL2_test.v
   hw/decode_issue/test/DecodeIssueUnitL3_test.v
+  hw/decode_issue/test/DecodeIssueUnitL4_test.v
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/RegfilePending_test.v
   hw/decode_issue/test/RenameTable_test.v
@@ -30,6 +31,7 @@ set(V_TEST_FILES
   hw/top/test/BlimpV2_test.v
   hw/top/test/BlimpV3_test.v
   hw/top/test/BlimpV4_test.v
+  hw/top/test/BlimpV5_test.v
   hw/top/test/FLProc_test.v
   hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v

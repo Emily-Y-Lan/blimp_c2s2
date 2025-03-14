@@ -92,12 +92,13 @@ module DecodeIssueUnitL3 #(
   rv_uop      decoder_uop;
   logic [4:0] decoder_raddr0;
   logic [4:0] decoder_raddr1;
+  logic       decoder_wen;
   logic [4:0] decoder_waddr;
   rv_imm_type decoder_imm_sel;
   logic       decoder_op2_sel;
 
   // verilator lint_off UNUSEDSIGNAL
-  logic       decoder_wen;
+  logic [1:0] decoder_jal;
   // verilator lint_on UNUSEDSIGNAL
   
   InstDecoder #(
@@ -111,7 +112,8 @@ module DecodeIssueUnitL3 #(
     .waddr   (decoder_waddr),
     .wen     (decoder_wen),
     .imm_sel (decoder_imm_sel),
-    .op2_sel (decoder_op2_sel)
+    .op2_sel (decoder_op2_sel),
+    .jal     (decoder_jal)
   );
 
   logic [31:0] rdata0, rdata1;
@@ -130,7 +132,7 @@ module DecodeIssueUnitL3 #(
     .alloc_areg     (decoder_waddr),
     .alloc_preg     (alloc_preg),
     .alloc_ppreg    (alloc_ppreg),
-    .alloc_en       (alloc_rdy & X_xfer),
+    .alloc_en       (alloc_rdy & decoder_wen & X_xfer),
     .alloc_rdy      (alloc_rdy),
 
     .lookup_areg    ({decoder_raddr1, decoder_raddr0}),
