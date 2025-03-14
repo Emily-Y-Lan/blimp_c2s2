@@ -1,7 +1,7 @@
 # ========================================================================
 # CMakeLists.txt
 # ========================================================================
-# A build system for blimp
+# A build system for Blimp
 
 #-------------------------------------------------------------------------
 # Get all of the test files
@@ -23,6 +23,7 @@ set(V_TEST_FILES
   hw/execute/test/l3/LoadStoreUnit_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/fetch/test/FetchUnitL2_test.v
+  hw/fetch/test/FetchUnitL3_test.v
   hw/fetch/test/SeqNumGenL2_test.v
   hw/top/test/BlimpV1_test.v
   hw/top/test/BlimpV2_test.v

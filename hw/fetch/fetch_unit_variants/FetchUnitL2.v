@@ -6,10 +6,10 @@
 `ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
 `define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL2_V
 
+`include "hw/fetch/SeqNumGenL2.v"
 `include "intf/CommitNotif.v"
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
-`include "hw/fetch/SeqNumGenL2.v"
 
 module FetchUnitL2
 #(

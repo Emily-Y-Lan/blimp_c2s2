@@ -20,6 +20,7 @@ interface SquashNotif
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   logic [p_seq_num_bits-1:0] seq_num;
+  logic               [31:0] target;
   logic                      val;
 
 
@@ -30,12 +31,14 @@ interface SquashNotif
   // Publish
   modport pub (
     output seq_num,
+    output target,
     output val
   );
 
   // Subscribe
   modport sub (
     input seq_num,
+    input target,
     input val
   );
 

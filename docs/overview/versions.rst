@@ -42,7 +42,7 @@ details the level of each unit that each processor version supports:
      - 3
      - 
 
-   * - V3
+   * - V4
      - 2
      - 3
      - 1, 2, 3

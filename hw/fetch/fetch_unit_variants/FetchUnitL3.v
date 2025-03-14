@@ -1,17 +1,21 @@
 //========================================================================
-// FetchUnitL1.v
+// FetchUnitL3.v
 //========================================================================
-// A basic modular fetch unit for fetching instructions
+// A basic modular fetch unit for fetching instructions with squashing
 
-`ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
-`define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
+`ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL3_V
+`define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL3_V
 
+`include "hw/fetch/SeqNumGenL2.v"
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
+`include "intf/CommitNotif.v"
+`include "intf/SquashNotif.v"
 
-module FetchUnitL1
+module FetchUnitL3
 #(
-  parameter p_opaq_bits = 8
+  parameter p_opaq_bits     = 8,
+  parameter p_reclaim_width = 2
 )
 ( 
   input  logic    clk,
@@ -27,14 +31,27 @@ module FetchUnitL1
   // F <-> D Interface
   //----------------------------------------------------------------------
 
-  F__DIntf.F_intf D
+  F__DIntf.F_intf D,
+
+  //----------------------------------------------------------------------
+  // Commit Interface
+  //----------------------------------------------------------------------
+
+  CommitNotif.sub commit,
+
+  //----------------------------------------------------------------------
+  // Squash Interface
+  //----------------------------------------------------------------------
+
+  SquashNotif.sub squash
 );
   
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Local Parameters
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  localparam p_rst_addr = 32'h200;
+  localparam p_rst_addr     = 32'h200;
+  localparam p_seq_num_bits = D.p_seq_num_bits;
   
   localparam logic [p_opaq_bits:0] p_max_in_flight = 2 ** p_opaq_bits;
   localparam type t_req_msg  = type(mem.req_msg);
@@ -84,8 +101,8 @@ module FetchUnitL1
   always_ff @( posedge clk ) begin
     if ( rst )
       curr_addr <= 32'(p_rst_addr);
-    // else if ( D.squash & !memreq_xfer )
-    //   curr_addr <= D.branch_target;
+    else if ( squash.val & !memreq_xfer )
+      curr_addr <= squash.target;
     else if ( memreq_xfer )
       curr_addr <= curr_addr_next;
   end
@@ -99,9 +116,9 @@ module FetchUnitL1
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   always_comb begin
-    // if ( D.squash )
-    //   mem.req_msg.addr = D.branch_target;
-    // else
+    if ( squash.val )
+      mem.req_msg.addr = squash.target;
+    else
       mem.req_msg.addr = curr_addr;
   end
 
@@ -109,22 +126,22 @@ module FetchUnitL1
   // Other request signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  // logic [p_opaq_bits-1:0] req_opaque_next;
+  logic [p_opaq_bits-1:0] req_opaque_next;
   logic [p_opaq_bits-1:0] req_opaque;
 
-  // assign req_opaque_next = req_opaque + 1;
+  assign req_opaque_next = req_opaque + 1;
 
   always_ff @( posedge clk ) begin
     if ( rst )
       req_opaque <= '0;
-    // else if ( D.squash )
-    //   req_opaque <= req_opaque_next;
+    else if ( squash.val )
+      req_opaque <= req_opaque_next;
   end
 
   always_comb begin
     mem.req_val        = (num_in_flight < p_max_in_flight);
     mem.req_msg.op     = MEM_MSG_READ;
-    // mem.req_msg.opaque = ( D.squash ) ? req_opaque_next : req_opaque;
+    mem.req_msg.opaque = ( squash.val ) ? req_opaque_next : req_opaque;
     mem.req_msg.opaque = req_opaque;
     mem.req_msg.len    = '0;
     mem.req_msg.data   = 'x;
@@ -139,31 +156,50 @@ module FetchUnitL1
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   logic should_drop;
-  // assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque)
-  //                    | D.squash;
-  assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque);
+  assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque)
+                     | squash.val;
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Allocation
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  logic                      alloc_val;
+  logic                      alloc_rdy;
+  logic [p_seq_num_bits-1:0] alloc_seq_num;
+
+  SeqNumGenL2 #(
+    .p_seq_num_bits  (p_seq_num_bits),
+    .p_reclaim_width (p_reclaim_width)
+  ) seq_num_gen (
+    .*
+  );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Other response signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   always_comb begin
-    mem.resp_rdy = D.rdy | should_drop;
-    D.val        = mem.resp_val & !should_drop;
+    mem.resp_rdy = (D.rdy & alloc_val) | should_drop;
+    alloc_rdy    = mem.resp_val & D.rdy     & !should_drop;
+    D.val        = mem.resp_val & alloc_val & !should_drop;
     D.inst       = mem.resp_msg.data;
     D.pc         = mem.resp_msg.addr;
+    D.seq_num    = alloc_seq_num;
   end
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Unused signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic       unused_resp_op;
-  logic [3:0] unused_resp_len;
+  logic                      unused_resp_op;
+  logic                [3:0] unused_resp_len;
+  logic [p_seq_num_bits-1:0] unused_squash_seq_num;
 
   always_comb begin
     unused_resp_op  = mem.resp_msg.op;
     unused_resp_len = mem.resp_msg.len;
+
+    unused_squash_seq_num = squash.seq_num;
   end
 
   //----------------------------------------------------------------------
@@ -171,15 +207,25 @@ module FetchUnitL1
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  function int ceil_div_4( int val );
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
+  endfunction
+
   function string trace();
     if( memreq_xfer )
-      trace = $sformatf("(%h)", req_opaque);
+      trace = $sformatf("%h", mem.req_msg.addr);
     else
-      if( memreq_xfer )
-      trace = $sformatf("(%h)", req_opaque);
+      trace = {8{" "}};
+
+    trace = {trace, " > "};
+
+    if( memresp_xfer )
+      trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, D.seq_num)};
+    else
+      trace = {trace, {(11 + ceil_div_4(p_seq_num_bits)){" "}}};
   endfunction
 `endif
 
 endmodule
 
-`endif // HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL1_V
+`endif // HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL3_V
