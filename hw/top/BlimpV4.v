@@ -12,7 +12,7 @@
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL3.v"
 `include "hw/execute/execute_units_l1/ALU.v"
 `include "hw/execute/execute_units_l2/PipelinedMultiplier.v"
-`include "hw/execute/execute_units_l4/LoadStoreUnit.v"
+`include "hw/execute/execute_units_l3/LoadStoreUnit.v"
 `include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL3.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"

@@ -3,8 +3,8 @@
 //========================================================================
 // An execute unit for performing memory operations
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L4_LOADSTOREUNIT_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L4_LOADSTOREUNIT_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L3_LOADSTOREUNIT_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L3_LOADSTOREUNIT_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -287,4 +287,4 @@ module LoadStoreUnit #(
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L4_LOADSTOREUNIT_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L3_LOADSTOREUNIT_V

@@ -4,7 +4,7 @@
 // A testbench for our basic load-store unit
 
 `include "defs/UArch.v"
-`include "hw/execute/execute_units_l4/LoadStoreUnit.v"
+`include "hw/execute/execute_units_l3/LoadStoreUnit.v"
 `include "test/fl/MemIntfTestServer.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
