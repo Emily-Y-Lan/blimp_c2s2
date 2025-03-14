@@ -19,7 +19,6 @@ details the level of each unit that each processor version supports:
      - DIU Level
      - XU Levels
      - WCU Level
-     - SQU Level
      - SU Level
    
    * - V1
@@ -28,15 +27,27 @@ details the level of each unit that each processor version supports:
      - 1
      - 1
      -
-     -
 
    * - V2
-     - 1
+     - 2
      - 2
      - 1, 2
      - 2
-     - 1
      -
+
+   * - V3
+     - 2
+     - 3
+     - 1, 2
+     - 3
+     - 
+
+   * - V3
+     - 2
+     - 3
+     - 1, 2, 3
+     - 3
+     - 
 
 Version 1
 --------------------------------------------------------------------------

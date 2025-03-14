@@ -62,7 +62,7 @@ module ROB #(
         };
       end
       if( deq_en & deq_rdy ) begin
-        entries[deq_ptr].val <= 1'b0;
+        entries[deq_ptr] <= '{msg: 'x, val: 1'b0};
       end
     end
   end
