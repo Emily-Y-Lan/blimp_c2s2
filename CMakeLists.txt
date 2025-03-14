@@ -25,6 +25,7 @@ set(V_TEST_FILES
   hw/fetch/test/FetchUnitL2_test.v
   hw/fetch/test/FetchUnitL3_test.v
   hw/fetch/test/SeqNumGenL2_test.v
+  hw/fetch/test/SeqNumGenL3_test.v
   hw/top/test/BlimpV1_test.v
   hw/top/test/BlimpV2_test.v
   hw/top/test/BlimpV3_test.v

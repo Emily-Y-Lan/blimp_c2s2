@@ -7,7 +7,7 @@
 // test_case_basic
 //----------------------------------------------------------------------
 
-task test_case_1_basic();
+task test_case_basic();
   t.test_case_begin( "test_case_basic" );
   if( !t.run_test ) return;
 
@@ -29,5 +29,5 @@ endtask
 //----------------------------------------------------------------------
 
 task run_basic_test_cases();
-  test_case_1_basic();
+  test_case_basic();
 endtask

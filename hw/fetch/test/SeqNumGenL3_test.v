@@ -1,61 +1,54 @@
 //========================================================================
-// FetchUintL3_test.v
+// SeqNumGenL3_test.v
 //========================================================================
-// A testbench for our fetch unit
+// A testbench for testing our sequence number generator
 
-`include "hw/fetch/fetch_unit_variants/FetchUnitL3.v"
-`include "intf/F__DIntf.v"
-`include "intf/MemIntf.v"
+`include "hw/fetch/SeqNumGenL3.v"
+`include "intf/CommitNotif.v"
 `include "intf/SquashNotif.v"
-`include "test/fl/MemIntfTestServer.v"
+`include "test/TestUtils.v"
 `include "test/fl/TestOstream.v"
 `include "test/fl/TestPub.v"
 
 import TestEnv::*;
 
 //========================================================================
-// FetchUnitL3TestSuite
+// SeqNumGenL3TestSuite
 //========================================================================
-// A test suite for a particular parametrization of the Fetch unit
+// A test suite for a particular parametrization of the sequence number
+// generator
 
-module FetchUnitL3TestSuite #(
-  parameter p_suite_num    = 0,
-  parameter p_opaq_bits    = 8,
-  parameter p_seq_num_bits = 5,
+module SeqNumGenL3TestSuite #(
+  parameter p_suite_num     = 0,
+  parameter p_seq_num_bits  = 5,
+  parameter p_reclaim_width = 2,
 
-  parameter p_mem_send_intv_delay = 1,
-  parameter p_mem_recv_intv_delay = 1,
-  parameter p_D_recv_intv_delay   = 0
+  parameter p_alloc_intv_delay = 0
 );
-  string suite_name = $sformatf("%0d: FetchUnitL3TestSuite_%0d_%0d_%0d_%0d_%0d", 
-                                p_suite_num, p_opaq_bits, p_seq_num_bits,
-                                p_mem_send_intv_delay, p_mem_recv_intv_delay,
-                                p_D_recv_intv_delay);
 
-  localparam p_num_seq_nums = 2 ** p_seq_num_bits;
+  string suite_name = $sformatf("%0d: SequencingUnitL1TestSuite_%0d_%0d_%0d",
+                                p_suite_num, p_seq_num_bits,
+                                p_reclaim_width, p_alloc_intv_delay);
 
   //----------------------------------------------------------------------
   // Setup
   //----------------------------------------------------------------------
 
+  // verilator lint_off UNUSED
   logic clk, rst;
-  TestUtils t( .* );
+  // verilator lint_on UNUSED
 
-  `MEM_REQ_DEFINE ( p_opaq_bits );
-  `MEM_RESP_DEFINE( p_opaq_bits );
+  TestUtils t( .* );
 
   //----------------------------------------------------------------------
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  MemIntf #(
-    .t_req_msg  (`MEM_REQ ( p_opaq_bits )),
-    .t_resp_msg (`MEM_RESP( p_opaq_bits ))
-  ) mem_intf();
+  localparam p_num_seq_nums = 2 ** p_seq_num_bits;
 
-  F__DIntf #(
-    .p_seq_num_bits (p_seq_num_bits)
-  ) F__D_intf();
+  logic [p_seq_num_bits-1:0] alloc_seq_num;
+  logic                      alloc_val;
+  logic                      alloc_rdy;
 
   CommitNotif #(
     .p_seq_num_bits (p_seq_num_bits)
@@ -65,70 +58,37 @@ module FetchUnitL3TestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) squash_notif();
 
-  FetchUnitL3 #(
-    .p_opaq_bits    (p_opaq_bits)
+  SeqNumGenL3 #(
+    .p_seq_num_bits  (p_seq_num_bits),
+    .p_reclaim_width (p_reclaim_width)
   ) dut (
-    .mem    (mem_intf),
-    .D      (F__D_intf),
     .commit (commit_notif),
     .squash (squash_notif),
     .*
   );
 
   //----------------------------------------------------------------------
-  // FL Memory
+  // FL Allocator
   //----------------------------------------------------------------------
 
-  MemIntfTestServer #(
-    .t_req_msg         (`MEM_REQ ( p_opaq_bits )),
-    .t_resp_msg        (`MEM_RESP( p_opaq_bits )),
-    .p_send_intv_delay (p_mem_send_intv_delay),
-    .p_recv_intv_delay (p_mem_recv_intv_delay),
-    .p_opaq_bits       (p_opaq_bits)
-  ) fl_mem (
-    .dut (mem_intf),
+  TestOstream #(
+    logic[p_seq_num_bits-1:0],
+    p_alloc_intv_delay
+  ) alloc_Ostream (
+    .msg (alloc_seq_num),
+    .val (alloc_val),
+    .rdy (alloc_rdy),
     .*
   );
 
-  //----------------------------------------------------------------------
-  // FL D Ostream
-  //----------------------------------------------------------------------
-
-  typedef struct packed {
-    logic               [31:0] inst;
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-  } t_f__d_msg;
-
-  t_f__d_msg f__d_msg;
-
-  assign f__d_msg.inst    = F__D_intf.inst;
-  assign f__d_msg.pc      = F__D_intf.pc;
-  assign f__d_msg.seq_num = F__D_intf.seq_num;
-
-  TestOstream #( t_f__d_msg, p_D_recv_intv_delay ) D_Ostream (
-    .msg (f__d_msg),
-    .val (F__D_intf.val),
-    .rdy (F__D_intf.rdy),
-    .*
-  );
-
-  t_f__d_msg msg_to_recv;
-
-  task recv(
-    input logic               [31:0] inst,
-    input logic               [31:0] pc,
+  task seq_alloc(
     input logic [p_seq_num_bits-1:0] seq_num
   );
-    msg_to_recv.inst    = inst;
-    msg_to_recv.pc      = pc;
-    msg_to_recv.seq_num = seq_num;
-
-    D_Ostream.recv(msg_to_recv);
+    alloc_Ostream.recv( seq_num );
   endtask
 
   //----------------------------------------------------------------------
-  // Commit Notification
+  // FL Freer
   //----------------------------------------------------------------------
 
   typedef struct packed {
@@ -147,7 +107,7 @@ module FetchUnitL3TestSuite #(
   assign commit_notif.wdata   = commit_msg.wdata;
   assign commit_notif.wen     = commit_msg.wen;
 
-  TestPub #( t_commit_msg ) commit_pub (
+  TestPub #( t_commit_msg ) free_pub (
     .msg (commit_msg),
     .val (commit_notif.val),
     .*
@@ -155,7 +115,7 @@ module FetchUnitL3TestSuite #(
 
   t_commit_msg msg_to_commit;
 
-  task commit(
+  task seq_free(
     input logic [p_seq_num_bits-1:0] seq_num
   );
     msg_to_commit.seq_num = seq_num;
@@ -164,7 +124,7 @@ module FetchUnitL3TestSuite #(
     msg_to_commit.wdata   = 32'( $urandom() );
     msg_to_commit.wen     =  1'( $urandom() );
 
-    commit_pub.pub( msg_to_commit );
+    free_pub.pub( msg_to_commit );
   endtask
 
   //----------------------------------------------------------------------
@@ -190,11 +150,10 @@ module FetchUnitL3TestSuite #(
   t_squash_msg msg_to_squash;
 
   task squash(
-    input logic [p_seq_num_bits-1:0] seq_num,
-    input logic               [31:0] target
+    input logic [p_seq_num_bits-1:0] seq_num
   );
     msg_to_squash.seq_num = seq_num;
-    msg_to_squash.target  = target;
+    msg_to_squash.target  = 'x;
 
     squash_pub.pub( msg_to_squash );
   endtask
@@ -210,27 +169,31 @@ module FetchUnitL3TestSuite #(
     #2;
     trace = "";
 
-    trace = {trace, fl_mem.trace()};
+    trace = {trace, alloc_Ostream.trace()};
     trace = {trace, " | "};
     trace = {trace, dut.trace()};
     trace = {trace, " | "};
-    trace = {trace, D_Ostream.trace()};
-    trace = {trace, " - "};
-    trace = {trace, commit_pub.trace()};
-    trace = {trace, " - "};
-    trace = {trace, squash_pub.trace()};
+    trace = {trace, free_pub.trace()};
 
     t.trace( trace );
   end
   // verilator lint_on BLKSEQ
 
   //----------------------------------------------------------------------
+  // check_allocated
+  //----------------------------------------------------------------------
+  // White-box testing the number of allocated entries
+
+  task check_allocated ( input int num_allocated );
+    `CHECK_EQ( int'(dut.entries_allocated), num_allocated );
+  endtask
+
+  //----------------------------------------------------------------------
   // Include test cases
   //----------------------------------------------------------------------
 
-  `include "hw/fetch/test/test_cases/basic_test_cases.v"
-  `include "hw/fetch/test/test_cases/seq_num_test_cases.v"
-  `include "hw/fetch/test/test_cases/squash_test_cases.v"
+  `include "hw/fetch/test/seq_num_test_cases/basic_test_cases.v"
+  `include "hw/fetch/test/seq_num_test_cases/squash_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -240,24 +203,20 @@ module FetchUnitL3TestSuite #(
     t.test_suite_begin( suite_name );
 
     run_basic_test_cases();
-    run_seq_num_test_cases();
     run_squash_test_cases();
   endtask
 endmodule
 
 //========================================================================
-// FetchUnitL1_test
+// SeqNumGenL3_test
 //========================================================================
 
-module FetchUnitL3_test;
-  FetchUnitL3TestSuite #(1)                suite_1();
-  FetchUnitL3TestSuite #(2, 8, 5, 0, 0, 0) suite_2();
-  FetchUnitL3TestSuite #(3, 1, 2, 0, 0, 0) suite_3();
-  FetchUnitL3TestSuite #(4, 8, 3, 3, 0, 0) suite_4();
-  FetchUnitL3TestSuite #(5, 8, 4, 0, 3, 0) suite_5();
-  FetchUnitL3TestSuite #(6, 8, 2, 0, 0, 3) suite_6();
-  FetchUnitL3TestSuite #(7, 4, 3, 3, 3, 3) suite_7();
-  FetchUnitL3TestSuite #(8, 1, 4, 9, 9, 9) suite_8();
+module SeqNumGenL3_test;
+  SeqNumGenL3TestSuite #(1)          suite_1();
+  SeqNumGenL3TestSuite #(2, 6, 2, 0) suite_2();
+  SeqNumGenL3TestSuite #(3, 8, 2, 0) suite_3();
+  SeqNumGenL3TestSuite #(4, 8, 4, 0) suite_4();
+  SeqNumGenL3TestSuite #(5, 8, 8, 3) suite_5();
 
   int s;
 
@@ -270,9 +229,6 @@ module FetchUnitL3_test;
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
     if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
     if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
-    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
-    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
-    if ((s <= 0) || (s == 8)) suite_8.run_test_suite();
 
     test_bench_end();
   end

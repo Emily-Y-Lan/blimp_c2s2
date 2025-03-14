@@ -6,7 +6,7 @@
 `ifndef HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL3_V
 `define HW_FETCH_FETCHUNITVARIANTS_FETCHUNITL3_V
 
-`include "hw/fetch/SeqNumGenL2.v"
+`include "hw/fetch/SeqNumGenL3.v"
 `include "intf/F__DIntf.v"
 `include "intf/MemIntf.v"
 `include "intf/CommitNotif.v"
@@ -101,7 +101,9 @@ module FetchUnitL3
   always_ff @( posedge clk ) begin
     if ( rst )
       curr_addr <= 32'(p_rst_addr);
-    else if ( squash.val & !memreq_xfer )
+    else if ( squash.val & memreq_xfer )
+      curr_addr <= squash.target + 4;
+    else if ( squash.val )
       curr_addr <= squash.target;
     else if ( memreq_xfer )
       curr_addr <= curr_addr_next;
@@ -139,10 +141,12 @@ module FetchUnitL3
   end
 
   always_comb begin
+    // Easier than tracking whether our opaque bits will wrap around for
+    // an outstanding request
     mem.req_val        = (num_in_flight < p_max_in_flight);
+
     mem.req_msg.op     = MEM_MSG_READ;
     mem.req_msg.opaque = ( squash.val ) ? req_opaque_next : req_opaque;
-    mem.req_msg.opaque = req_opaque;
     mem.req_msg.len    = '0;
     mem.req_msg.data   = 'x;
   end
@@ -167,7 +171,7 @@ module FetchUnitL3
   logic                      alloc_rdy;
   logic [p_seq_num_bits-1:0] alloc_seq_num;
 
-  SeqNumGenL2 #(
+  SeqNumGenL3 #(
     .p_seq_num_bits  (p_seq_num_bits),
     .p_reclaim_width (p_reclaim_width)
   ) seq_num_gen (
