@@ -20,7 +20,7 @@ void FLMem::init( uint32_t addr, uint32_t data )
 
 void FLMem::init( uint32_t addr, std::string assembly )
 {
-  mem[addr] = assemble( assembly.c_str(), addr );
+  mem[addr] = assemble( assembly.c_str(), &addr );
 }
 
 //------------------------------------------------------------------------

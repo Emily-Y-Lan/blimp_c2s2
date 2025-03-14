@@ -14,6 +14,24 @@
 FLTrace::FLTrace( uint32_t pc, uint32_t waddr, uint32_t wdata, bool wen )
     : pc( pc ), waddr( waddr ), wdata( wdata ), wen( wen ) {};
 
+// Assume a struct of the following format:
+//
+// typedef struct packed {
+//   bit        wen;
+//   bit  [4:0] waddr;
+//   bit [31:0] wdata;
+//   bit [31:0] pc;
+// } inst_trace;
+//
+// Pack the bits accordingly (pc is least-significant word)
+FLTrace::FLTrace( uint32_t *vstruct )
+{
+  pc    = vstruct[0];
+  wdata = vstruct[1];
+  waddr = vstruct[2] & 0x0000001F;
+  wen   = ( vstruct[2] >> 5 ) & 0x00000001;
+}
+
 //------------------------------------------------------------------------
 // Equality
 //------------------------------------------------------------------------
@@ -30,16 +48,21 @@ bool FLTrace::operator!=( const FLTrace &other )
 }
 
 //------------------------------------------------------------------------
-// Stream representation
+// String representation
 //------------------------------------------------------------------------
+
+std::string FLTrace::str() const
+{
+  std::string str_rep = std::format( "0x{:08X}: ", pc );
+  if ( wen ) {
+    str_rep += std::format( "0x{:08X} -> R[{}]", wdata, waddr );
+  }
+  return str_rep;
+}
 
 std::ostream &operator<<( std::ostream &out, const FLTrace &trace )
 {
-  std::string str_rep = std::format( "0x{:X}: ", trace.pc );
-  if ( trace.wen ) {
-    str_rep += std::format( "0x{:X} -> R[{}]", trace.wdata, trace.waddr );
-  }
-  out << str_rep;
+  out << trace.str();
   return out;
 }
 

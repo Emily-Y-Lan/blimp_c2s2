@@ -36,7 +36,7 @@ void FLProc::init( uint32_t addr, uint32_t inst )
 }
 void FLProc::init( uint32_t addr, std::string assembly )
 {
-  mem[addr] = assemble( assembly.c_str(), addr );
+  mem[addr] = assemble( assembly.c_str(), &addr );
 }
 
 //------------------------------------------------------------------------
@@ -106,8 +106,17 @@ FLTrace FLProc::step()
 
     case JAL:
       regs[inst.rd()] = pc + 4;
-      pc              = pc + inst.imm_u();
+      pc              = pc + inst.imm_j();
       return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // jalr
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case JALR:
+      pc              = ( regs[inst.rs1()] + inst.imm_i() ) & 0xfffffffe;
+      regs[inst.rd()] = inst_pc + 4;
+      return FLTrace( inst_pc, inst.rd(), inst_pc + 4, inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // bne

@@ -347,7 +347,7 @@ uint32_t addr_b_mask( const std::string& addr, uint32_t pc )
   return imm_b_mask( std::to_string( (int) addr_val - pc ) );
 }
 
-uint32_t addr_u_mask( const std::string& addr, uint32_t pc )
+uint32_t addr_j_mask( const std::string& addr, uint32_t pc )
 {
   int32_t addr_val = get_imm_int( addr );
 
@@ -356,7 +356,7 @@ uint32_t addr_u_mask( const std::string& addr, uint32_t pc )
     throw std::invalid_argument( excp );
   }
 
-  return imm_u_mask( std::to_string( (int) addr_val - pc ) );
+  return imm_j_mask( std::to_string( (int) addr_val - pc ) );
 }
 
 uint32_t get_addr_b( uint32_t binary, uint32_t pc )
@@ -364,9 +364,9 @@ uint32_t get_addr_b( uint32_t binary, uint32_t pc )
   return get_imm_b( binary ) + pc;
 }
 
-uint32_t get_addr_u( uint32_t binary, uint32_t pc )
+uint32_t get_addr_j( uint32_t binary, uint32_t pc )
 {
-  return get_imm_u( binary ) + pc;
+  return get_imm_j( binary ) + pc;
 }
 
 std::string get_addr_b_id( uint32_t binary, uint32_t pc )
@@ -377,10 +377,10 @@ std::string get_addr_b_id( uint32_t binary, uint32_t pc )
   return stream.str();
 }
 
-std::string get_addr_u_id( uint32_t binary, uint32_t pc )
+std::string get_addr_j_id( uint32_t binary, uint32_t pc )
 {
   std::stringstream stream;
   stream << "0x" << std::setfill( '0' ) << std::setw( 8 ) << std::hex
-         << get_addr_u( binary, pc );
+         << get_addr_j( binary, pc );
   return stream.str();
 }

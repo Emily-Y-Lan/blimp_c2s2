@@ -29,7 +29,7 @@ std::map<std::string, std::function<uint32_t( const std::string& )>>
 std::map<std::string,
          std::function<uint32_t( const std::string&, uint32_t )>>
     asm_pc_field_map = { { "addr_b", addr_b_mask },
-                         { "addr_u", addr_u_mask } };
+                         { "addr_j", addr_j_mask } };
 
 //------------------------------------------------------------------------
 // assemble
@@ -37,9 +37,10 @@ std::map<std::string,
 // Convert the assembly into tokens, then call the instruction-specific
 // assembler
 
-uint32_t assemble( const char* vassembly, uint32_t pc )
+uint32_t assemble( const char* vassembly, uint32_t* vpc )
 {
   std::string              assembly = vassembly;
+  uint32_t                 pc       = *vpc;
   std::vector<std::string> tokens   = tokenize( assembly );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

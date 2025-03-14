@@ -14,7 +14,7 @@
 
 FLInst::FLInst( uint32_t inst ) : binary( inst ) {};
 FLInst::FLInst( std::string assembly, uint32_t addr )
-    : binary( assemble( assembly.c_str(), addr ) ) {};
+    : binary( assemble( assembly.c_str(), &addr ) ) {};
 
 //------------------------------------------------------------------------
 // Name

@@ -41,3 +41,16 @@ bool fl_trace( uint32_t* trace )
     return 0;
   }
 }
+
+//------------------------------------------------------------------------
+// Linetracing
+//------------------------------------------------------------------------
+
+// Store globally to avoid destructing after return
+std::string curr_fl_trace_str;
+
+const char* fl_trace_str( uint32_t* trace )
+{
+  curr_fl_trace_str = FLTrace( trace ).str();
+  return curr_fl_trace_str.c_str();
+}

@@ -28,7 +28,7 @@ std::map<std::string, std::function<std::string( uint32_t )>>
 
 std::map<std::string, std::function<std::string( uint32_t, uint32_t )>>
     disasm_pc_field_map = { { "addr_b", get_addr_b_id },
-                            { "addr_u", get_addr_u_id } };
+                            { "addr_j", get_addr_j_id } };
 
 //------------------------------------------------------------------------
 // disassemble

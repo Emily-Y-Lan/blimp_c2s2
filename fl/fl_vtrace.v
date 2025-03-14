@@ -14,9 +14,10 @@ typedef struct packed {
   bit [31:0] pc;
 } inst_trace;
 
-import "DPI-C" function void fl_reset();
-import "DPI-C" function void fl_init ( bit [31:0] addr, bit[31:0] binary );
-import "DPI-C" function bit  fl_trace( output inst_trace trace );
+import "DPI-C" function void   fl_reset();
+import "DPI-C" function void   fl_init ( bit [31:0] addr, bit[31:0] binary );
+import "DPI-C" function bit    fl_trace( output inst_trace trace );
+import "DPI-C" function string fl_trace_str( inst_trace trace );
 `endif
 
 `endif // FL_PROC_FL_VTRACE_V

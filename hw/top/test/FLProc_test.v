@@ -40,6 +40,7 @@ module FLProc_test;
 
   logic      dut_success;
   inst_trace dut_trace;
+  string     trace;
 
   task check_trace(
     input logic [31:0] pc,
@@ -48,6 +49,19 @@ module FLProc_test;
     input logic        wen
   );
     dut_success = fl_trace( dut_trace );
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Linetracing
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    trace = $sformatf("(%b) ", dut_success);
+    trace = {trace, fl_trace_str( dut_trace )};
+    t.trace( trace );
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Check trace
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     if( !dut_success ) begin
       // Invalid trace - force a failure
       `CHECK_EQ( 1'b1, 1'b0 );
@@ -71,6 +85,8 @@ module FLProc_test;
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
   `include "hw/top/test/test_cases/directed/lw_test_cases.v"
   `include "hw/top/test/test_cases/directed/sw_test_cases.v"
+  `include "hw/top/test/test_cases/directed/jal_test_cases.v"
+  `include "hw/top/test/test_cases/directed/jalr_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_tests
@@ -85,6 +101,8 @@ module FLProc_test;
     run_directed_mul_tests();
     run_directed_lw_tests();
     run_directed_sw_tests();
+    run_directed_jal_tests();
+    run_directed_jalr_tests();
 
     test_bench_end();
   endtask

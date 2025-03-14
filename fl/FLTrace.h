@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <string>
 
 class FLTrace {
   //----------------------------------------------------------------------
@@ -16,12 +17,14 @@ class FLTrace {
  public:
   // Constructors
   FLTrace( uint32_t pc, uint32_t waddr, uint32_t wdata, bool wen );
+  FLTrace( uint32_t *vstruct );
 
   // Equality for comparing traces
   bool operator==( const FLTrace &other );
   bool operator!=( const FLTrace &other );
 
   // String representation for stream output
+  std::string          str() const;
   friend std::ostream &operator<<( std::ostream  &out,
                                    const FLTrace &trace );
 
