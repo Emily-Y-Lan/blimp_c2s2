@@ -40,6 +40,8 @@ module BlimpV5TestSuite #(
   logic clk, rst;
   TestUtils t( .* );
 
+  initial t.timeout = 20000;
+
   `MEM_REQ_DEFINE ( p_opaq_bits );
   `MEM_RESP_DEFINE( p_opaq_bits );
 
@@ -182,6 +184,8 @@ module BlimpV5TestSuite #(
   `include "hw/top/test/test_cases/golden/mul_test_cases.v"
   `include "hw/top/test/test_cases/golden/lw_test_cases.v"
   `include "hw/top/test/test_cases/golden/sw_test_cases.v"
+  `include "hw/top/test/test_cases/golden/jal_test_cases.v"
+  `include "hw/top/test/test_cases/golden/jalr_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -203,6 +207,8 @@ module BlimpV5TestSuite #(
     run_golden_mul_tests();
     run_golden_lw_tests();
     run_golden_sw_tests();
+    run_golden_jal_tests();
+    run_golden_jalr_tests();
 
   endtask
 endmodule

@@ -162,6 +162,7 @@ module TestUtils
   // ---------------------------------------------------------------------
 
   int cycles;
+  int timeout = 10000;
 
   always @( posedge clk ) begin
 
@@ -170,7 +171,7 @@ module TestUtils
     else
       cycles <= cycles + 1;
 
-    if ( cycles > 10000 ) begin
+    if ( cycles > timeout ) begin
       $display( "\nERROR (cycles=%0d): timeout!", cycles );
       TestStatus::test_fail();
       $finish;

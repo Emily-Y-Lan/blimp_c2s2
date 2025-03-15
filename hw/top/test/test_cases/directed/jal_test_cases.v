@@ -234,6 +234,86 @@ task test_case_directed_jal_7_loop_self();
 endtask
 
 //------------------------------------------------------------------------
+// test_case_directed_jal_8_mix
+//------------------------------------------------------------------------
+
+task test_case_directed_jal_8_mix();
+  t.test_case_begin( "test_case_directed_jal_8_mix" );
+  if( !t.run_test ) return;
+  fl_reset();
+
+  // Write assembly program into memory
+
+  asm( 'h200, "addi x1,  x0, 0x100" );
+  asm( 'h204, "addi x2,  x0, 0x110" );
+  asm( 'h208, "addi x3,  x0, 0x120" );
+  asm( 'h20c, "addi x4,  x0, 0"     );
+
+  asm( 'h210, "lw   x5,  0(x1)"     );
+  asm( 'h214, "lw   x6,  0(x2)"     );
+  asm( 'h218, "mul  x7,  x5, x6"    );
+  asm( 'h21c, "add  x4,  x4, x7"    );
+  asm( 'h220, "sw   x4,  0(x3)"     );
+  asm( 'h224, "addi x1,  x1, 4"     );
+  asm( 'h228, "addi x2,  x2, 4"     );
+  asm( 'h22c, "addi x3,  x3, 4"     );
+  asm( 'h230, "jal  x0,  0x210"     );
+
+  // Write data into memory
+
+  data( 'h100, 1 );
+  data( 'h104, 2 );
+  data( 'h108, 3 );
+
+  data( 'h110, 5 );
+  data( 'h114, 6 );
+  data( 'h118, 7 );
+
+  data( 'h120, 0 );
+  data( 'h124, 0 );
+  data( 'h128, 0 );
+
+  // Check each executed instruction
+
+  check_trace( 'h200, 1, 'h100, 1 ); // addi x1,  x0, 0x100
+  check_trace( 'h204, 2, 'h110, 1 ); // addi x2,  x0, 0x110
+  check_trace( 'h208, 3, 'h120, 1 ); // addi x3,  x0, 0x120
+  check_trace( 'h20c, 4,     0, 1 ); // addi x4,  x0, 0
+
+  check_trace( 'h210,  5,     1, 1 ); // lw   x5,  0(x1)
+  check_trace( 'h214,  6,     5, 1 ); // lw   x6,  0(x2)
+  check_trace( 'h218,  7,     5, 1 ); // mul  x7,  x5, x6
+  check_trace( 'h21c,  4,     5, 1 ); // add  x4,  x4, x7
+  check_trace( 'h220, 'x,    'x, 0 ); // sw   x4,  0(x3)
+  check_trace( 'h224,  1, 'h104, 1 ); // addi x1,  x1, 4
+  check_trace( 'h228,  2, 'h114, 1 ); // addi x2,  x2, 4
+  check_trace( 'h22c,  3, 'h124, 1 ); // addi x3,  x3, 4
+  check_trace( 'h230, 'x,    'x, 0 ); // jal  x0,  0x010
+  
+  check_trace( 'h210,  5,     2, 1 ); // lw   x5,  0(x1)
+  check_trace( 'h214,  6,     6, 1 ); // lw   x6,  0(x2)
+  check_trace( 'h218,  7,    12, 1 ); // mul  x7,  x5, x6
+  check_trace( 'h21c,  4,    17, 1 ); // add  x4,  x4, x7
+  check_trace( 'h220, 'x,    'x, 0 ); // sw   x4,  0(x3)
+  check_trace( 'h224,  1, 'h108, 1 ); // addi x1,  x1, 4
+  check_trace( 'h228,  2, 'h118, 1 ); // addi x2,  x2, 4
+  check_trace( 'h22c,  3, 'h128, 1 ); // addi x3,  x3, 4
+  check_trace( 'h230, 'x,    'x, 0 ); // jal  x0,  0x010
+
+  check_trace( 'h210,  5,     3, 1 ); // lw   x5,  0(x1)
+  check_trace( 'h214,  6,     7, 1 ); // lw   x6,  0(x2)
+  check_trace( 'h218,  7,    21, 1 ); // mul  x7,  x5, x6
+  check_trace( 'h21c,  4,    38, 1 ); // add  x4,  x4, x7
+  check_trace( 'h220, 'x,    'x, 0 ); // sw   x4,  0(x3)
+  check_trace( 'h224,  1, 'h10c, 1 ); // addi x1,  x1, 4
+  check_trace( 'h228,  2, 'h11c, 1 ); // addi x2,  x2, 4
+  check_trace( 'h22c,  3, 'h12c, 1 ); // addi x3,  x3, 4
+  check_trace( 'h230, 'x,    'x, 0 ); // jal  x0,  0x010
+
+  t.test_case_end();
+endtask
+
+//------------------------------------------------------------------------
 // run_directed_jal_tests
 //------------------------------------------------------------------------
 
@@ -245,4 +325,5 @@ task run_directed_jal_tests();
   test_case_directed_jal_5_backward();
   test_case_directed_jal_6_loop();
   test_case_directed_jal_7_loop_self();
+  test_case_directed_jal_8_mix();
 endtask

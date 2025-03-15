@@ -76,56 +76,10 @@ task test_case_golden_jal_2_deps();
 endtask
 
 //------------------------------------------------------------------------
-// test_case_golden_jal_3_mix
-//------------------------------------------------------------------------
-
-task test_case_10_mix();
-  t.test_case_begin( "test_case_golden_jal_3_mix" );
-  if( !t.run_test ) return;
-  fl_reset();
-
-  // Write assembly program into memory
-
-  asm( 'h200, "addi x1,  x0, 0x100" );
-  asm( 'h204, "addi x2,  x0, 0x110" );
-  asm( 'h208, "addi x3,  x0, 0x120" );
-  asm( 'h20c, "addi x4,  x0, 0"     );
-
-  asm( 'h210, "lw   x5,  0(x1)"     );
-  asm( 'h214, "lw   x6,  0(x2)"     );
-  asm( 'h218, "mul  x7,  x5, x6"    );
-  asm( 'h21c, "add  x4,  x4, x7"    );
-  asm( 'h220, "sw   x4,  0(x3)"     );
-  asm( 'h224, "addi x1,  x1, 4"     );
-  asm( 'h228, "addi x2,  x2, 4"     );
-  asm( 'h22c, "addi x3,  x3, 4"     );
-  asm( 'h230, "jal  x0,  0x210"     );
-
-  // Write data into memory
-
-  data( 'h100, 1 );
-  data( 'h104, 2 );
-  data( 'h108, 3 );
-
-  data( 'h110, 5 );
-  data( 'h114, 6 );
-  data( 'h118, 7 );
-
-  data( 'h120, 0 );
-  data( 'h124, 0 );
-  data( 'h128, 0 );
-
-  check_traces();
-
-  t.test_case_end();
-endtask
-
-//------------------------------------------------------------------------
 // run_golden_jal_tests
 //------------------------------------------------------------------------
 
 task run_golden_jal_tests();
   test_case_golden_jal_1_regs();
   test_case_golden_jal_2_deps();
-  test_case_golden_jal_3_mix();
 endtask
