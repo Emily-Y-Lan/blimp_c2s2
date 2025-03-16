@@ -53,10 +53,15 @@ module FLProc_test;
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Linetracing
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Add a check for verbosity; test utilities will only display if
+    // verbose, but we want to avoid string processing if possible for
+    // speed
 
-    trace = $sformatf("(%b) ", dut_success);
-    trace = {trace, fl_trace_str( dut_trace )};
-    t.trace( trace );
+    if( t.verbose ) begin
+      trace = $sformatf("(%b) ", dut_success);
+      trace = {trace, fl_trace_str( dut_trace )};
+      t.trace( trace );
+    end
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Check trace
@@ -87,6 +92,7 @@ module FLProc_test;
   `include "hw/top/test/test_cases/directed/sw_test_cases.v"
   `include "hw/top/test/test_cases/directed/jal_test_cases.v"
   `include "hw/top/test/test_cases/directed/jalr_test_cases.v"
+  `include "hw/top/test/test_cases/directed/bne_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_tests
@@ -103,6 +109,7 @@ module FLProc_test;
     run_directed_sw_tests();
     run_directed_jal_tests();
     run_directed_jalr_tests();
+    run_directed_bne_tests();
 
     test_bench_end();
   endtask

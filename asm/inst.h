@@ -73,7 +73,7 @@ const inst_spec_t inst_specs[] = {
 
     { JAL, "jal  rd, addr_j", 0x0000006F, 0x0000007F },
     { JALR, "jalr  rd, rs1, imm_i", 0x00000067, 0x0000707F },
-    { BNE, "bne  rs1, rs1, addr_b", 0x00001063, 0x0000707F },
+    { BNE, "bne  rs1, rs2, addr_b", 0x00001063, 0x0000707F },
 };
 
 //------------------------------------------------------------------------
