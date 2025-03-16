@@ -22,6 +22,7 @@ set(V_TEST_FILES
   hw/execute/test/l1/Multiplier_test.v
   hw/execute/test/l2/PipelinedMultiplier_test.v
   hw/execute/test/l3/LoadStoreUnit_test.v
+  hw/execute/test/l4/ControlFlowUnit_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/fetch/test/FetchUnitL2_test.v
   hw/fetch/test/FetchUnitL3_test.v

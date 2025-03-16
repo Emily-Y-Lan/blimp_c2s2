@@ -84,9 +84,11 @@ module ControlFlowUnit (
 
   logic [31:0] unused_op1;
   logic [31:0] unused_op2;
+  rv_uop       unused_uop;
 
   assign unused_op1 = D.op1;
   assign unused_op2 = D.op2;
+  assign unused_uop = D.uop;
 
   //----------------------------------------------------------------------
   // Compute return address
