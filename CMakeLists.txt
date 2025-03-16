@@ -157,12 +157,13 @@ endforeach(V_TEST_FILE_REL_PATH)
 #------------------------------------------------------------------------
 
 set(KNOWN_TESTS_TEXT "Available test targets:")
+set(LIST_COMMANDS COMMAND ${CMAKE_COMMAND} -E echo "Available test targets:")
 foreach(VTEST ${CMAKE_VTESTS})
-  set(KNOWN_TESTS_TEXT "${KNOWN_TESTS_TEXT}" " - ${VTEST}")
+  set(LIST_COMMANDS ${LIST_COMMANDS} COMMAND ${CMAKE_COMMAND} -E echo " - ${VTEST}")
 endforeach(VTEST)
 
 add_custom_target(
   list
-  COMMAND echo ${KNOWN_TESTS_TEXT}
-  VERBATIM
+  ${LIST_COMMANDS}
+  COMMENT ${KNOWN_TEST_TEXT}
 )
