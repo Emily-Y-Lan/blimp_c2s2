@@ -353,11 +353,12 @@ endmodule
 //========================================================================
 
 module SquashUnitL1_test;
-  SquashUnitL1TestSuite #(1)       suite_1();
-  SquashUnitL1TestSuite #(2, 4, 5) suite_2();
-  SquashUnitL1TestSuite #(3, 1, 3) suite_3();
-  SquashUnitL1TestSuite #(4, 8, 4) suite_4();
-  SquashUnitL1TestSuite #(5, 5, 6) suite_5();
+  SquashUnitL1TestSuite #(1)        suite_1();
+  SquashUnitL1TestSuite #(2,  4, 5) suite_2();
+  SquashUnitL1TestSuite #(3,  1, 3) suite_3();
+  SquashUnitL1TestSuite #(4,  8, 4) suite_4();
+  SquashUnitL1TestSuite #(5,  5, 6) suite_5();
+  SquashUnitL1TestSuite #(5, 20, 6) suite_6();
 
   int s;
 
@@ -370,6 +371,7 @@ module SquashUnitL1_test;
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
     if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
     if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
+    if ((s <= 0) || (s == 5)) suite_6.run_test_suite();
 
     test_bench_end();
   end
