@@ -18,11 +18,12 @@ set(V_TEST_FILES
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/RegfilePending_test.v
   hw/decode_issue/test/RenameTable_test.v
-  hw/execute/test/l1/ALU_test.v
-  hw/execute/test/l1/Multiplier_test.v
-  hw/execute/test/l2/PipelinedMultiplier_test.v
-  hw/execute/test/l3/LoadStoreUnit_test.v
-  hw/execute/test/l4/ControlFlowUnit_test.v
+  hw/execute/test/l1/ALUL1_test.v
+  hw/execute/test/l1/MultiplierL1_test.v
+  hw/execute/test/l2/PipelinedMultiplierL2_test.v
+  hw/execute/test/l3/LoadStoreUnitL3_test.v
+  hw/execute/test/l4/ControlFlowUnitL4_test.v
+  hw/execute/test/l5/ControlFlowUnitL5_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/fetch/test/FetchUnitL2_test.v
   hw/fetch/test/FetchUnitL3_test.v

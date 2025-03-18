@@ -99,6 +99,7 @@ module DecodeIssueUnitL3 #(
 
   // verilator lint_off UNUSEDSIGNAL
   logic [1:0] decoder_jal;
+  logic       decoder_op3_sel;
   // verilator lint_on UNUSEDSIGNAL
   
   InstDecoder #(
@@ -113,7 +114,8 @@ module DecodeIssueUnitL3 #(
     .wen     (decoder_wen),
     .imm_sel (decoder_imm_sel),
     .op2_sel (decoder_op2_sel),
-    .jal     (decoder_jal)
+    .jal     (decoder_jal),
+    .op3_sel (decoder_op3_sel)
   );
 
   logic [31:0] rdata0, rdata1;
@@ -197,15 +199,15 @@ module DecodeIssueUnitL3 #(
   genvar k;
   generate
     for( k = 0; k < p_num_pipes; k = k + 1 ) begin: pipe_signals
-      assign Ex[k].pc       = F_reg.pc;
-      assign Ex[k].op1      = op1;
-      assign Ex[k].op2      = op2;
-      assign Ex[k].uop      = decoder_uop;
-      assign Ex[k].waddr    = decoder_waddr;
-      assign Ex[k].seq_num  = F_reg.seq_num;
-      assign Ex[k].preg     = alloc_preg;
-      assign Ex[k].ppreg    = alloc_ppreg;
-      assign Ex[k].mem_data = rdata1;
+      assign Ex[k].pc           = F_reg.pc;
+      assign Ex[k].op1          = op1;
+      assign Ex[k].op2          = op2;
+      assign Ex[k].uop          = decoder_uop;
+      assign Ex[k].waddr        = decoder_waddr;
+      assign Ex[k].seq_num      = F_reg.seq_num;
+      assign Ex[k].preg         = alloc_preg;
+      assign Ex[k].ppreg        = alloc_ppreg;
+      assign Ex[k].op3.mem_data = rdata1;
     end
   endgenerate
 

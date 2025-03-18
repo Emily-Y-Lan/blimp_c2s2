@@ -1,10 +1,10 @@
 //========================================================================
-// Multiplier.v
+// MultiplierL1.v
 //========================================================================
 // An execute unit for performing multiplication operations
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIER_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIER_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIERL1_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIERL1_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -12,7 +12,7 @@
 
 import UArch::*;
 
-module Multiplier (
+module MultiplierL1 (
   input  logic clk,
   input  logic rst,
 
@@ -155,4 +155,4 @@ module Multiplier (
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIER_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L1_MULTIPLIERL1_V

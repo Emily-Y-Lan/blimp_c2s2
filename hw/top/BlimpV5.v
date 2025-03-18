@@ -11,10 +11,10 @@
 `include "defs/UArch.v"
 `include "hw/fetch/fetch_unit_variants/FetchUnitL3.v"
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL4.v"
-`include "hw/execute/execute_units_l1/ALU.v"
-`include "hw/execute/execute_units_l2/PipelinedMultiplier.v"
-`include "hw/execute/execute_units_l3/LoadStoreUnit.v"
-`include "hw/execute/execute_units_l4/ControlFlowUnit.v"
+`include "hw/execute/execute_units_l1/ALUL1.v"
+`include "hw/execute/execute_units_l2/PipelinedMultiplierL2.v"
+`include "hw/execute/execute_units_l3/LoadStoreUnitL3.v"
+`include "hw/execute/execute_units_l4/ControlFlowUnitL4.v"
 `include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL3.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"
@@ -126,13 +126,13 @@ module BlimpV5 #(
     .*
   );
 
-  ALU ALU_XU (
+  ALUL1 ALU_XU (
     .D (d__x_intfs[0]),
     .W (x__w_intfs[0]),
     .*
   );
 
-  PipelinedMultiplier #(
+  PipelinedMultiplierL2 #(
     .p_pipeline_stages (4)
   ) MUL_XU (
     .D (d__x_intfs[1]),
@@ -140,7 +140,7 @@ module BlimpV5 #(
     .*
   );
 
-  LoadStoreUnit #(
+  LoadStoreUnitL3 #(
     .p_opaq_bits (p_opaq_bits)
   ) MEM_XU (
     .D   (d__x_intfs[2]),
@@ -149,7 +149,7 @@ module BlimpV5 #(
     .*
   );
 
-  ControlFlowUnit CTRL_XU (
+  ControlFlowUnitL4 CTRL_XU (
     .D (d__x_intfs[3]),
     .W (x__w_intfs[3]),
     .*

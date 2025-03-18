@@ -1,10 +1,10 @@
 //========================================================================
-// PipelinedMultiplier_test.v
+// PipelinedMultiplierL2_test.v
 //========================================================================
 // A testbench for our pipelined multiplier
 
 `include "defs/UArch.v"
-`include "hw/execute/execute_units_l2/PipelinedMultiplier.v"
+`include "hw/execute/execute_units_l2/PipelinedMultiplierL2.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
 
@@ -12,11 +12,11 @@ import UArch::*;
 import TestEnv::*;
 
 //========================================================================
-// PipelinedMultiplierTestSuite
+// PipelinedMultiplierL2TestSuite
 //========================================================================
 // A test suite for the multiplier
 
-module PipelinedMultiplierTestSuite #(
+module PipelinedMultiplierL2TestSuite #(
   parameter p_suite_num       = 0,
   parameter p_seq_num_bits    = 5,
   parameter p_pipeline_stages = 1,
@@ -26,7 +26,7 @@ module PipelinedMultiplierTestSuite #(
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: PipelinedMultiplierTestSuite_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: PipelinedMultiplierL2TestSuite_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_seq_num_bits, p_pipeline_stages,
                                 p_D_send_intv_delay, p_W_recv_intv_delay);
   //verilator lint_on UNUSEDSIGNAL
@@ -50,7 +50,7 @@ module PipelinedMultiplierTestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intf();
 
-  PipelinedMultiplier #(
+  PipelinedMultiplierL2 #(
     .p_pipeline_stages (p_pipeline_stages)
   ) dut (
     .D (D__X_intf),
@@ -195,16 +195,16 @@ module PipelinedMultiplierTestSuite #(
 endmodule
 
 //========================================================================
-// PipelinedMultiplier_test
+// PipelinedMultiplierL2_test
 //========================================================================
 
-module PipelinedMultiplier_test;
-  PipelinedMultiplierTestSuite #(1)             suite_1();
-  PipelinedMultiplierTestSuite #(2, 6, 1, 0, 0) suite_2();
-  PipelinedMultiplierTestSuite #(3, 3, 2, 0, 0) suite_3();
-  PipelinedMultiplierTestSuite #(4, 4, 4, 3, 0) suite_4();
-  PipelinedMultiplierTestSuite #(5, 9, 8, 0, 3) suite_5();
-  PipelinedMultiplierTestSuite #(6, 5, 8, 3, 3) suite_6();
+module PipelinedMultiplierL2_test;
+  PipelinedMultiplierL2TestSuite #(1)             suite_1();
+  PipelinedMultiplierL2TestSuite #(2, 6, 1, 0, 0) suite_2();
+  PipelinedMultiplierL2TestSuite #(3, 3, 2, 0, 0) suite_3();
+  PipelinedMultiplierL2TestSuite #(4, 4, 4, 3, 0) suite_4();
+  PipelinedMultiplierL2TestSuite #(5, 9, 8, 0, 3) suite_5();
+  PipelinedMultiplierL2TestSuite #(6, 5, 8, 3, 3) suite_6();
 
   int s;
 

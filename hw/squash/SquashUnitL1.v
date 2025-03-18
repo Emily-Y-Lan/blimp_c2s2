@@ -138,7 +138,7 @@ module SquashUnitL1 #(
     // Use a helper module to arbitrate between two requests, and connect
     // in a binary tree structure
 
-    else begin: recur_case
+    else begin: tree
       logic [p_seq_num_bits-1:0] intermediate_seq_num [p_num_intf] /* verilator split_var */;
       logic               [31:0] intermediate_target  [p_num_intf] /* verilator split_var */;
       logic                      intermediate_val     [p_num_intf] /* verilator split_var */;

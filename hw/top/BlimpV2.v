@@ -9,8 +9,8 @@
 `include "defs/UArch.v"
 `include "hw/fetch/fetch_unit_variants/FetchUnitL2.v"
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL2.v"
-`include "hw/execute/execute_units_l1/ALU.v"
-`include "hw/execute/execute_units_l2/PipelinedMultiplier.v"
+`include "hw/execute/execute_units_l1/ALUL1.v"
+`include "hw/execute/execute_units_l2/PipelinedMultiplierL2.v"
 `include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL2.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"
@@ -94,13 +94,13 @@ module BlimpV2 #(
     .*
   );
 
-  ALU ALU_XU (
+  ALUL1 ALU_XU (
     .D (d__x_intfs[0]),
     .W (x__w_intfs[0]),
     .*
   );
 
-  PipelinedMultiplier #(
+  PipelinedMultiplierL2 #(
     .p_pipeline_stages (4)
   ) MUL_XU (
     .D (d__x_intfs[1]),

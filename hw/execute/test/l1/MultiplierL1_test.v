@@ -1,10 +1,10 @@
 //========================================================================
-// Multiplier_test.v
+// MultiplierL1_test.v
 //========================================================================
-// A testbench for our Multiplier
+// A testbench for our MultiplierL1
 
 `include "defs/UArch.v"
-`include "hw/execute/execute_units_l1/Multiplier.v"
+`include "hw/execute/execute_units_l1/MultiplierL1.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
 
@@ -12,11 +12,11 @@ import UArch::*;
 import TestEnv::*;
 
 //========================================================================
-// MultiplierTestSuite
+// MultiplierL1TestSuite
 //========================================================================
-// A test suite for the multiplier
+// A test suite for the MultiplierL1
 
-module MultiplierTestSuite #(
+module MultiplierL1TestSuite #(
   parameter p_suite_num    = 0,
   parameter p_seq_num_bits = 5,
 
@@ -25,7 +25,7 @@ module MultiplierTestSuite #(
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: MultiplierTestSuite_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: MultiplierL1TestSuite_%0d_%0d_%0d", 
                                 p_suite_num, p_seq_num_bits,
                                 p_D_send_intv_delay, p_W_recv_intv_delay);
   //verilator lint_on UNUSEDSIGNAL
@@ -49,7 +49,7 @@ module MultiplierTestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) X__W_intf();
 
-  Multiplier dut (
+  MultiplierL1 dut (
     .D (D__X_intf),
     .W (X__W_intf),
     .*
@@ -189,16 +189,16 @@ module MultiplierTestSuite #(
 endmodule
 
 //========================================================================
-// Multiplier_test
+// MultiplierL1_test
 //========================================================================
 
-module Multiplier_test;
-  MultiplierTestSuite #(1)          suite_1();
-  MultiplierTestSuite #(2, 6, 0, 0) suite_2();
-  MultiplierTestSuite #(3, 3, 0, 0) suite_3();
-  MultiplierTestSuite #(4, 4, 3, 0) suite_4();
-  MultiplierTestSuite #(5, 9, 0, 3) suite_5();
-  MultiplierTestSuite #(6, 5, 3, 3) suite_6();
+module MultiplierL1_test;
+  MultiplierL1TestSuite #(1)          suite_1();
+  MultiplierL1TestSuite #(2, 6, 0, 0) suite_2();
+  MultiplierL1TestSuite #(3, 3, 0, 0) suite_3();
+  MultiplierL1TestSuite #(4, 4, 3, 0) suite_4();
+  MultiplierL1TestSuite #(5, 9, 0, 3) suite_5();
+  MultiplierL1TestSuite #(6, 5, 3, 3) suite_6();
 
   int s;
 

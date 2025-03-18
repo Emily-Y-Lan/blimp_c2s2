@@ -1,12 +1,12 @@
 //========================================================================
-// ControlFlowUnit.v
+// ControlFlowUnitL4.v
 //========================================================================
 // An execute unit for handling control flow operations
 //
 // Since we only handle jumps, all this does is compute the return address
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L4_CONTROLFLOWUNIT_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L4_CONTROLFLOWUNIT_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L4_CONTROLFLOWUNITL4_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L4_CONTROLFLOWUNITL4_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -14,7 +14,7 @@
 
 import UArch::*;
 
-module ControlFlowUnit (
+module ControlFlowUnitL4 (
   input  logic clk,
   input  logic rst,
 
@@ -134,4 +134,4 @@ module ControlFlowUnit (
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L1_ALU_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L4_CONTROLFLOWUNITL4_V

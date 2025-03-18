@@ -97,6 +97,7 @@ module DecodeIssueUnitL2 #(
 
   // verilator lint_off UNUSEDSIGNAL
   logic [1:0] decoder_jal;
+  logic       decoder_op3_sel;
   // verilator lint_on UNUSEDSIGNAL
   
   InstDecoder #(
@@ -111,7 +112,8 @@ module DecodeIssueUnitL2 #(
     .wen     (decoder_wen),
     .imm_sel (decoder_imm_sel),
     .op2_sel (decoder_op2_sel),
-    .jal     (decoder_jal)
+    .jal     (decoder_jal),
+    .op3_sel (decoder_op3_sel)
   );
 
   logic [31:0] rdata0, rdata1;

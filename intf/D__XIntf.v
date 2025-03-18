@@ -20,6 +20,11 @@ interface D__XIntf
   parameter p_phys_addr_bits = 6
 );
 
+  typedef union packed {
+    logic [31:0] mem_data;
+    logic [31:0] branch_imm;
+  } op3_t;
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,7 +47,7 @@ interface D__XIntf
   logic [p_phys_addr_bits-1:0] ppreg;
 
   // Added in v4
-  logic                 [31:0] mem_data;
+  op3_t op3;
 
   // verilator lint_on UNUSEDSIGNAL
 
@@ -67,7 +72,7 @@ interface D__XIntf
     output ppreg,
 
     // v4
-    output mem_data
+    output op3
   );
 
   modport X_intf (
@@ -87,7 +92,7 @@ interface D__XIntf
     input  ppreg,
 
     // v4
-    input  mem_data
+    input  op3
   );
 
 endinterface

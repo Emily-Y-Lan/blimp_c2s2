@@ -1,10 +1,10 @@
 //========================================================================
-// PipelinedMultiplier.v
+// PipelinedMultiplierL2.v
 //========================================================================
 // A multiplier with a parametrizable latency
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIER_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIER_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIERL2_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIERL2_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -12,7 +12,7 @@
 
 import UArch::*;
 
-module PipelinedMultiplier #(
+module PipelinedMultiplierL2 #(
   parameter p_pipeline_stages = 1
 )(
   input  logic clk,
@@ -217,4 +217,4 @@ module PipelinedMultiplier #(
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIER_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L2_PIPELINEDMULTIPLIERL2_V
