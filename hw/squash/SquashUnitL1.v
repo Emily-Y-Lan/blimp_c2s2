@@ -159,15 +159,15 @@ module SquashUnitL1 #(
           SquashUnitL1Helper #(
             .p_seq_num_bits (p_seq_num_bits)
           ) helper (
-            .arb0_seq_num ( intermediate_seq_num[(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 1] ),
-            .arb0_target  ( intermediate_target [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 1] ),
-            .arb0_val     ( intermediate_val    [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 1] ),
-            .arb1_seq_num ( intermediate_seq_num[(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 2] ),
-            .arb1_target  ( intermediate_target [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 2] ),
-            .arb1_val     ( intermediate_val    [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 2] ),
-            .gnt_seq_num  ( intermediate_seq_num[(2 ** (p_num_levels + 1)) -      j  -      (2 ** i)  - 1] ),
-            .gnt_target   ( intermediate_target [(2 ** (p_num_levels + 1)) -      j  -      (2 ** i)  - 1] ),
-            .gnt_val      ( intermediate_val    [(2 ** (p_num_levels + 1)) -      j  -      (2 ** i)  - 1] ),
+            .arb0_seq_num ( intermediate_seq_num[p_num_intf - (2 * j) - (2 * (2 ** i))    ] ),
+            .arb0_target  ( intermediate_target [p_num_intf - (2 * j) - (2 * (2 ** i))    ] ),
+            .arb0_val     ( intermediate_val    [p_num_intf - (2 * j) - (2 * (2 ** i))    ] ),
+            .arb1_seq_num ( intermediate_seq_num[p_num_intf - (2 * j) - (2 * (2 ** i)) - 1] ),
+            .arb1_target  ( intermediate_target [p_num_intf - (2 * j) - (2 * (2 ** i)) - 1] ),
+            .arb1_val     ( intermediate_val    [p_num_intf - (2 * j) - (2 * (2 ** i)) - 1] ),
+            .gnt_seq_num  ( intermediate_seq_num[p_num_intf -      j  -      (2 ** i)     ] ),
+            .gnt_target   ( intermediate_target [p_num_intf -      j  -      (2 ** i)     ] ),
+            .gnt_val      ( intermediate_val    [p_num_intf -      j  -      (2 ** i)     ] ),
             .*
           );
         end
