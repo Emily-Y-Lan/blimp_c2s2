@@ -60,9 +60,7 @@ module FetchUnitL2TestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif();
 
-  FetchUnitL2 #(
-    .p_opaq_bits    (p_opaq_bits)
-  ) dut (
+  FetchUnitL2 dut (
     .mem    (mem_intf),
     .D      (F__D_intf),
     .commit (commit_notif),

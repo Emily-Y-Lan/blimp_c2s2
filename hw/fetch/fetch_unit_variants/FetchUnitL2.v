@@ -13,7 +13,6 @@
 
 module FetchUnitL2
 #(
-  parameter p_opaq_bits     = 8,
   parameter p_reclaim_width = 2
 )
 ( 
@@ -46,7 +45,6 @@ module FetchUnitL2
   localparam p_rst_addr     = 32'h200;
   localparam p_seq_num_bits = D.p_seq_num_bits;
   
-  localparam logic [p_opaq_bits:0] p_max_in_flight = 2 ** p_opaq_bits;
   localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
@@ -63,25 +61,6 @@ module FetchUnitL2
   always_comb begin
     memreq_xfer  = mem.req_val  & mem.req_rdy;
     memresp_xfer = mem.resp_val & mem.resp_rdy;
-  end
-
-  logic [p_opaq_bits:0] num_in_flight;
-  logic [p_opaq_bits:0] num_in_flight_next;
-
-  always_ff @( posedge clk ) begin
-    if ( rst )
-      num_in_flight <= '0;
-    else
-      num_in_flight <= num_in_flight_next;
-  end
-
-  always_comb begin
-    num_in_flight_next = num_in_flight;
-
-    if ( memreq_xfer & !memresp_xfer )
-      num_in_flight_next = num_in_flight + 1;
-    if ( memresp_xfer & !memreq_xfer )
-      num_in_flight_next = num_in_flight - 1;
   end
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,7 +90,7 @@ module FetchUnitL2
   end
 
   always_comb begin
-    mem.req_val        = (num_in_flight < p_max_in_flight);
+    mem.req_val        = 1'b1;
     mem.req_msg.op     = MEM_MSG_READ;
     mem.req_msg.opaque = '0;
     mem.req_msg.len    = '0;

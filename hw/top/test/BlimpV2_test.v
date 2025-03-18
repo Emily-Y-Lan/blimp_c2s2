@@ -54,7 +54,6 @@ module BlimpV2TestSuite #(
   InstTraceNotif inst_trace_notif();
 
   BlimpV2 #(
-    .p_opaq_bits    (p_opaq_bits),
     .p_seq_num_bits (p_seq_num_bits)
   ) dut (
     .inst_mem   (mem_intf),

@@ -22,7 +22,6 @@
 `include "intf/InstTraceNotif.v"
 
 module BlimpV1 #(
-  parameter p_opaq_bits    = 8,
   parameter p_seq_num_bits = 5
 ) (
   input logic clk,
@@ -75,9 +74,7 @@ module BlimpV1 #(
   // Units
   //----------------------------------------------------------------------
 
-  FetchUnitL1 #(
-    .p_opaq_bits (p_opaq_bits)
-  ) FU (
+  FetchUnitL1 FU (
     .mem (inst_mem),
     .D   (f__d_intf),
     .*

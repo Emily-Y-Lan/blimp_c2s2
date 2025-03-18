@@ -53,9 +53,7 @@ module FetchUnitL1TestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) F__D_intf();
 
-  FetchUnitL1 #(
-    .p_opaq_bits (p_opaq_bits)
-  ) dut (
+  FetchUnitL1 dut (
     .mem (mem_intf),
     .D   (F__D_intf),
     .*

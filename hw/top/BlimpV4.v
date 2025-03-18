@@ -91,9 +91,7 @@ module BlimpV4 #(
   // Units
   //----------------------------------------------------------------------
 
-  FetchUnitL2 #(
-    .p_opaq_bits (p_opaq_bits)
-  ) FU (
+  FetchUnitL2 FU (
     .mem    (inst_mem),
     .D      (f__d_intf),
     .commit (commit_notif),
