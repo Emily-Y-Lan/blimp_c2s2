@@ -1,9 +1,9 @@
 //========================================================================
-// SquashUnitL1_test.v
+// SquashUnitL1ChainChain_test.v
 //========================================================================
 // A testbench for our squash unit
 
-`include "hw/squash/SquashUnitL1.v"
+`include "hw/squash/SquashUnitL1Chain.v"
 `include "intf/CommitNotif.v"
 `include "intf/SquashNotif.v"
 `include "test/fl/TestPub.v"
@@ -13,18 +13,18 @@
 import TestEnv::*;
 
 //========================================================================
-// SquashUnitL1TestSuite
+// SquashUnitL1ChainTestSuite
 //========================================================================
 // A test suite for the squash unit
 
-module SquashUnitL1TestSuite #(
+module SquashUnitL1ChainTestSuite #(
   parameter p_suite_num    = 0,
   parameter p_num_arb      = 2,
   parameter p_seq_num_bits = 5
 );
 
   //verilator lint_off UNUSEDSIGNAL
-  string suite_name = $sformatf("%0d: SquashUnitL1TestSuite_%0d_%0d", 
+  string suite_name = $sformatf("%0d: SquashUnitL1ChainTestSuite_%0d_%0d", 
                                 p_suite_num, p_num_arb, p_seq_num_bits);
   //verilator lint_on UNUSEDSIGNAL
 
@@ -51,7 +51,7 @@ module SquashUnitL1TestSuite #(
     .p_seq_num_bits (p_seq_num_bits)
   ) commit_notif ();
 
-  SquashUnitL1 #(
+  SquashUnitL1Chain #(
     .p_num_arb (p_num_arb)
   ) dut (
     .arb    (squash_arb),
@@ -349,16 +349,16 @@ module SquashUnitL1TestSuite #(
 endmodule
 
 //========================================================================
-// SquashUnitL1_test
+// SquashUnitL1Chain_test
 //========================================================================
 
-module SquashUnitL1_test;
-  SquashUnitL1TestSuite #(1)        suite_1();
-  SquashUnitL1TestSuite #(2,  4, 5) suite_2();
-  SquashUnitL1TestSuite #(3,  1, 3) suite_3();
-  SquashUnitL1TestSuite #(4,  8, 4) suite_4();
-  SquashUnitL1TestSuite #(5,  5, 6) suite_5();
-  SquashUnitL1TestSuite #(5, 20, 6) suite_6();
+module SquashUnitL1Chain_test;
+  SquashUnitL1ChainTestSuite #(1)        suite_1();
+  SquashUnitL1ChainTestSuite #(2,  4, 5) suite_2();
+  SquashUnitL1ChainTestSuite #(3,  1, 3) suite_3();
+  SquashUnitL1ChainTestSuite #(4,  8, 4) suite_4();
+  SquashUnitL1ChainTestSuite #(5,  5, 6) suite_5();
+  SquashUnitL1ChainTestSuite #(5, 20, 6) suite_6();
 
   int s;
 

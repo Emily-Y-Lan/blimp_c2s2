@@ -67,6 +67,23 @@ module SeqAge (
            ( seq_num_1 < oldest_seq_num );
   endfunction
 
+  //----------------------------------------------------------------------
+  // Unused signals
+  //----------------------------------------------------------------------
+  // Include those that are used by SeqAge
+
+  logic [31:0] unused_commit_pc;
+  logic  [4:0] unused_commit_waddr;
+  logic [31:0] unused_commit_wdata;
+  logic        unused_commit_wen;
+  logic        unused_commit_val;
+
+  assign unused_commit_pc    = commit.pc;
+  assign unused_commit_waddr = commit.waddr;
+  assign unused_commit_wdata = commit.wdata;
+  assign unused_commit_wen   = commit.wen;
+  assign unused_commit_val   = commit.val;
+
 endmodule
 
 `endif // HW_UTIL_SEQAGE_V
