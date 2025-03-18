@@ -123,7 +123,7 @@ module SquashUnitL1 #(
 
   generate
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // Base case
+    // Trivial case
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     if( p_num_arb == 1 ) begin: base_case
@@ -133,8 +133,10 @@ module SquashUnitL1 #(
     end
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // Recursive case
+    // Complicated case
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Use a helper module to arbitrate between two requests, and connect
+    // in a binary tree structure
 
     else begin: recur_case
       logic [p_seq_num_bits-1:0] intermediate_seq_num [p_num_intf] /* verilator split_var */;
