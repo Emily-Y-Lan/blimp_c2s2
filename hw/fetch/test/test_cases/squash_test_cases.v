@@ -83,6 +83,111 @@ task test_case_squash_backward();
 endtask
 
 //----------------------------------------------------------------------
+// test_case_squash_many
+//----------------------------------------------------------------------
+
+task test_case_squash_many();
+  t.test_case_begin( "test_case_squash_many" );
+  if( !t.run_test ) return;
+
+  //               addr  data
+  fl_mem.init_mem( 'h200, 32'hf0f0f0f0 );
+  fl_mem.init_mem( 'h204, 32'he0e0e0e0 );
+  fl_mem.init_mem( 'h208, 32'hd0d0d0d0 );
+  fl_mem.init_mem( 'h20c, 32'hc0c0c0c0 );
+
+  //    inst          pc     seq_num
+  recv( 32'hf0f0f0f0, 'h200, 0 );
+
+  // Delay to build up in-flight requests
+  for( int i = 0; i < 5; i = i + 1 ) begin
+    @( posedge clk );
+    #1;
+  end
+
+  //      seq_num target
+  squash( 0,      'h200 );
+
+  recv( 32'hf0f0f0f0, 'h200, 1 );
+
+  for( int i = 0; i < 5; i = i + 1 ) begin
+    @( posedge clk );
+    #1;
+  end
+
+  //      seq_num target
+  squash( 1,      'h200 );
+
+  recv( 32'hf0f0f0f0, 'h200, 2 );
+
+  t.test_case_end();
+endtask
+
+//----------------------------------------------------------------------
+// test_case_squash_multi
+//----------------------------------------------------------------------
+
+task test_case_squash_multi();
+  t.test_case_begin( "test_case_squash_multi" );
+  if( !t.run_test ) return;
+
+  //               addr  data
+  fl_mem.init_mem( 'h200, 32'hf0f0f0f0 );
+  fl_mem.init_mem( 'h204, 32'he0e0e0e0 );
+  fl_mem.init_mem( 'h208, 32'hd0d0d0d0 );
+  fl_mem.init_mem( 'h20c, 32'hc0c0c0c0 );
+
+  //    inst          pc     seq_num
+  recv( 32'hf0f0f0f0, 'h200, 0 );
+
+  for( int j = 1; j < 4; j = j + 1 ) begin
+    // Delay to build up in-flight requests
+    for( int i = 0; i < 10; i = i + 1 ) begin
+      @( posedge clk );
+      #1;
+    end
+
+    //      seq_num target
+    squash( 0,      'h200 );
+
+    recv( 32'hf0f0f0f0, 'h200, p_seq_num_bits'(j) );
+  end
+
+  t.test_case_end();
+endtask
+
+//----------------------------------------------------------------------
+// test_case_squash_max_in_flight
+//----------------------------------------------------------------------
+
+task test_case_squash_max_in_flight();
+  t.test_case_begin( "test_case_squash_max_in_flight" );
+  if( !t.run_test ) return;
+
+  for( int i = 0; i < 3 * p_max_in_flight + 4; i = i + 1 ) begin
+    //               addr                data
+    fl_mem.init_mem( 'h200 + 32'(4 * i), 32'(i) );
+  end
+
+  // Wait a while, then squash multiple times
+  for( int i = 0; i < 3; i = i + 1 ) begin
+    for( int j = 0; j < p_max_in_flight; j = j + 1 ) begin
+      @( posedge clk ); // Request is sent out
+      #1;
+    end
+    squash( 0, 'h200 );
+  end
+
+  // Check that we still receive the correct messages
+  for( int i = 0; i < 2 * p_max_in_flight; i = i + 1 ) begin
+    //    inst    pc              seq_num
+    recv( 32'(i), 'h200 + 32'(4 * i), p_seq_num_bits'(i) );
+  end
+
+  t.test_case_end();
+endtask
+
+//----------------------------------------------------------------------
 // run_squash_test_cases
 //----------------------------------------------------------------------
 
@@ -90,4 +195,7 @@ task run_squash_test_cases();
   test_case_squash_basic();
   test_case_squash_forward();
   test_case_squash_backward();
+  test_case_squash_many();
+  test_case_squash_multi();
+  test_case_squash_max_in_flight();
 endtask

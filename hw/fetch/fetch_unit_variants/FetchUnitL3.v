@@ -14,8 +14,8 @@
 
 module FetchUnitL3
 #(
-  parameter p_opaq_bits     = 8,
-  parameter p_reclaim_width = 2
+  parameter p_reclaim_width = 2,
+  parameter p_max_in_flight = 16
 )
 ( 
   input  logic    clk,
@@ -53,7 +53,7 @@ module FetchUnitL3
   localparam p_rst_addr     = 32'h200;
   localparam p_seq_num_bits = D.p_seq_num_bits;
   
-  localparam logic [p_opaq_bits:0] p_max_in_flight = 2 ** p_opaq_bits;
+  localparam p_flight_bits   = $clog2(p_max_in_flight) + 1;
   localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
@@ -72,8 +72,8 @@ module FetchUnitL3
     memresp_xfer = mem.resp_val & mem.resp_rdy;
   end
 
-  logic [p_opaq_bits:0] num_in_flight;
-  logic [p_opaq_bits:0] num_in_flight_next;
+  logic [p_flight_bits-1:0] num_in_flight;
+  logic [p_flight_bits-1:0] num_in_flight_next;
 
   always_ff @( posedge clk ) begin
     if ( rst )
@@ -81,15 +81,46 @@ module FetchUnitL3
     else
       num_in_flight <= num_in_flight_next;
   end
+  
+  logic should_drop; // Drop messages from squashing
 
   always_comb begin
     num_in_flight_next = num_in_flight;
 
-    if ( memreq_xfer & !memresp_xfer )
-      num_in_flight_next = num_in_flight + 1;
-    if ( memresp_xfer & !memreq_xfer )
-      num_in_flight_next = num_in_flight - 1;
+    if( squash.val ) // All in-flight messages should be squashed
+      num_in_flight_next = 0;
+
+    if ( memreq_xfer & (!memresp_xfer | should_drop) )
+      num_in_flight_next = num_in_flight_next + 1;
+    if ( memresp_xfer & !memreq_xfer & !should_drop )
+      num_in_flight_next = num_in_flight_next - 1;
   end
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Keep track of the in-flight requests to squash
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  logic [p_flight_bits-1:0] num_to_squash;
+  logic [p_flight_bits-1:0] num_to_squash_next;
+
+  always_ff @( posedge clk ) begin
+    if ( rst )
+      num_to_squash <= '0;
+    else
+      num_to_squash <= num_to_squash_next;
+  end
+
+  always_comb begin
+    num_to_squash_next = num_to_squash;
+
+    if( squash.val ) // Copy over from in-flight requests
+      num_to_squash_next = num_to_squash_next + num_in_flight;
+
+    if( memresp_xfer & ( num_to_squash_next > 0 ) ) // Decrement
+      num_to_squash_next = num_to_squash_next - 1;
+  end
+
+  assign should_drop = squash.val | ( num_to_squash > 0 );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Keep track of the current request address
@@ -128,25 +159,10 @@ module FetchUnitL3
   // Other request signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  logic [p_opaq_bits-1:0] req_opaque_next;
-  logic [p_opaq_bits-1:0] req_opaque;
-
-  assign req_opaque_next = req_opaque + 1;
-
-  always_ff @( posedge clk ) begin
-    if ( rst )
-      req_opaque <= '0;
-    else if ( squash.val )
-      req_opaque <= req_opaque_next;
-  end
-
   always_comb begin
-    // Easier than tracking whether our opaque bits will wrap around for
-    // an outstanding request
-    mem.req_val        = (num_in_flight < p_max_in_flight);
-
+    mem.req_val        = (num_in_flight + num_to_squash < p_max_in_flight);
     mem.req_msg.op     = MEM_MSG_READ;
-    mem.req_msg.opaque = ( squash.val ) ? req_opaque_next : req_opaque;
+    mem.req_msg.opaque = 'x;
     mem.req_msg.len    = '0;
     mem.req_msg.data   = 'x;
   end
@@ -154,14 +170,6 @@ module FetchUnitL3
   //----------------------------------------------------------------------
   // Response
   //----------------------------------------------------------------------
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // Dropped squashed messages
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  logic should_drop;
-  assign should_drop = (mem.resp_msg.opaque != mem.req_msg.opaque)
-                     | squash.val;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Allocation
@@ -224,9 +232,11 @@ module FetchUnitL3
     trace = {trace, " > "};
 
     if( memresp_xfer )
-      trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, D.seq_num)};
+      trace = {trace, $sformatf("%h (%h) %s ", 
+                                mem.resp_msg.addr, D.seq_num,
+                                (should_drop ? "X" : " "))};
     else
-      trace = {trace, {(11 + ceil_div_4(p_seq_num_bits)){" "}}};
+      trace = {trace, {(14 + ceil_div_4(p_seq_num_bits)){" "}}};
   endfunction
 `endif
 

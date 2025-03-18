@@ -19,16 +19,17 @@ import TestEnv::*;
 // A test suite for a particular parametrization of the Fetch unit
 
 module FetchUnitL3TestSuite #(
-  parameter p_suite_num    = 0,
-  parameter p_opaq_bits    = 8,
-  parameter p_seq_num_bits = 5,
+  parameter p_suite_num     = 0,
+  parameter p_opaq_bits     = 8,
+  parameter p_seq_num_bits  = 5,
+  parameter p_max_in_flight = 16,
 
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1,
   parameter p_D_recv_intv_delay   = 0
 );
-  string suite_name = $sformatf("%0d: FetchUnitL3TestSuite_%0d_%0d_%0d_%0d_%0d", 
-                                p_suite_num, p_opaq_bits, p_seq_num_bits,
+  string suite_name = $sformatf("%0d: FetchUnitL3TestSuite_%0d_%0d_%0d_%0d_%0d_%0d", 
+                                p_suite_num, p_opaq_bits, p_seq_num_bits, p_max_in_flight,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay,
                                 p_D_recv_intv_delay);
 
@@ -66,7 +67,7 @@ module FetchUnitL3TestSuite #(
   ) squash_notif();
 
   FetchUnitL3 #(
-    .p_opaq_bits    (p_opaq_bits)
+    .p_max_in_flight (p_max_in_flight)
   ) dut (
     .mem    (mem_intf),
     .D      (F__D_intf),
@@ -250,14 +251,14 @@ endmodule
 //========================================================================
 
 module FetchUnitL3_test;
-  FetchUnitL3TestSuite #(1)                suite_1();
-  FetchUnitL3TestSuite #(2, 8, 5, 0, 0, 0) suite_2();
-  FetchUnitL3TestSuite #(3, 1, 2, 0, 0, 0) suite_3();
-  FetchUnitL3TestSuite #(4, 8, 3, 3, 0, 0) suite_4();
-  FetchUnitL3TestSuite #(5, 8, 4, 0, 3, 0) suite_5();
-  FetchUnitL3TestSuite #(6, 8, 2, 0, 0, 3) suite_6();
-  FetchUnitL3TestSuite #(7, 4, 3, 3, 3, 3) suite_7();
-  FetchUnitL3TestSuite #(8, 1, 4, 9, 9, 9) suite_8();
+  FetchUnitL3TestSuite #(1)                    suite_1();
+  FetchUnitL3TestSuite #(2, 8, 5, 32, 0, 0, 0) suite_2();
+  FetchUnitL3TestSuite #(3, 1, 2,  8, 0, 0, 0) suite_3();
+  FetchUnitL3TestSuite #(4, 8, 3,  4, 3, 0, 0) suite_4();
+  FetchUnitL3TestSuite #(5, 8, 4, 64, 0, 3, 0) suite_5();
+  FetchUnitL3TestSuite #(6, 8, 2,  1, 0, 0, 3) suite_6();
+  FetchUnitL3TestSuite #(7, 4, 3, 16, 3, 3, 3) suite_7();
+  FetchUnitL3TestSuite #(8, 1, 4, 16, 9, 9, 9) suite_8();
 
   int s;
 

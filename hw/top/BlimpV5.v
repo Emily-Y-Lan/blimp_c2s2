@@ -99,7 +99,7 @@ module BlimpV5 #(
   //----------------------------------------------------------------------
 
   FetchUnitL3 #(
-    .p_opaq_bits (p_opaq_bits)
+    .p_max_in_flight (32)
   ) FU (
     .mem    (inst_mem),
     .D      (f__d_intf),
