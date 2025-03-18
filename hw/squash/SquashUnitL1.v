@@ -11,6 +11,85 @@
 `include "intf/CommitNotif.v"
 `include "intf/SquashNotif.v"
 
+//------------------------------------------------------------------------
+// SquashUnitL1Helper
+//------------------------------------------------------------------------
+// A helper module to arbitrate between two squash interfaces
+
+module SquashUnitL1Helper #(
+  parameter p_seq_num_bits = 5
+)(
+  input  logic    clk,
+  input  logic    rst,
+
+  //----------------------------------------------------------------------
+  // Notifications to arbitrate between
+  //----------------------------------------------------------------------
+
+  input  logic [p_seq_num_bits-1:0] arb0_seq_num,
+  input  logic               [31:0] arb0_target,
+  input  logic                      arb0_val,
+  input  logic [p_seq_num_bits-1:0] arb1_seq_num,
+  input  logic               [31:0] arb1_target,
+  input  logic                      arb1_val,
+
+  //----------------------------------------------------------------------
+  // Arbitrated notification
+  //----------------------------------------------------------------------
+
+  output logic [p_seq_num_bits-1:0] gnt_seq_num,
+  output logic               [31:0] gnt_target,
+  output logic                      gnt_val,
+
+  //----------------------------------------------------------------------
+  // Commit to track age comparison
+  //----------------------------------------------------------------------
+
+  CommitNotif.sub commit
+);
+
+  SeqAge seq_age (
+    .*
+  );
+
+  logic arb0_is_older;
+  assign arb0_is_older = seq_age.is_older(
+    arb0_seq_num,
+    arb1_seq_num
+  );
+
+  always_comb begin
+    // Choose the valid notification, if only one
+    if( !arb0_val ) begin
+      gnt_seq_num = arb1_seq_num;
+      gnt_target  = arb1_target;
+      gnt_val     = arb1_val;
+    end else if( !arb1_val ) begin
+      gnt_seq_num = arb0_seq_num;
+      gnt_target  = arb0_target;
+      gnt_val     = arb0_val;
+    end
+
+    // Pass along the older squash
+    else if( arb0_is_older ) begin
+      // 0 is older
+      gnt_seq_num = arb0_seq_num;
+      gnt_target  = arb0_target;
+      gnt_val     = arb0_val;
+    end else begin
+      // 1 is older
+      gnt_seq_num = arb1_seq_num;
+      gnt_target  = arb1_target;
+      gnt_val     = arb1_val;
+    end
+  end
+
+endmodule
+
+//------------------------------------------------------------------------
+// SquashUnitL1
+//------------------------------------------------------------------------
+
 module SquashUnitL1 #(
   parameter p_num_arb = 2
 ) (
@@ -38,6 +117,10 @@ module SquashUnitL1 #(
 
   localparam p_seq_num_bits = gnt.p_seq_num_bits;
 
+  // Binary tree
+  localparam p_num_levels = $clog2( p_num_arb );
+  localparam p_num_intf   = ( 2 ** ( p_num_levels + 1 ) ) - 1;
+
   generate
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Base case
@@ -54,69 +137,45 @@ module SquashUnitL1 #(
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     else begin: recur_case
-      localparam p_num_arb_split = p_num_arb / 2;
+      logic [p_seq_num_bits-1:0] intermediate_seq_num [p_num_intf] /* verilator split_var */;
+      logic               [31:0] intermediate_target  [p_num_intf] /* verilator split_var */;
+      logic                      intermediate_val     [p_num_intf] /* verilator split_var */;
 
-      // Temporary interfaces to arbitrate
-      SquashNotif #(
-        .p_seq_num_bits (p_seq_num_bits)
-      ) gnt_intermediate [2]();
-
-      // Form binary decision tree
-      localparam p_left_num_arb  = p_num_arb_split;
-      localparam p_right_num_arb = p_num_arb - p_num_arb_split;
-
-      SquashUnitL1 #(
-        .p_num_arb (p_left_num_arb)
-      ) left (
-        .arb (arb[0:p_num_arb_split-1]),
-        .gnt (gnt_intermediate[0]),
-        .*
-      );
-
-      SquashUnitL1 #(
-        .p_num_arb (p_right_num_arb)
-      ) right (
-        .arb (arb[p_num_arb_split:p_num_arb-1]),
-        .gnt (gnt_intermediate[1]),
-        .*
-      );
-
-      // Arbitrate between the remaining two notifications
-      SeqAge seq_age (
-        .*
-      );
-
-      logic gnt0_is_older;
-      assign gnt0_is_older = recur_case.seq_age.is_older(
-        gnt_intermediate[0].seq_num,
-        gnt_intermediate[1].seq_num
-      );
-
-      always_comb begin
-        // Choose the valid notification, if only one
-        if( !gnt_intermediate[0].val ) begin
-          gnt.seq_num = gnt_intermediate[1].seq_num;
-          gnt.target  = gnt_intermediate[1].target;
-          gnt.val     = gnt_intermediate[1].val;
-        end else if( !gnt_intermediate[1].val ) begin
-          gnt.seq_num = gnt_intermediate[0].seq_num;
-          gnt.target  = gnt_intermediate[0].target;
-          gnt.val     = gnt_intermediate[0].val;
-        end
-
-        // Pass along the older squash
-        else if( gnt0_is_older ) begin
-          // 0 is older
-          gnt.seq_num = gnt_intermediate[0].seq_num;
-          gnt.target  = gnt_intermediate[0].target;
-          gnt.val     = gnt_intermediate[0].val;
+      genvar i, j;
+      for( i = 0; i < 2 ** p_num_levels; i = i + 1 ) begin
+        if( i < p_num_arb ) begin
+          assign intermediate_seq_num[i] = arb[i].seq_num;
+          assign intermediate_target[i]  = arb[i].target;
+          assign intermediate_val[i]     = arb[i].val;
         end else begin
-          // 1 is older
-          gnt.seq_num = gnt_intermediate[1].seq_num;
-          gnt.target  = gnt_intermediate[1].target;
-          gnt.val     = gnt_intermediate[1].val;
+          assign intermediate_seq_num[i] = 'x;
+          assign intermediate_target[i]  = 'x;
+          assign intermediate_val[i]     = 1'b0;
         end
       end
+
+      for( i = 0; i < p_num_levels; i = i + 1 ) begin
+        for( j = 0; j < (2 ** i); j = j + 1 ) begin
+          SquashUnitL1Helper #(
+            .p_seq_num_bits (p_seq_num_bits)
+          ) helper (
+            .arb0_seq_num ( intermediate_seq_num[(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 1] ),
+            .arb0_target  ( intermediate_target [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 1] ),
+            .arb0_val     ( intermediate_val    [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 1] ),
+            .arb1_seq_num ( intermediate_seq_num[(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 2] ),
+            .arb1_target  ( intermediate_target [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 2] ),
+            .arb1_val     ( intermediate_val    [(2 ** (p_num_levels + 1)) - (2 * j) - (2 * (2 ** i)) - 2] ),
+            .gnt_seq_num  ( intermediate_seq_num[(2 ** (p_num_levels + 1)) -      j  -      (2 ** i)  - 1] ),
+            .gnt_target   ( intermediate_target [(2 ** (p_num_levels + 1)) -      j  -      (2 ** i)  - 1] ),
+            .gnt_val      ( intermediate_val    [(2 ** (p_num_levels + 1)) -      j  -      (2 ** i)  - 1] ),
+            .*
+          );
+        end
+      end
+
+      assign gnt.seq_num = intermediate_seq_num[p_num_intf - 1];
+      assign gnt.target  = intermediate_target [p_num_intf - 1];
+      assign gnt.val     = intermediate_val    [p_num_intf - 1];
     end
   endgenerate
 
