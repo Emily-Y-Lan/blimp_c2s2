@@ -172,3 +172,9 @@ add_custom_target(
   ${LIST_COMMANDS}
   COMMENT ${KNOWN_TEST_TEXT}
 )
+
+#------------------------------------------------------------------------
+# Include RISCV programs
+#------------------------------------------------------------------------
+
+add_subdirectory(app)
