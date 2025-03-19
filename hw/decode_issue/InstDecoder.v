@@ -103,7 +103,7 @@ module InstDecoder (
         `RVI_INST_SW:   cs( y, OP_SW,   j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
         `RVI_INST_JAL:  cs( y, OP_JAL,  j_jal,  rx,    rx,    rd,   y,  IMM_J,  op2_x,   op3_x   );
         `RVI_INST_JALR: cs( y, OP_JALR, j_jalr, rs1,   rx,    rd,   y,  IMM_I,  op2_x,   op3_x   );
-        `RVI_INST_BNE:  cs( y, OP_BNE,  j_n,    rs1,   rs2,   rd,   y,  IMM_B,  op2_rf,  op3_br  );
+        `RVI_INST_BNE:  cs( y, OP_BNE,  j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
         default:        cs( n, 'x,      j_n,    'x,    'x,    'x,   n,  'x,     'x,      'x      );
       endcase
     end

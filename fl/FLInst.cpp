@@ -71,3 +71,7 @@ uint32_t FLInst::imm_j() const
 {
   return get_imm_j( binary );
 }
+uint32_t FLInst::imm_is() const
+{
+  return get_imm_is( binary );
+}

@@ -34,18 +34,21 @@ uint32_t imm_s_mask( const std::string& imm );
 uint32_t imm_b_mask( const std::string& imm );
 uint32_t imm_u_mask( const std::string& imm );
 uint32_t imm_j_mask( const std::string& imm );
+uint32_t imm_is_mask( const std::string& imm );
 
 uint32_t get_imm_i( uint32_t binary );
 uint32_t get_imm_s( uint32_t binary );
 uint32_t get_imm_b( uint32_t binary );
 uint32_t get_imm_u( uint32_t binary );
 uint32_t get_imm_j( uint32_t binary );
+uint32_t get_imm_is( uint32_t binary );
 
 std::string get_imm_i_id( uint32_t binary );
 std::string get_imm_s_id( uint32_t binary );
 std::string get_imm_b_id( uint32_t binary );
 std::string get_imm_u_id( uint32_t binary );
 std::string get_imm_j_id( uint32_t binary );
+std::string get_imm_is_id( uint32_t binary );
 
 //------------------------------------------------------------------------
 // Address Specifiers

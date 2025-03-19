@@ -107,7 +107,9 @@ module ControlFlowUnitL5 (
   always_comb begin
     case( D_reg.uop )
       OP_BNE:  should_squash = ( D_reg.op1 != D_reg.op2 );
-      default: should_squash = 1'b0;
+      OP_JAL:  should_squash = 1'b0;
+      OP_JALR: should_squash = 1'b0;
+      default: should_squash = 1'bx;
     endcase
   end
 
@@ -130,7 +132,15 @@ module ControlFlowUnitL5 (
   // Determine register write
   //----------------------------------------------------------------------
 
-  assign W.wen   = ( D_reg.uop == OP_JAL ) | ( D_reg.uop == OP_JALR );
+  always_comb begin
+    case( D_reg.uop )
+      OP_BNE:  W.wen = 1'b0;
+      OP_JAL:  W.wen = 1'b1;
+      OP_JALR: W.wen = 1'b1;
+      default: W.wen = 1'bx;
+    endcase
+  end
+
   assign W.wdata = D_reg.pc + 32'd4;
 
   //----------------------------------------------------------------------

@@ -94,6 +94,15 @@ module FLProc_test;
   `include "hw/top/test/test_cases/directed/jalr_test_cases.v"
   `include "hw/top/test/test_cases/directed/bne_test_cases.v"
 
+  `include "hw/top/test/test_cases/directed/sub_test_cases.v"
+  `include "hw/top/test/test_cases/directed/and_test_cases.v"
+  `include "hw/top/test/test_cases/directed/or_test_cases.v"
+  `include "hw/top/test/test_cases/directed/xor_test_cases.v"
+
+  `include "hw/top/test/test_cases/directed/andi_test_cases.v"
+  `include "hw/top/test/test_cases/directed/ori_test_cases.v"
+  `include "hw/top/test/test_cases/directed/xori_test_cases.v"
+
   //----------------------------------------------------------------------
   // run_tests
   //----------------------------------------------------------------------
@@ -110,6 +119,15 @@ module FLProc_test;
     run_directed_jal_tests();
     run_directed_jalr_tests();
     run_directed_bne_tests();
+
+    run_directed_sub_tests();
+    run_directed_and_tests();
+    run_directed_or_tests();
+    run_directed_xor_tests();
+
+    run_directed_andi_tests();
+    run_directed_ori_tests();
+    run_directed_xori_tests();
 
     test_bench_end();
   endtask

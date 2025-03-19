@@ -33,6 +33,7 @@ class FLInst {
   __attribute__( ( const ) ) uint32_t imm_b() const;
   __attribute__( ( const ) ) uint32_t imm_u() const;
   __attribute__( ( const ) ) uint32_t imm_j() const;
+  __attribute__( ( const ) ) uint32_t imm_is() const;
 
   //----------------------------------------------------------------------
   // Protected attrributes

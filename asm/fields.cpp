@@ -188,10 +188,7 @@ uint32_t imm_i_mask( const std::string& imm )
     throw std::invalid_argument( excp );
   }
 
-  uint32_t imm_encoding = 0;
-  imm_encoding |= ( bitslice( imm_val, 11, 0 ) << 20 );
-
-  return imm_encoding;
+  return bitslice( imm_val, 11, 0 ) << 20;
 }
 
 uint32_t imm_s_mask( const std::string& imm )
@@ -242,9 +239,7 @@ uint32_t imm_u_mask( const std::string& imm )
     throw std::invalid_argument( excp );
   }
 
-  uint32_t imm_encoding = (uint32_t) ( imm_val & 0xFFFFF000 );
-
-  return imm_encoding;
+  return (uint32_t) ( imm_val << 12 );
 }
 
 uint32_t imm_j_mask( const std::string& imm )
@@ -268,6 +263,19 @@ uint32_t imm_j_mask( const std::string& imm )
   imm_encoding |= ( bitslice( imm_val, 20, 20 ) << 31 );
 
   return imm_encoding;
+}
+
+uint32_t imm_is_mask( const std::string& imm )
+{
+  int32_t imm_val = get_imm_int( imm );
+
+  if ( ( imm_val > 0x1f ) || ( imm_val < 0 ) ) {
+    std::string excp =
+        std::format( "Invalid Shift-immediate: {}", imm_val );
+    throw std::invalid_argument( excp );
+  }
+
+  return bitslice( imm_val, 4, 0 ) << 20;
 }
 
 uint32_t get_imm_i( uint32_t binary )
@@ -294,7 +302,7 @@ uint32_t get_imm_b( uint32_t binary )
 
 uint32_t get_imm_u( uint32_t binary )
 {
-  return binary & 0xFFFFF000;
+  return binary >> 12;
 }
 
 uint32_t get_imm_j( uint32_t binary )
@@ -304,6 +312,11 @@ uint32_t get_imm_j( uint32_t binary )
   imm |= ( binary ) & 0x000FF000;
   imm |= ( binary >> 9 ) & 0x00000800;
   return imm;
+}
+
+uint32_t get_imm_is( uint32_t binary )
+{
+  return ( ( (int32_t) binary ) >> 20 ) & 0x0000001f;
 }
 
 std::string get_imm_i_id( uint32_t binary )
@@ -329,6 +342,11 @@ std::string get_imm_u_id( uint32_t binary )
 std::string get_imm_j_id( uint32_t binary )
 {
   return std::to_string( (int) get_imm_j( binary ) );
+}
+
+std::string get_imm_is_id( uint32_t binary )
+{
+  return std::to_string( (int) get_imm_is( binary ) );
 }
 
 //------------------------------------------------------------------------

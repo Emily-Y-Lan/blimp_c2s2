@@ -62,11 +62,93 @@ FLTrace FLProc::step()
                       inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // addi
+      // sub
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    case ADDI:
-      regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
+    case SUB:
+      regs[inst.rd()] = regs[inst.rs1()] - regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // and
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case AND:
+      regs[inst.rd()] = regs[inst.rs1()] & regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // or
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case OR:
+      regs[inst.rd()] = regs[inst.rs1()] | regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // xor
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case XOR:
+      regs[inst.rd()] = regs[inst.rs1()] ^ regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // slt
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SLT:
+      regs[inst.rd()] =
+          ( (int32_t) regs[inst.rs1()] ) < ( (int32_t) regs[inst.rs2()] );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sltu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SLTU:
+      regs[inst.rd()] = regs[inst.rs1()] < regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sra
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SRA:
+      regs[inst.rd()] =
+          ( (int32_t) regs[inst.rs1()] ) >> ( regs[inst.rs2()] & 0x1f );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // srl
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SRL:
+      regs[inst.rd()] = regs[inst.rs1()] >> ( regs[inst.rs2()] & 0x1f );
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sll
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SLL:
+      regs[inst.rd()] = regs[inst.rs1()] << ( regs[inst.rs2()] & 0x1f );
       pc              = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -77,6 +159,117 @@ FLTrace FLProc::step()
 
     case MUL:
       regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // addi
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case ADDI:
+      regs[inst.rd()] = regs[inst.rs1()] + inst.imm_i();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // andi
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case ANDI:
+      regs[inst.rd()] = regs[inst.rs1()] & inst.imm_i();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // ori
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case ORI:
+      regs[inst.rd()] = regs[inst.rs1()] | inst.imm_i();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // xori
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case XORI:
+      regs[inst.rd()] = regs[inst.rs1()] ^ inst.imm_i();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // slti
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SLTI:
+      regs[inst.rd()] =
+          ( (int32_t) regs[inst.rs1()] ) < ( (int32_t) inst.imm_i() );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sltiu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SLTIU:
+      regs[inst.rd()] = regs[inst.rs1()] < inst.imm_i();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // srai
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SRAI:
+      regs[inst.rd()] = ( (int32_t) regs[inst.rs1()] ) >> inst.imm_is();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // srli
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SRLI:
+      regs[inst.rd()] = regs[inst.rs1()] >> inst.imm_is();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // slli
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SLLI:
+      regs[inst.rd()] = regs[inst.rs1()] << inst.imm_is();
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // lui
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case LUI:
+      regs[inst.rd()] = inst.imm_u() << 12;
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // auipc
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case AUIPC:
+      regs[inst.rd()] = pc + ( inst.imm_u() << 12 );
       pc              = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -119,6 +312,19 @@ FLTrace FLProc::step()
       return FLTrace( inst_pc, inst.rd(), inst_pc + 4, inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // beq
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case BEQ:
+      if ( regs[inst.rs1()] == regs[inst.rs2()] ) {
+        pc = pc + inst.imm_b();
+      }
+      else {
+        pc = pc + 4;
+      }
+      return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // bne
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -131,7 +337,59 @@ FLTrace FLProc::step()
       }
       return FLTrace( inst_pc, 0, 0, 0 );
 
-      // TODO: Add more instructions!
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // blt
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case BLT:
+      if ( ( (int32_t) regs[inst.rs1()] ) <
+           ( (int32_t) regs[inst.rs2()] ) ) {
+        pc = pc + inst.imm_b();
+      }
+      else {
+        pc = pc + 4;
+      }
+      return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // bge
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case BGE:
+      if ( ( (int32_t) regs[inst.rs1()] ) >=
+           ( (int32_t) regs[inst.rs2()] ) ) {
+        pc = pc + inst.imm_b();
+      }
+      else {
+        pc = pc + 4;
+      }
+      return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // bltu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case BLTU:
+      if ( regs[inst.rs1()] < regs[inst.rs2()] ) {
+        pc = pc + inst.imm_b();
+      }
+      else {
+        pc = pc + 4;
+      }
+      return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // bgeu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case BGEU:
+      if ( regs[inst.rs1()] >= regs[inst.rs2()] ) {
+        pc = pc + inst.imm_b();
+      }
+      else {
+        pc = pc + 4;
+      }
+      return FLTrace( inst_pc, 0, 0, 0 );
 
     default:
       std::string excp =
