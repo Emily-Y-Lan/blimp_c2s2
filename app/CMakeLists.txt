@@ -11,7 +11,7 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 #-------------------------------------------------------------------------
 
 set(APP_FILES
-  test.cpp
+  riscv_test.cpp
 )
 
 #-------------------------------------------------------------------------
@@ -23,5 +23,5 @@ foreach(APP_FILE_REL_PATH ${APP_FILES})
   get_leaf(APP_FILE ${APP_FILE_PATH})
   remove_extension(APP_BIN ${APP_FILE})
 
-  add_executable(${APP_BIN}.elf ${APP_FILE_PATH})
+  add_executable(${APP_BIN} ${APP_FILE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S)
 endforeach(APP_FILE_REL_PATH)

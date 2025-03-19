@@ -77,6 +77,7 @@ project(
   BLIMP 
   VERSION 1.0
   DESCRIPTION "BLIMP: BRG's Luculently-Interfaced Modular Processor"
+  LANGUAGES C CXX ASM
 )
 
 enable_testing()
