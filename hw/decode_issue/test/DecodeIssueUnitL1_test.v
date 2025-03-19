@@ -63,7 +63,6 @@ module DecodeIssueUnitL1TestSuite #(
   ) complete_notif();
 
   DecodeIssueUnitL1 #(
-    .p_isa_subset   (p_tinyrv1),
     .p_num_pipes    (p_num_pipes),
     .p_pipe_subsets (p_pipe_subsets)
   ) dut (
@@ -168,7 +167,7 @@ module DecodeIssueUnitL1TestSuite #(
 
   TestPub #(
     t_complete_msg
-  ) CompletePub (
+  ) complete_pub (
     .msg (complete_msg),
     .val (complete_notif.val),
     .*
@@ -187,7 +186,7 @@ module DecodeIssueUnitL1TestSuite #(
     msg_to_pub.wdata   = wdata;
     msg_to_pub.wen     = wen;
 
-    CompletePub.pub( msg_to_pub );
+    complete_pub.pub( msg_to_pub );
   endtask
 
   //----------------------------------------------------------------------
@@ -306,12 +305,14 @@ module DecodeIssueUnitL1TestSuite #(
   string trace;
   string F_Istream_trace;
   string dut_trace;
+  string complete_trace;
 
   // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
     #2;
     F_Istream_trace = F_Istream.trace();
     dut_trace       = dut.trace();
+    complete_trace  = complete_pub.trace();
 
     // Wait until X_Ostream traces are ready
     #1;
@@ -326,6 +327,8 @@ module DecodeIssueUnitL1TestSuite #(
         trace = {trace, " "};
       trace = {trace, X_traces[j]};
     end
+    trace = {trace, " | "};
+    trace = {trace, complete_trace};
     
     t.trace( trace );
   end

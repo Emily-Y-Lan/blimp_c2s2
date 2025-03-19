@@ -49,8 +49,7 @@ task test_case_squash_capacity();
   seq_free( 0 );
 
   // Check that we can continue allocating
-  seq_alloc( p_seq_num_bits'(p_num_seq_nums - 1) );
-  for( int i = 0; i < p_num_seq_nums - 2; i = i + 1 ) begin
+  for( int i = 1; i < p_num_seq_nums; i = i + 1 ) begin
     seq_alloc(
       p_seq_num_bits'(i)
     );

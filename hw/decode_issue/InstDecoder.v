@@ -12,9 +12,7 @@
 import ISA::*;
 import UArch::*;
 
-module InstDecoder #(
-  parameter p_isa_subset = p_tinyrv1
-) (
+module InstDecoder (
   input  logic [31:0] inst,
 
   output logic        val,
@@ -97,57 +95,17 @@ module InstDecoder #(
 
   generate
     always_comb begin
-      cs( n, 'x, j_n, 'x, 'x, 'x, n, 'x, 'x, 'x );
-
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Arithmetic
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      if ( ( p_isa_subset & OP_ADD_VEC ) > 0 ) begin
-        casez ( inst ) //        uop     jal  raddr0 raddr1 waddr wen imm_sel op2_sel  op3_sel
-          `RVI_INST_ADD:  cs( y, OP_ADD, j_n, rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x );
-          `RVI_INST_ADDI: cs( y, OP_ADD, j_n, rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x );
-        endcase
-      end
-
-      if ( ( p_isa_subset & OP_MUL_VEC ) > 0 ) begin
-        casez ( inst ) //        uop     jal  raddr0 raddr1 waddr wen imm_sel op2_sel op3_sel
-          `RVI_INST_MUL:  cs( y, OP_MUL, j_n, rs1,   rs2,   rd,   y,  'x,     op2_rf, op3_x  );
-        endcase
-      end
-
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Memory
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      if ( ( p_isa_subset & OP_LW_VEC ) > 0 ) begin
-        casez ( inst ) //       uop    jal  raddr0 raddr1 waddr wen imm_sel op2_sel  op3_sel
-          `RVI_INST_LW:  cs( y, OP_LW, j_n, rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
-        endcase
-      end
-
-      if ( ( p_isa_subset & OP_SW_VEC ) > 0 ) begin
-        casez ( inst ) //       uop    jal  raddr0 raddr1 waddr wen imm_sel op2_sel  op3_sel
-          `RVI_INST_SW:  cs( y, OP_SW, j_n, rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
-        endcase
-      end
-
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Control Flow
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      if ( ( p_isa_subset & OP_JAL_VEC ) > 0 ) begin
-        casez ( inst ) //        uop     jal    raddr0 raddr1 waddr wen imm_sel op2_sel op3_sel
-          `RVI_INST_JAL:  cs( y, OP_JAL, j_jal, rx,    rx,    rd,   y,  IMM_J,  op2_x,  op3_x );
-        endcase
-      end
-
-      if ( ( p_isa_subset & OP_JALR_VEC ) > 0 ) begin
-        casez ( inst ) //         uop      jal     raddr0 raddr1 waddr wen imm_sel op2_sel op3_sel
-          `RVI_INST_JALR:  cs( y, OP_JALR, j_jalr, rs1,   rx,    rd,   y,  IMM_I,  op2_x,  op3_x );
-        endcase
-      end
-
+      casez ( inst ) //        uop      jal     raddr0 raddr1 waddr wen imm_sel op2_sel  op3_sel
+        `RVI_INST_ADD:  cs( y, OP_ADD,  j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_ADDI: cs( y, OP_ADD,  j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_MUL:  cs( y, OP_MUL,  j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_LW:   cs( y, OP_LW,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
+        `RVI_INST_SW:   cs( y, OP_SW,   j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
+        `RVI_INST_JAL:  cs( y, OP_JAL,  j_jal,  rx,    rx,    rd,   y,  IMM_J,  op2_x,   op3_x   );
+        `RVI_INST_JALR: cs( y, OP_JALR, j_jalr, rs1,   rx,    rd,   y,  IMM_I,  op2_x,   op3_x   );
+        `RVI_INST_BNE:  cs( y, OP_BNE,  j_n,    rs1,   rs2,   rd,   y,  IMM_B,  op2_rf,  op3_br  );
+        default:        cs( n, 'x,      j_n,    'x,    'x,    'x,   n,  'x,     'x,      'x      );
+      endcase
     end
   endgenerate
 

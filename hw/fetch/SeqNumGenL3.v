@@ -103,14 +103,23 @@ module SeqNumGenL3 #(
   assign alloc_val = !( curr_head_ptr + 1 == curr_tail_ptr );
 
   assign is_alloc = alloc_val & alloc_rdy;
-  assign alloc_seq_num = curr_head_ptr;
+  assign alloc_seq_num = ( squash.val ) ? squash.seq_num + 1
+                                        : curr_head_ptr;
+  logic [p_seq_num_bits-1:0] curr_head_ptr_next;
 
   always_ff @( posedge clk ) begin
     if( rst ) begin
       curr_head_ptr <= '0;
     end else begin
-      if( is_alloc ) curr_head_ptr <= curr_head_ptr + 1;
+      curr_head_ptr <= curr_head_ptr_next;
     end
+  end
+
+  always_comb begin
+    curr_head_ptr_next = curr_head_ptr;
+
+    if( squash.val ) curr_head_ptr_next = squash.seq_num + 1;
+    if( is_alloc   ) curr_head_ptr_next = curr_head_ptr_next + 1;
   end
 
   //----------------------------------------------------------------------

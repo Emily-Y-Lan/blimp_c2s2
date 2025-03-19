@@ -73,7 +73,6 @@ module DecodeIssueUnitL4TestSuite #(
   ) squash_notif();
 
   DecodeIssueUnitL4 #(
-    .p_isa_subset    (p_tinyrv1),
     .p_num_pipes     (p_num_pipes),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets  (p_pipe_subsets)
@@ -191,7 +190,7 @@ module DecodeIssueUnitL4TestSuite #(
 
   TestPub #(
     t_complete_msg
-  ) CompletePub (
+  ) complete_pub (
     .msg (complete_msg),
     .val (complete_notif.val),
     .*
@@ -214,7 +213,7 @@ module DecodeIssueUnitL4TestSuite #(
     msg_to_pub.preg    = preg;
     msg_to_pub.ppreg   = ppreg;
 
-    CompletePub.pub( msg_to_pub );
+    complete_pub.pub( msg_to_pub );
   endtask
 
   //----------------------------------------------------------------------
@@ -369,6 +368,7 @@ module DecodeIssueUnitL4TestSuite #(
   string trace;
   string F_Istream_trace;
   string dut_trace;
+  string complete_trace;
   string squash_trace;
 
   // verilator lint_off BLKSEQ
@@ -376,6 +376,7 @@ module DecodeIssueUnitL4TestSuite #(
     #2;
     F_Istream_trace = F_Istream.trace();
     dut_trace       = dut.trace();
+    complete_trace  = complete_pub.trace();
     squash_trace    = squash_sub.trace();
 
     // Wait until X_Ostream traces are ready
@@ -391,6 +392,8 @@ module DecodeIssueUnitL4TestSuite #(
         trace = {trace, " "};
       trace = {trace, X_traces[j]};
     end
+    trace = {trace, " | "};
+    trace = {trace, complete_trace};
     trace = {trace, " | "};
     trace = {trace, squash_trace};
     
@@ -417,7 +420,7 @@ module DecodeIssueUnitL4TestSuite #(
 endmodule
 
 //========================================================================
-// DecodeIssueUnitL2_test
+// DecodeIssueUnitL4_test
 //========================================================================
 
 module DecodeIssueUnitL4_test;

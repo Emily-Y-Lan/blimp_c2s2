@@ -49,8 +49,8 @@ task test_case_squash_forward();
   //      seq_num target
   squash( 0,      'h20c );
 
-  recv( 32'h40404040, 'h20c, 2 );
-  recv( 32'h50505050, 'h210, 3 );
+  recv( 32'h40404040, 'h20c, 1 );
+  recv( 32'h50505050, 'h210, 2 );
 
   t.test_case_end();
 endtask
@@ -77,7 +77,7 @@ task test_case_squash_backward();
   //      seq_num target
   squash( 1,      'h200 );
 
-  recv( 32'hf0f0f0f0, 'h200, 3 );
+  recv( 32'hf0f0f0f0, 'h200, 2 );
 
   t.test_case_end();
 endtask
@@ -147,8 +147,8 @@ task test_case_squash_multi();
       #1;
     end
 
-    //      seq_num target
-    squash( 0,      'h200 );
+    //      seq_num                 target
+    squash( p_seq_num_bits'(j - 1), 'h200 );
 
     recv( 32'hf0f0f0f0, 'h200, p_seq_num_bits'(j) );
   end
@@ -181,7 +181,8 @@ task test_case_squash_max_in_flight();
   // Check that we still receive the correct messages
   for( int i = 0; i < 2 * p_max_in_flight; i = i + 1 ) begin
     //    inst    pc              seq_num
-    recv( 32'(i), 'h200 + 32'(4 * i), p_seq_num_bits'(i) );
+    recv( 32'(i), 'h200 + 32'(4 * i), p_seq_num_bits'(i + 1) );
+    commit( p_seq_num_bits'(i + 1) );
   end
 
   t.test_case_end();

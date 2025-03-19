@@ -1,17 +1,20 @@
 //========================================================================
-// BlimpV3.v
+// BlimpV6.v
 //========================================================================
 // A top-level implementation of the Blimp processor with OOO completion
-// and register renaming
+// and register renaming supporting memory and control flow operations
 
-`ifndef HW_TOP_BLIMPV3_V
-`define HW_TOP_BLIMPV3_V
+`ifndef HW_TOP_BLIMPV6_V
+`define HW_TOP_BLIMPV6_V
 
 `include "defs/UArch.v"
-`include "hw/fetch/fetch_unit_variants/FetchUnitL2.v"
-`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL3.v"
+`include "hw/fetch/fetch_unit_variants/FetchUnitL3.v"
+`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL5.v"
 `include "hw/execute/execute_units_l1/ALUL1.v"
 `include "hw/execute/execute_units_l2/PipelinedMultiplierL2.v"
+`include "hw/execute/execute_units_l3/LoadStoreUnitL3.v"
+`include "hw/execute/execute_units_l5/ControlFlowUnitL5.v"
+`include "hw/squash/SquashUnitL1.v"
 `include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL3.v"
 `include "intf/MemIntf.v"
 `include "intf/F__DIntf.v"
@@ -19,9 +22,11 @@
 `include "intf/X__WIntf.v"
 `include "intf/CompleteNotif.v"
 `include "intf/CommitNotif.v"
+`include "intf/SquashNotif.v"
 `include "intf/InstTraceNotif.v"
 
-module BlimpV3 #(
+module BlimpV6 #(
+  parameter p_opaq_bits     = 8,
   parameter p_seq_num_bits  = 5,
   parameter p_num_phys_regs = 36
 ) (
@@ -33,6 +38,12 @@ module BlimpV3 #(
   //----------------------------------------------------------------------
 
   MemIntf.client inst_mem,
+
+  //----------------------------------------------------------------------
+  // Data Memory
+  //----------------------------------------------------------------------
+
+  MemIntf.client data_mem,
 
   //----------------------------------------------------------------------
   // Instruction Trace
@@ -54,13 +65,21 @@ module BlimpV3 #(
   D__XIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) d__x_intfs[2]();
+  ) d__x_intfs[4]();
 
   X__WIntf #(
     .p_seq_num_bits (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) x__w_intfs[2]();
+  ) x__w_intfs[4]();
 
+  SquashNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) squash_arb_notif [2]();
+
+  SquashNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) squash_gnt_notif();
+  
   CompleteNotif #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
@@ -83,24 +102,32 @@ module BlimpV3 #(
   // Units
   //----------------------------------------------------------------------
 
-  FetchUnitL2 FU (
+  FetchUnitL3 #(
+    .p_max_in_flight (32)
+  ) FU (
     .mem    (inst_mem),
     .D      (f__d_intf),
     .commit (commit_notif),
+    .squash (squash_gnt_notif),
     .*
   );
 
-  DecodeIssueUnitL3 #(
-    .p_num_pipes     (2),
+  DecodeIssueUnitL5 #(
+    .p_num_pipes     (4),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets ({
-      OP_ADD_VEC, // ALU
-      OP_MUL_VEC  // Multiplier
+      OP_ADD_VEC,                           // ALU
+      OP_MUL_VEC,                           // Multiplier
+      OP_LW_VEC | OP_SW_VEC,                // Memory
+      OP_JAL_VEC | OP_JALR_VEC | OP_BNE_VEC // Control Flow
     })
   ) DIU (
-    .F        (f__d_intf),
-    .Ex       (d__x_intfs),
-    .complete (complete_notif),
+    .F          (f__d_intf),
+    .Ex         (d__x_intfs),
+    .complete   (complete_notif),
+    .squash_pub (squash_arb_notif[0]),
+    .squash_sub (squash_gnt_notif),
+    .commit     (commit_notif),
     .*
   );
 
@@ -118,12 +145,37 @@ module BlimpV3 #(
     .*
   );
 
+  LoadStoreUnitL3 #(
+    .p_opaq_bits (p_opaq_bits)
+  ) MEM_XU (
+    .D   (d__x_intfs[2]),
+    .W   (x__w_intfs[2]),
+    .mem (data_mem),
+    .*
+  );
+
+  ControlFlowUnitL5 CTRL_XU (
+    .D      (d__x_intfs[3]),
+    .W      (x__w_intfs[3]),
+    .squash (squash_arb_notif[1]),
+    .*
+  );
+
   WritebackCommitUnitL3 #(
-    .p_num_pipes (2)
+    .p_num_pipes (4)
   ) WCU (
     .Ex       (x__w_intfs),
     .complete (complete_notif),
     .commit   (commit_notif),
+    .*
+  );
+
+  SquashUnitL1 #(
+    .p_num_arb (2)
+  ) SU (
+    .arb    (squash_arb_notif),
+    .gnt    (squash_gnt_notif),
+    .commit (commit_notif),
     .*
   );
 
@@ -142,6 +194,10 @@ module BlimpV3 #(
       " | ",
       MUL_XU.trace(),
       " | ",
+      MEM_XU.trace(),
+      " | ",
+      CTRL_XU.trace(),
+      " | ",
       WCU.trace()
     };
   endfunction
@@ -149,4 +205,4 @@ module BlimpV3 #(
 
 endmodule
 
-`endif // HW_TOP_BLIMPV3_V
+`endif // HW_TOP_BLIMPV6_V

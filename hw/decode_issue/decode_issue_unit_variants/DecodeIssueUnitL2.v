@@ -20,7 +20,6 @@
 import ISA::*;
 
 module DecodeIssueUnitL2 #(
-  parameter p_isa_subset                               = p_tinyrv1,
   parameter p_num_pipes                                = 1,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 ) (
@@ -100,9 +99,7 @@ module DecodeIssueUnitL2 #(
   logic       decoder_op3_sel;
   // verilator lint_on UNUSEDSIGNAL
   
-  InstDecoder #(
-    .p_isa_subset (p_isa_subset)
-  ) decoder (
+  InstDecoder decoder (
     .val     (decoder_val),
     .inst    (F_reg.inst),
     .uop     (decoder_uop),

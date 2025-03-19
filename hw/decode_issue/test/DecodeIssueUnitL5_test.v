@@ -1,12 +1,13 @@
 //========================================================================
-// DecodeIssueUnitL3_test.v
+// DecodeIssueUnitL5_test.v
 //========================================================================
 // A testbench for our decode-issue unit with WAW stalling
 
 `include "asm/assemble.v"
 `include "defs/UArch.v"
-`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL3.v"
+`include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL5.v"
 `include "test/fl/TestPub.v"
+`include "test/fl/TestSub.v"
 `include "test/fl/TestIstream.v"
 `include "test/fl/TestOstream.v"
 
@@ -14,11 +15,11 @@ import UArch::*;
 import TestEnv::*;
 
 //========================================================================
-// DecodeIssueUnitL3TestSuite
+// DecodeIssueUnitL5TestSuite
 //========================================================================
 // A test suite for the basic decoder
 
-module DecodeIssueUnitL3TestSuite #(
+module DecodeIssueUnitL5TestSuite #(
   parameter p_suite_num     = 0,
   parameter p_num_pipes     = 3,
   parameter p_seq_num_bits  = 5,
@@ -30,7 +31,7 @@ module DecodeIssueUnitL3TestSuite #(
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
 );
 
-  string suite_name = $sformatf("%0d: DecodeIssueUnitL3TestSuite_%0d_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: DecodeIssueUnitL5TestSuite_%0d_%0d_%0d_%0d_%0d", 
                                 p_suite_num, p_num_pipes, p_seq_num_bits, p_num_phys_regs,
                                 p_F_send_intv_delay, p_X_recv_intv_delay);
 
@@ -67,14 +68,29 @@ module DecodeIssueUnitL3TestSuite #(
     .p_phys_addr_bits (p_phys_addr_bits)
   ) complete_notif();
 
-  DecodeIssueUnitL3 #(
+  CommitNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) commit_notif();
+
+  SquashNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) squash_pub_notif();
+
+  SquashNotif #(
+    .p_seq_num_bits (p_seq_num_bits)
+  ) squash_sub_notif();
+
+  DecodeIssueUnitL5 #(
     .p_num_pipes     (p_num_pipes),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets  (p_pipe_subsets)
   ) dut (
-    .F        (F__D_intf),
-    .Ex       (D__X_intfs),
-    .complete (complete_notif),
+    .F          (F__D_intf),
+    .Ex         (D__X_intfs),
+    .complete   (complete_notif),
+    .commit     (commit_notif),
+    .squash_pub (squash_pub_notif),
+    .squash_sub (squash_sub_notif),
     .*
   );
 
@@ -211,6 +227,103 @@ module DecodeIssueUnitL3TestSuite #(
   endtask
 
   //----------------------------------------------------------------------
+  // Commit Notification
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic               [31:0] pc;
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic                [4:0] waddr;
+    logic               [31:0] wdata;
+    logic                      wen;
+  } t_commit_msg;
+
+  t_commit_msg commit_msg;
+
+  assign commit_notif.pc      = commit_msg.pc;
+  assign commit_notif.seq_num = commit_msg.seq_num;
+  assign commit_notif.waddr   = commit_msg.waddr;
+  assign commit_notif.wdata   = commit_msg.wdata;
+  assign commit_notif.wen     = commit_msg.wen;
+
+  TestPub #( t_commit_msg ) commit_pub (
+    .msg (commit_msg),
+    .val (commit_notif.val),
+    .*
+  );
+
+  t_commit_msg msg_to_commit;
+
+  task commit(
+    input logic [p_seq_num_bits-1:0] seq_num
+  );
+    msg_to_commit.seq_num = seq_num;
+    msg_to_commit.pc      = 32'( $urandom() );
+    msg_to_commit.waddr   =  5'( $urandom() );
+    msg_to_commit.wdata   = 32'( $urandom() );
+    msg_to_commit.wen     =  1'( $urandom() );
+
+    commit_pub.pub( msg_to_commit );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Squash Notification
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [p_seq_num_bits-1:0] seq_num;
+    logic               [31:0] target;
+  } t_squash_msg;
+
+  t_squash_msg squash_pub_msg;
+
+  assign squash_pub_msg.seq_num = squash_pub_notif.seq_num;
+  assign squash_pub_msg.target  = squash_pub_notif.target;
+
+  TestSub #( t_squash_msg ) squash_sub (
+    .msg (squash_pub_msg),
+    .val (squash_pub_notif.val),
+    .*
+  );
+
+  t_squash_msg msg_from_squash;
+
+  task sub_squash(
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic               [31:0] target
+  );
+    msg_from_squash.seq_num = seq_num;
+    msg_from_squash.target  = target;
+
+    squash_sub.sub( msg_from_squash );
+  endtask
+
+  // verilator lint_off UNUSEDSIGNAL
+  t_squash_msg squash_sub_msg;
+  // verilator lint_on UNUSEDSIGNAL
+
+  assign squash_sub_notif.seq_num = squash_pub_msg.seq_num;
+  assign squash_sub_notif.target  = squash_pub_msg.target;
+
+  TestPub #( t_squash_msg ) squash_pub (
+    .msg (squash_sub_msg),
+    .val (squash_sub_notif.val),
+    .*
+  );
+
+  t_squash_msg msg_to_squash;
+
+  task pub_squash(
+    input logic [p_seq_num_bits-1:0] seq_num,
+    input logic               [31:0] target
+  );
+    msg_to_squash.seq_num = seq_num;
+    msg_to_squash.target  = target;
+
+    squash_pub.pub( msg_to_squash );
+  endtask
+
+  //----------------------------------------------------------------------
   // Handle giving messages to the correct pipe
   //----------------------------------------------------------------------
 
@@ -331,6 +444,8 @@ module DecodeIssueUnitL3TestSuite #(
   string F_Istream_trace;
   string dut_trace;
   string complete_trace;
+  string commit_trace;
+  string squash_trace;
 
   // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
@@ -338,6 +453,8 @@ module DecodeIssueUnitL3TestSuite #(
     F_Istream_trace = F_Istream.trace();
     dut_trace       = dut.trace();
     complete_trace  = complete_pub.trace();
+    commit_trace    = commit_pub.trace();
+    squash_trace    = squash_sub.trace();
 
     // Wait until X_Ostream traces are ready
     #1;
@@ -354,6 +471,10 @@ module DecodeIssueUnitL3TestSuite #(
     end
     trace = {trace, " | "};
     trace = {trace, complete_trace};
+    trace = {trace, " | "};
+    trace = {trace, commit_trace};
+    trace = {trace, " | "};
+    trace = {trace, squash_trace};
     
     t.trace( trace );
   end
@@ -378,12 +499,12 @@ module DecodeIssueUnitL3TestSuite #(
 endmodule
 
 //========================================================================
-// DecodeIssueUnitL2_test
+// DecodeIssueUnitL5_test
 //========================================================================
 
-module DecodeIssueUnitL3_test;
-  DecodeIssueUnitL3TestSuite #(1) suite_1();
-  DecodeIssueUnitL3TestSuite #(
+module DecodeIssueUnitL5_test;
+  DecodeIssueUnitL5TestSuite #(1) suite_1();
+  DecodeIssueUnitL5TestSuite #(
     2, 
     2, 
     4, 
@@ -392,7 +513,7 @@ module DecodeIssueUnitL3_test;
     0, 
     {p_tinyrv1, OP_ADD_VEC}) 
   suite_2();
-  DecodeIssueUnitL3TestSuite #(
+  DecodeIssueUnitL5TestSuite #(
     3, 
     5, 
     8, 
@@ -407,7 +528,7 @@ module DecodeIssueUnitL3_test;
       OP_MUL_VEC
     }
   ) suite_3();
-  DecodeIssueUnitL3TestSuite #(
+  DecodeIssueUnitL5TestSuite #(
     4, 
     1, 
     3, 
@@ -416,7 +537,7 @@ module DecodeIssueUnitL3_test;
     0, 
     {p_tinyrv1}
   ) suite_4();
-  DecodeIssueUnitL3TestSuite #(
+  DecodeIssueUnitL5TestSuite #(
     5, 
     3, 
     6, 
@@ -429,7 +550,7 @@ module DecodeIssueUnitL3_test;
       p_tinyrv1
     }
   ) suite_5();
-  DecodeIssueUnitL3TestSuite #(
+  DecodeIssueUnitL5TestSuite #(
     6, 
     3, 
     7, 
@@ -442,7 +563,7 @@ module DecodeIssueUnitL3_test;
       p_tinyrv1
     }
   ) suite_6();
-  DecodeIssueUnitL3TestSuite #(
+  DecodeIssueUnitL5TestSuite #(
     7, 
     3, 
     3, 

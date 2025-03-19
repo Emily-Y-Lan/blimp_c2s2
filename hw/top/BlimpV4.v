@@ -99,7 +99,6 @@ module BlimpV4 #(
   );
 
   DecodeIssueUnitL3 #(
-    .p_isa_subset    (p_tinyrv1_mem),
     .p_num_pipes     (3),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets ({

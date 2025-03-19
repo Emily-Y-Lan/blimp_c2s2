@@ -1,10 +1,10 @@
 //========================================================================
-// DecodeIssueUnitL3.v
+// DecodeIssueUnitL5.v
 //========================================================================
-// A basic in-order, single-issue decoder with register renaming
+// An in-order, single-issue decoder with register renaming
 
-`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL3_V
-`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL3_V
+`ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL5_V
+`define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL5_V
 
 `include "asm/disassemble.v"
 `include "defs/ISA.v"
@@ -13,13 +13,15 @@
 `include "hw/decode_issue/InstRouter.v"
 `include "hw/decode_issue/Regfile.v"
 `include "hw/decode_issue/RenameTable.v"
+`include "hw/util/SeqAge.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
 `include "intf/CompleteNotif.v"
+`include "intf/SquashNotif.v"
 
 import ISA::*;
 
-module DecodeIssueUnitL3 #(
+module DecodeIssueUnitL5 #(
   parameter p_num_pipes                                = 1,
   parameter p_num_phys_regs                            = 36,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
@@ -43,7 +45,20 @@ module DecodeIssueUnitL3 #(
   // Completion Notification
   //----------------------------------------------------------------------
 
-  CompleteNotif.sub complete
+  CompleteNotif.sub complete,
+
+  //----------------------------------------------------------------------
+  // Commit Notification
+  //----------------------------------------------------------------------
+
+  CommitNotif.sub commit,
+
+  //----------------------------------------------------------------------
+  // Squash Notification (one to request, one to receive)
+  //----------------------------------------------------------------------
+
+  SquashNotif.pub squash_pub,
+  SquashNotif.sub squash_sub
 );
 
   localparam p_seq_num_bits   = F.p_seq_num_bits;
@@ -65,6 +80,8 @@ module DecodeIssueUnitL3 #(
   logic   F_xfer;
   logic   X_xfer;
 
+  logic should_squash;
+
   always_ff @( posedge clk ) begin
     if ( rst )
       F_reg <= '{ val: 1'b0, inst: 'x, pc: 'x, seq_num: 'x };
@@ -77,7 +94,7 @@ module DecodeIssueUnitL3 #(
 
     if ( F_xfer )
       F_reg_next = '{ val: 1'b1, inst: F.inst, pc: F.pc, seq_num: F.seq_num };
-    else if ( X_xfer )
+    else if ( X_xfer | should_squash )
       F_reg_next = '{ val: 1'b0, inst: 'x, pc: 'x, seq_num: 'x };
     else
       F_reg_next = F_reg;
@@ -91,15 +108,12 @@ module DecodeIssueUnitL3 #(
   rv_uop      decoder_uop;
   logic [4:0] decoder_raddr0;
   logic [4:0] decoder_raddr1;
-  logic       decoder_wen;
   logic [4:0] decoder_waddr;
+  logic       decoder_wen;
   rv_imm_type decoder_imm_sel;
   logic       decoder_op2_sel;
-
-  // verilator lint_off UNUSEDSIGNAL
   logic [1:0] decoder_jal;
   logic       decoder_op3_sel;
-  // verilator lint_on UNUSEDSIGNAL
   
   InstDecoder decoder (
     .val     (decoder_val),
@@ -131,7 +145,7 @@ module DecodeIssueUnitL3 #(
     .alloc_areg     (decoder_waddr),
     .alloc_preg     (alloc_preg),
     .alloc_ppreg    (alloc_ppreg),
-    .alloc_en       (alloc_rdy & decoder_wen & X_xfer),
+    .alloc_en       (alloc_rdy & decoder_wen & X_xfer & !should_squash),
     .alloc_rdy      (alloc_rdy),
 
     .lookup_areg    ({decoder_raddr1, decoder_raddr0}),
@@ -167,17 +181,57 @@ module DecodeIssueUnitL3 #(
   );
 
   //----------------------------------------------------------------------
+  // Squashing
+  //----------------------------------------------------------------------
+
+  logic [31:0] jump_target;
+  always_comb begin
+    case( decoder_jal )
+      2'd1:    jump_target = F_reg.pc + imm;                // JAL
+      2'd2:    jump_target = (rdata0 + imm) & 32'hFFFFFFFE; // JALR
+      default: jump_target = 'x;
+    endcase
+  end
+
+  logic squash_sent;
+  always_ff @( posedge clk ) begin
+    if( rst )
+      squash_sent <= 1'b0;
+    else if( F_xfer )
+      squash_sent <= 1'b0;
+    else
+      squash_sent <= 1'b1;
+  end
+
+  assign squash_pub.val     = (decoder_jal != 0) & F_reg.val & !squash_sent;
+  assign squash_pub.target  = jump_target;
+  assign squash_pub.seq_num = F_reg.seq_num;
+
+  //----------------------------------------------------------------------
+  // Determine whether we need to squash ourself
+  //----------------------------------------------------------------------
+  
+  SeqAge seq_age (
+    .*
+  );
+
+  assign should_squash = squash_sub.val & 
+                         seq_age.is_older( squash_sub.seq_num, F_reg.seq_num );
+
+  //----------------------------------------------------------------------
   // Route the instruction (set val/rdy for pipes) based on uop
   //----------------------------------------------------------------------
 
   InstRouter #(p_num_pipes, p_pipe_subsets) inst_router (
     .uop   (decoder_uop),
-    .val   (F_reg.val & !stall_pending & decoder_val),
+    .val   (F_reg.val & !stall_pending & decoder_val & !should_squash),
     .Ex    (Ex),
     .xfer  (X_xfer)
   );
 
-  assign F.rdy = (X_xfer & !stall_pending & decoder_val) | (!F_reg.val);
+  assign F.rdy = (X_xfer & !stall_pending & decoder_val) | 
+                 should_squash                           |
+                 (!F_reg.val);
 
   //----------------------------------------------------------------------
   // Pass remaining signals to pipes
@@ -187,7 +241,7 @@ module DecodeIssueUnitL3 #(
 
   always_comb begin
     op1 = rdata0;
-    if ( decoder_op2_sel )
+    if( decoder_op2_sel )
       op2 = imm;
     else
       op2 = rdata1;
@@ -204,7 +258,13 @@ module DecodeIssueUnitL3 #(
       assign Ex[k].seq_num      = F_reg.seq_num;
       assign Ex[k].preg         = alloc_preg;
       assign Ex[k].ppreg        = alloc_ppreg;
-      assign Ex[k].op3.mem_data = rdata1;
+
+      always_comb begin
+        if( decoder_op3_sel ) // Branch - need immediate
+          assign Ex[k].op3.branch_imm = imm;
+        else // Memory needs register data
+          assign Ex[k].op3.mem_data = rdata1;
+      end
     end
   endgenerate
 
@@ -218,12 +278,12 @@ module DecodeIssueUnitL3 #(
 `ifndef SYNTHESIS  
   function string trace();
     if( F_reg.val & F.rdy )
-      trace = $sformatf("%-20s", disassemble(F_reg.inst, F_reg.pc) );
+      trace = $sformatf("%-25s", disassemble(F_reg.inst, F_reg.pc) );
     else
-      trace = {20{" "}};
+      trace = {25{" "}};
   endfunction
 `endif
 
 endmodule
 
-`endif // HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL3_V
+`endif // HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL5_V
