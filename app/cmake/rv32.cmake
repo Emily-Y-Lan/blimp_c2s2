@@ -36,7 +36,7 @@ set(CMAKE_AR ${RISCV_TOOLCHAIN_BIN_PATH}/${TOOLCHAIN_PREFIX}ar)
 set(CMAKE_OBJCOPY ${RISCV_TOOLCHAIN_BIN_PATH}/${CROSS_COMPILE}objcopy CACHE FILEPATH "The toolchain objcopy command " FORCE)
 set(CMAKE_OBJDUMP ${RISCV_TOOLCHAIN_BIN_PATH}/${CROSS_COMPILE}objdump CACHE FILEPATH "The toolchain objdump command " FORCE)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O3 -D_RISCV -fno-builtin -march=rv32imac -mabi=ilp32")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O3 -D_RISCV -fno-builtin -march=rv32im -mabi=ilp32")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++20")
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib -nostartfiles -T${CMAKE_CURRENT_SOURCE_DIR}/scripts/tinyrv2.ld" )

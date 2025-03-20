@@ -60,6 +60,7 @@ set(FL_PROC_FILES
   fl/FLRegfile.cpp
   fl/FLTrace.cpp
   fl/fl_vtrace.cpp
+  fl/parse_elf.cpp
 )
 
 #-------------------------------------------------------------------------
