@@ -5,9 +5,7 @@
 
 #include "asm/assemble.h"
 #include "fl/FLMem.h"
-#include <format>
 #include <stdexcept>
-#include <type_traits>
 
 //------------------------------------------------------------------------
 // FLMem::init
@@ -33,14 +31,31 @@ void FLMem::clear()
 }
 
 //------------------------------------------------------------------------
+// FLMem::add_peripheral
+//------------------------------------------------------------------------
+
+void FLMem::add_peripheral( FLPeripheral* peripheral )
+{
+  peripherals.push_back( peripheral );
+}
+
+//------------------------------------------------------------------------
 // FLMem::load
 //------------------------------------------------------------------------
 // No initialization of empty location currently (use operator[] if
 // desired)
 
-uint32_t FLMem::load( uint32_t addr ) const
+uint32_t FLMem::load( uint32_t addr )
 {
-  return mem.at( addr );
+  uint32_t peripheral_data;
+  for ( FLPeripheral* peripheral : peripherals ) {
+    if ( peripheral->try_read( addr, &peripheral_data ) ) {
+      return peripheral_data;
+    }
+  }
+
+  // Otherwise, get from memory
+  return mem[addr];  // 0 if not already mapped
 }
 
 //------------------------------------------------------------------------
@@ -49,21 +64,23 @@ uint32_t FLMem::load( uint32_t addr ) const
 
 void FLMem::store( uint32_t addr, uint32_t data )
 {
+  for ( FLPeripheral* peripheral : peripherals ) {
+    if ( peripheral->try_write( addr, data ) ) {
+      return;
+    }
+  }
+
+  // Otherwise, store to memory
   mem[addr] = data;
 }
 
 //------------------------------------------------------------------------
 // FLMem::operator[]
 //------------------------------------------------------------------------
+// Doesn't check peripherals
 
 // Store - return uint32_t&
 uint32_t& FLMem::operator[]( uint32_t addr )
 {
   return mem[addr];
-}
-
-// Load - return uint32_t
-uint32_t FLMem::operator[]( uint32_t addr ) const
-{
-  return load( addr );
 }

@@ -10,6 +10,8 @@
 #include "fl/FLMem.h"
 #include "fl/FLRegfile.h"
 #include "fl/FLTrace.h"
+#include "fl/peripherals/FLExit.h"
+#include "fl/peripherals/FLTerminal.h"
 #include <cstdint>
 #include <map>
 
@@ -37,6 +39,10 @@ class FLProc {
   uint32_t  pc;
   FLRegfile regs;
   FLMem     mem;
+
+  // Peripherals
+  FLExit     exit;
+  FLTerminal terminal;
 };
 
 #endif  // FL_PROC_H

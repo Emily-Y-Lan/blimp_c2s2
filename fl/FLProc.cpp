@@ -6,6 +6,7 @@
 #include "asm/assemble.h"
 #include "asm/inst.h"
 #include "fl/FLProc.h"
+#include "fl/parse_elf.h"
 #include <format>
 #include <iostream>
 #include <stdexcept>
@@ -14,7 +15,12 @@
 // Constructor
 //------------------------------------------------------------------------
 
-FLProc::FLProc() : pc( 0x200 ) {};
+FLProc::FLProc() : pc( 0x200 )
+{
+  // Add peripherals
+  mem.add_peripheral( &terminal );
+  mem.add_peripheral( &exit );
+};
 
 //------------------------------------------------------------------------
 // Reset
@@ -279,7 +285,7 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case LW:
-      regs[inst.rd()] = mem[regs[inst.rs1()] + inst.imm_i()];
+      regs[inst.rd()] = mem.load( regs[inst.rs1()] + inst.imm_i() );
       pc              = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -289,8 +295,8 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case SW:
-      mem[regs[inst.rs1()] + inst.imm_s()] = regs[inst.rs2()];
-      pc                                   = pc + 4;
+      mem.store( regs[inst.rs1()] + inst.imm_s(), regs[inst.rs2()] );
+      pc = pc + 4;
       return FLTrace( inst_pc, 0, 0, 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

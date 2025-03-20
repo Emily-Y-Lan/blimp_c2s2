@@ -56,11 +56,15 @@ set(ASM_FILES
 set(FL_PROC_FILES
   fl/FLInst.cpp
   fl/FLMem.cpp
+  fl/FLPeripheral.cpp
   fl/FLProc.cpp
   fl/FLRegfile.cpp
   fl/FLTrace.cpp
   fl/fl_vtrace.cpp
   fl/parse_elf.cpp
+
+  fl/peripherals/FLExit.cpp
+  fl/peripherals/FLTerminal.cpp
 )
 
 #-------------------------------------------------------------------------
@@ -180,3 +184,11 @@ add_custom_target(
 #------------------------------------------------------------------------
 
 add_subdirectory(app)
+
+#-------------------------------------------------------------------------
+# Include FL Simulator
+#-------------------------------------------------------------------------
+
+add_executable(fl-sim fl/fl_sim.cpp)
+target_compile_options(fl-sim PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_link_libraries(fl-sim PRIVATE FL_PROC)

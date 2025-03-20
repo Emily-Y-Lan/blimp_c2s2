@@ -137,9 +137,7 @@ _start:
 
   # use return value from main (a0) as exit code
 
-  // lui   t0, 0x10
-  // add   t0, t0, a0
-  // csrw  0x7c0, t0
+  sw    a0, -1(x0)
 
   # few nops to enable test harness to stop simulation
 
