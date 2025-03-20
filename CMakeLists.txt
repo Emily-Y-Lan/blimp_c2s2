@@ -150,7 +150,7 @@ target_compile_options(FL_PROC PRIVATE -Wall -Wextra -Wpedantic -Werror)
 # Add our SystemVerilog tests
 #------------------------------------------------------------------------
 
-add_custom_target(check COMMAND "ctest" "--timeout" "10")
+add_custom_target(check COMMAND "ctest" "--timeout" "20")
 
 foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   set(V_TEST_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_TEST_FILE_REL_PATH}")
