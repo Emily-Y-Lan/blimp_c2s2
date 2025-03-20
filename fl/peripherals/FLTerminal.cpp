@@ -10,22 +10,27 @@
 // read
 //------------------------------------------------------------------------
 
-void FLTerminal::read( uint32_t, uint32_t* data )
+void FLTerminal::read( uint32_t, uint32_t* )
 {
-  // Address is always 0xF0000000 for reading
-  *data = std::cin.get();
+  // Never called
 }
 
 //------------------------------------------------------------------------
 // write
 //------------------------------------------------------------------------
 
-void FLTerminal::write( uint32_t, uint32_t data )
+#define WPRINTF_INT_ADDR 0xF0000000
+#define WPRINTF_CHAR_ADDR 0xF0000004
+
+void FLTerminal::write( uint32_t addr, uint32_t data )
 {
-  // Address is always 0xF0000004 for writing
-  char output = (char) data;
-  std::cout << output;
-  if ( data == '\n' ) {
-    std::cout.flush();
+  if ( addr == WPRINTF_INT_ADDR ) {
+    std::cout << (int) data;
+  }
+  else {
+    std::cout << (char) data;
+    if ( (char) data == '\n' ) {
+      std::cout.flush();
+    }
   }
 }

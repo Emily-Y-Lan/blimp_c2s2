@@ -184,6 +184,7 @@ add_custom_target(
 #------------------------------------------------------------------------
 
 add_subdirectory(app)
+set_property(DIRECTORY app PROPERTY TARGET_NAMESPACE APP)
 
 #-------------------------------------------------------------------------
 # Include FL Simulator
