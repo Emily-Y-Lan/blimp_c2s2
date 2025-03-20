@@ -6,6 +6,8 @@
 #ifndef BLIMP_PRINT_H
 #define BLIMP_PRINT_H
 
+#include <wchar.h>
+
 #ifdef _RISCV
 
 void blimp_wprintf( const wchar_t* fmt, ... );

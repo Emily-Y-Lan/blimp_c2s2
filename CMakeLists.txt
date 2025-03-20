@@ -67,6 +67,10 @@ set(FL_PROC_FILES
   fl/peripherals/FLTerminal.cpp
 )
 
+set(APP_SUBDIRS
+  app
+)
+
 #-------------------------------------------------------------------------
 # Boilerplate
 #-------------------------------------------------------------------------
@@ -112,6 +116,19 @@ endfunction()
 function(remove_extension VARNAME FILE_NAME)
   string(REGEX REPLACE "\\.[^.]*$" "" NAME_WITHOUT_EXT ${FILE_NAME})
   set(${VARNAME} "${NAME_WITHOUT_EXT}" PARENT_SCOPE)
+endfunction()
+
+#------------------------------------------------------------------------
+# add_prefix
+#------------------------------------------------------------------------
+# A function to add a prefix to all elements of a list
+
+function(add_prefix LIST_VAR PREFIX)
+  set(NEW_LIST_VAR "")
+  foreach(ITEM ${${LIST_VAR}})
+    list(APPEND NEW_LIST_VAR "${PREFIX}${ITEM}")
+  endforeach(ITEM)
+  set(${LIST_VAR} ${NEW_LIST_VAR} PARENT_SCOPE)
 endfunction()
 
 #------------------------------------------------------------------------
@@ -183,8 +200,26 @@ add_custom_target(
 # Include RISCV programs
 #------------------------------------------------------------------------
 
-add_subdirectory(app)
-set_property(DIRECTORY app PROPERTY TARGET_NAMESPACE APP)
+foreach(APP_SUBDIR ${APP_SUBDIRS})
+  set(APP_FILES "")
+  set(SRC_FILES "")
+  add_subdirectory(app)
+  add_prefix(SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
+  add_prefix(APP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
+
+  # Include native builds for all apps
+  foreach(APP_FILE_PATH ${APP_FILES})
+    get_leaf(APP_FILE ${APP_FILE_PATH})
+    remove_extension(APP_BIN ${APP_FILE})
+    add_executable(app-${APP_BIN}-native ${APP_FILE_PATH} ${SRC_FILES})
+    target_compile_options(app-${APP_BIN}-native PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_include_directories(app-${APP_BIN}-native PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR})
+    set_target_properties(app-${APP_BIN}-native PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${APP_SUBDIR}"
+      OUTPUT_NAME ${APP_BIN}-native
+    )
+  endforeach(APP_FILE_PATH)
+endforeach(APP_SUBDIR)
 
 #-------------------------------------------------------------------------
 # Include FL Simulator
