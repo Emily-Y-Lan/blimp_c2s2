@@ -7,6 +7,8 @@
 `define HW_DECODE_RENAMETABLE_V
 
 `include "hw/common/PriorityEncoder.v"
+`include "intf/CompleteNotif.v"
+`include "intf/CommitNotif.v"
 
 module RenameTable #(
   parameter p_num_phys_regs = 36
@@ -34,10 +36,16 @@ module RenameTable #(
   input  logic                        lookup_en      [2],
 
   // ---------------------------------------------------------------------
-  // Complete
+  // Complete (clear pending)
   // ---------------------------------------------------------------------
   
-  CompleteNotif.sub complete
+  CompleteNotif.sub complete,
+
+  // ---------------------------------------------------------------------
+  // Commit (free)
+  // ---------------------------------------------------------------------
+
+  CommitNotif.sub commit
 );
 
   localparam p_phys_addr_bits = complete.p_phys_addr_bits;
@@ -60,8 +68,10 @@ module RenameTable #(
 
   logic alloc_xfer;
 
+  logic                        complete_val;
+  logic [p_phys_addr_bits-1:0] complete_preg;
+
   logic                        free_val;
-  logic [p_phys_addr_bits-1:0] free_preg;
   logic [p_phys_addr_bits-1:0] free_ppreg;
 
   genvar i;
@@ -71,7 +81,7 @@ module RenameTable #(
         if( rst ) begin
           rename_table[i] <= '{pending: 1'b0, preg: p_phys_addr_bits'(i)};
         end else begin
-          if( free_val & ( free_preg == rename_table[i].preg ) )
+          if( complete_val & ( complete_preg == rename_table[i].preg ) )
             rename_table[i].pending <= 1'b0;
           if( alloc_xfer & ( alloc_areg == i )) begin
             rename_table[i].pending <= 1'b1;
@@ -153,7 +163,7 @@ module RenameTable #(
       lookup_pending[0] = 0;
     end else begin
       lookup_preg[0]    = rename_table[lookup_areg[0]].preg;
-      if( free_preg == lookup_preg[0] )
+      if( complete_preg == lookup_preg[0] )
         lookup_pending[0] = 1'b0; // Bypass
       else
         lookup_pending[0] = rename_table[lookup_areg[0]].pending;
@@ -164,7 +174,7 @@ module RenameTable #(
       lookup_pending[1] = 0;
     end else begin
       lookup_preg[1]    = rename_table[lookup_areg[1]].preg;
-      if( free_preg == lookup_preg[1] )
+      if( complete_preg == lookup_preg[1] )
         lookup_pending[0] = 1'b0; // Bypass
       else
         lookup_pending[1] = rename_table[lookup_areg[1]].pending;
@@ -172,12 +182,18 @@ module RenameTable #(
   end
 
   // ---------------------------------------------------------------------
+  // Not pending on complete
+  // ---------------------------------------------------------------------
+
+  assign complete_val  = complete.val;
+  assign complete_preg = complete.preg;
+
+  // ---------------------------------------------------------------------
   // Free on commit
   // ---------------------------------------------------------------------
 
-  assign free_val   = complete.val;
-  assign free_preg  = complete.preg;
-  assign free_ppreg = complete.ppreg;
+  assign free_val   = commit.val;
+  assign free_ppreg = commit.ppreg;
 
   // ---------------------------------------------------------------------
   // Linetracing
@@ -188,6 +204,7 @@ module RenameTable #(
   string test_trace;
   int    alloc_len;
   int    lookup_len;
+  int    complete_len;
   int    free_len;
 
   initial begin
@@ -197,7 +214,10 @@ module RenameTable #(
     test_trace = $sformatf("%x > %x", lookup_areg, lookup_preg);
     lookup_len = test_trace.len();
 
-    test_trace = $sformatf("%x (%x)", free_preg, free_ppreg);
+    test_trace   = $sformatf("%x", complete_preg);
+    complete_len = test_trace.len();
+
+    test_trace = $sformatf("%x", free_ppreg);
     free_len   = test_trace.len();
   end
 
@@ -222,8 +242,15 @@ module RenameTable #(
 
     trace = {trace, "] ["};
 
+    if( complete_val )
+      trace = {trace, $sformatf("%x", complete_preg)};
+    else
+      trace = {trace, {(complete_len){" "}}};
+
+    trace = {trace, " "};
+
     if( free_val )
-      trace = {trace, $sformatf("%x (%x)", free_preg, free_ppreg)};
+      trace = {trace, $sformatf("%x", free_ppreg)};
     else
       trace = {trace, {(free_len){" "}}};
 

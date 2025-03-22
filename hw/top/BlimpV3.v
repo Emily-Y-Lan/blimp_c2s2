@@ -67,7 +67,8 @@ module BlimpV3 #(
   ) complete_notif();
 
   CommitNotif #(
-    .p_seq_num_bits (p_seq_num_bits)
+    .p_seq_num_bits   (p_seq_num_bits),
+    .p_phys_addr_bits (p_phys_addr_bits)
   ) commit_notif();
 
   assign inst_trace_notif.pc    = commit_notif.pc;
@@ -101,6 +102,7 @@ module BlimpV3 #(
     .F        (f__d_intf),
     .Ex       (d__x_intfs),
     .complete (complete_notif),
+    .commit   (commit_notif),
     .*
   );
 

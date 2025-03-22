@@ -4,6 +4,7 @@
 // A testbench for our rename table
 
 `include "hw/decode_issue/RenameTable.v"
+`include "intf/CommitNotif.v"
 `include "intf/CompleteNotif.v"
 `include "test/fl/TestCaller.v"
 `include "test/fl/TestPub.v"
@@ -52,6 +53,10 @@ module RenameTableTestSuite #(
     .p_phys_addr_bits (p_phys_addr_bits)
   ) complete_notif();
 
+  CommitNotif #(
+    .p_phys_addr_bits (p_phys_addr_bits)
+  ) commit_notif();
+
   RenameTable #(
     .p_num_phys_regs (p_num_phys_regs)
   ) dut (
@@ -67,6 +72,7 @@ module RenameTableTestSuite #(
     .lookup_pending (dut_lookup_pending),
 
     .complete    (complete_notif),
+    .commit      (commit_notif),
     .*
   );
 
@@ -165,33 +171,21 @@ module RenameTableTestSuite #(
   // Complete
   //----------------------------------------------------------------------
 
-  typedef struct packed {
-    logic                [4:0]   seq_num;
-    logic                [4:0]   waddr;
-    logic               [31:0]   wdata;
-    logic                        wen;
-    logic [p_phys_addr_bits-1:0] preg;
-    logic [p_phys_addr_bits-1:0] ppreg;
-  } t_complete_msg;
+  typedef logic [p_phys_addr_bits-1:0] t_complete_msg;
 
   t_complete_msg complete_msg;
+  assign complete_notif.preg    = complete_msg;
+  assign complete_notif.waddr   = 'x;
+  assign complete_notif.wdata   = 'x;
+  assign complete_notif.wen     = 'x;
 
-  assign complete_notif.seq_num = complete_msg.seq_num;
-  assign complete_notif.waddr   = complete_msg.waddr;
-  assign complete_notif.wdata   = complete_msg.wdata;
-  assign complete_notif.wen     = complete_msg.wen;
-  assign complete_notif.preg    = complete_msg.preg;
-  assign complete_notif.ppreg   = complete_msg.ppreg;
+  logic  [4:0] unused_complete_waddr;
+  logic [31:0] unused_complete_wdata;
+  logic        unused_complete_wen;
 
-  logic  [4:0] unused_seq_num;
-  logic  [4:0] unused_waddr;
-  logic [31:0] unused_wdata;
-  logic        unused_wen;
-
-  assign unused_seq_num = complete_notif.seq_num;
-  assign unused_waddr   = complete_notif.waddr;
-  assign unused_wdata   = complete_notif.wdata;
-  assign unused_wen     = complete_notif.wen;
+  assign unused_complete_waddr   = complete_notif.waddr;
+  assign unused_complete_wdata   = complete_notif.wdata;
+  assign unused_complete_wen     = complete_notif.wen;
 
   TestPub #(
     t_complete_msg
@@ -201,21 +195,55 @@ module RenameTableTestSuite #(
     .*
   );
 
-  t_complete_msg msg_to_pub;
-
-  assign msg_to_pub.seq_num = 'x;
-  assign msg_to_pub.waddr   = 'x;
-  assign msg_to_pub.wdata   = 'x;
-  assign msg_to_pub.wen     = 'x;
+  t_complete_msg msg_to_complete_pub;
 
   task complete(
-    input logic [p_phys_addr_bits-1:0] preg,
+    input logic [p_phys_addr_bits-1:0] preg
+  );
+    msg_to_complete_pub = preg;
+
+    complete_pub.pub( msg_to_complete_pub );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Commit
+  //----------------------------------------------------------------------
+
+  typedef logic [p_phys_addr_bits-1:0] t_commit_msg;
+
+  t_commit_msg commit_msg;
+  assign commit_notif.ppreg = commit_msg;
+  assign commit_notif.pc    = 'x;
+  assign commit_notif.waddr = 'x;
+  assign commit_notif.wdata = 'x;
+  assign commit_notif.wen   = 'x;
+
+  logic [31:0] unused_commit_pc;
+  logic  [4:0] unused_commit_waddr;
+  logic [31:0] unused_commit_wdata;
+  logic        unused_commit_wen;
+
+  assign unused_commit_pc    = commit_notif.pc;
+  assign unused_commit_waddr = commit_notif.waddr;
+  assign unused_commit_wdata = commit_notif.wdata;
+  assign unused_commit_wen   = commit_notif.wen;
+
+  TestPub #(
+    t_commit_msg
+  ) commit_pub (
+    .msg (commit_msg),
+    .val (commit_notif.val),
+    .*
+  );
+
+  t_commit_msg msg_to_commit_pub;
+
+  task commit(
     input logic [p_phys_addr_bits-1:0] ppreg
   );
-    msg_to_pub.preg  = preg;
-    msg_to_pub.ppreg = ppreg;
+    msg_to_commit_pub = ppreg;
 
-    complete_pub.pub( msg_to_pub );
+    commit_pub.pub( msg_to_commit_pub );
   endtask
 
   //----------------------------------------------------------------------
@@ -238,6 +266,8 @@ module RenameTableTestSuite #(
     trace = {trace, lookup_caller[1].trace()};
     trace = {trace, " | "};
     trace = {trace, complete_pub.trace()};
+    trace = {trace, " | "};
+    trace = {trace, commit_pub.trace()};
 
     t.trace( trace );
   end
@@ -312,7 +342,8 @@ module RenameTableTestSuite #(
     for( int i = 1; i <= capacity_num_to_check; i = i + 1 ) begin
       alloc( 5'(i), 31 + p_phys_addr_bits'(i), p_phys_addr_bits'(i) );
 
-      complete( 31 + p_phys_addr_bits'(i), p_phys_addr_bits'(i) );
+      complete( 31 + p_phys_addr_bits'(i) );
+      commit( p_phys_addr_bits'(i) );
 
       // Can now re-use the ppreg
       alloc( 5'(i), p_phys_addr_bits'(i), 31 + p_phys_addr_bits'(i) );

@@ -169,7 +169,6 @@ module WritebackCommitUnitL3TestSuite #(
     logic                 [31:0] wdata;
     logic                        wen;
     logic [p_phys_addr_bits-1:0] preg;
-    logic [p_phys_addr_bits-1:0] ppreg;
   } t_complete_msg;
 
   t_complete_msg complete_msg;
@@ -179,7 +178,6 @@ module WritebackCommitUnitL3TestSuite #(
   assign complete_msg.wdata   = complete_notif.wdata;
   assign complete_msg.wen     = complete_notif.wen;
   assign complete_msg.preg    = complete_notif.preg;
-  assign complete_msg.ppreg   = complete_notif.ppreg;
 
   TestSub #(
     t_complete_msg
@@ -196,15 +194,13 @@ module WritebackCommitUnitL3TestSuite #(
     input logic                  [4:0] waddr,
     input logic                 [31:0] wdata,
     input logic                        wen,
-    input logic [p_phys_addr_bits-1:0] preg,
-    input logic [p_phys_addr_bits-1:0] ppreg
+    input logic [p_phys_addr_bits-1:0] preg
   );
     msg_to_complete_sub.seq_num = seq_num;
     msg_to_complete_sub.waddr   = waddr;
     msg_to_complete_sub.wdata   = wdata;
     msg_to_complete_sub.wen     = wen;
     msg_to_complete_sub.preg    = preg;
-    msg_to_complete_sub.ppreg   = ppreg;
 
     CompleteSub.sub( msg_to_complete_sub );
   endtask
@@ -214,11 +210,12 @@ module WritebackCommitUnitL3TestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic               [31:0] pc;
-    logic [p_seq_num_bits-1:0] seq_num;
-    logic                [4:0] waddr;
-    logic               [31:0] wdata;
-    logic                      wen;
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } t_commit_msg;
 
   t_commit_msg commit_msg;
@@ -228,6 +225,7 @@ module WritebackCommitUnitL3TestSuite #(
   assign commit_msg.waddr   = commit_notif.waddr;
   assign commit_msg.wdata   = commit_notif.wdata;
   assign commit_msg.wen     = commit_notif.wen;
+  assign commit_msg.ppreg   = commit_notif.ppreg;
 
   TestSub #(
     t_commit_msg
@@ -240,17 +238,19 @@ module WritebackCommitUnitL3TestSuite #(
   t_commit_msg msg_to_commit_sub;
 
   task commit_sub(
-    input logic               [31:0] pc,
-    input logic [p_seq_num_bits-1:0] seq_num,
-    input logic                [4:0] waddr,
-    input logic               [31:0] wdata,
-    input logic                      wen
+    input logic                 [31:0] pc,
+    input logic   [p_seq_num_bits-1:0] seq_num,
+    input logic                  [4:0] waddr,
+    input logic                 [31:0] wdata,
+    input logic                        wen,
+    input logic [p_phys_addr_bits-1:0] ppreg
   );
     msg_to_commit_sub.pc      = pc;
     msg_to_commit_sub.seq_num = seq_num;
     msg_to_commit_sub.waddr   = waddr;
     msg_to_commit_sub.wdata   = wdata;
     msg_to_commit_sub.wen     = wen;
+    msg_to_commit_sub.ppreg   = ppreg;
 
     CommitSub.sub( msg_to_commit_sub );
   endtask

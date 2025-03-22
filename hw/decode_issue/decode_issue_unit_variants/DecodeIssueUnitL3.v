@@ -15,6 +15,7 @@
 `include "hw/decode_issue/RenameTable.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
+`include "intf/CommitNotif.v"
 `include "intf/CompleteNotif.v"
 
 import ISA::*;
@@ -43,7 +44,13 @@ module DecodeIssueUnitL3 #(
   // Completion Notification
   //----------------------------------------------------------------------
 
-  CompleteNotif.sub complete
+  CompleteNotif.sub complete,
+
+  //----------------------------------------------------------------------
+  // Commit Notification
+  //----------------------------------------------------------------------
+
+  CommitNotif.sub   commit
 );
 
   localparam p_seq_num_bits   = F.p_seq_num_bits;
@@ -139,7 +146,8 @@ module DecodeIssueUnitL3 #(
     .lookup_pending (lookup_pending),
     .lookup_en      ({1'b1, 1'b1}),
 
-    .complete       (complete)
+    .complete       (complete),
+    .commit         (commit)
   );
 
   Regfile #(

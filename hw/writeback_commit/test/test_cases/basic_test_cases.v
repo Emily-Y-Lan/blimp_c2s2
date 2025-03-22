@@ -18,15 +18,15 @@ task test_case_basic();
     end
 
     begin
-      //           seq_num addr  data          wen preg ppreg
-      complete_sub(0,      5'h1, 32'hdeadbeef, 1,  32,  1 );
-      complete_sub(1,      5'h2, 32'hcafecafe, 1,  33,  2 );
+      //           seq_num addr  data          wen preg
+      complete_sub(0,      5'h1, 32'hdeadbeef, 1,  32 );
+      complete_sub(1,      5'h2, 32'hcafecafe, 1,  33 );
     end
 
     begin
-      //         pc  seq_num addr  data          wen
-      commit_sub('0, 0,      5'h1, 32'hdeadbeef, 1 );
-      commit_sub('1, 1,      5'h2, 32'hcafecafe, 1 );
+      //         pc  seq_num addr  data          wen ppreg
+      commit_sub('0, 0,      5'h1, 32'hdeadbeef, 1,  1 );
+      commit_sub('1, 1,      5'h2, 32'hcafecafe, 1,  2 );
     end
   join
 

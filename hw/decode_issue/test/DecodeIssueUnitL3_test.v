@@ -67,6 +67,11 @@ module DecodeIssueUnitL3TestSuite #(
     .p_phys_addr_bits (p_phys_addr_bits)
   ) complete_notif();
 
+  CommitNotif #(
+    .p_seq_num_bits   (p_seq_num_bits),
+    .p_phys_addr_bits (p_phys_addr_bits)
+  ) commit_notif();
+
   DecodeIssueUnitL3 #(
     .p_num_pipes     (p_num_pipes),
     .p_num_phys_regs (p_num_phys_regs),
@@ -75,6 +80,7 @@ module DecodeIssueUnitL3TestSuite #(
     .F        (F__D_intf),
     .Ex       (D__X_intfs),
     .complete (complete_notif),
+    .commit   (commit_notif),
     .*
   );
 
@@ -167,7 +173,6 @@ module DecodeIssueUnitL3TestSuite #(
     logic                 [31:0] wdata;
     logic                        wen;
     logic [p_phys_addr_bits-1:0] preg;
-    logic [p_phys_addr_bits-1:0] ppreg;
   } t_complete_msg;
 
   t_complete_msg complete_msg;
@@ -177,7 +182,6 @@ module DecodeIssueUnitL3TestSuite #(
   assign complete_notif.wdata   = complete_msg.wdata;
   assign complete_notif.wen     = complete_msg.wen;
   assign complete_notif.preg    = complete_msg.preg;
-  assign complete_notif.ppreg   = complete_msg.ppreg;
 
   logic [4:0] unused_waddr;
   assign unused_waddr = complete_notif.waddr;
@@ -192,22 +196,78 @@ module DecodeIssueUnitL3TestSuite #(
 
   t_complete_msg msg_to_pub;
 
-  task pub(
+  task complete(
     input logic   [p_seq_num_bits-1:0] seq_num,
     input logic                  [4:0] waddr,
     input logic                 [31:0] wdata,
     input logic                        wen,
-    input logic [p_phys_addr_bits-1:0] preg,
-    input logic [p_phys_addr_bits-1:0] ppreg
+    input logic [p_phys_addr_bits-1:0] preg
   );
     msg_to_pub.seq_num = seq_num;
     msg_to_pub.waddr   = waddr;
     msg_to_pub.wdata   = wdata;
     msg_to_pub.wen     = wen;
     msg_to_pub.preg    = preg;
-    msg_to_pub.ppreg   = ppreg;
 
     complete_pub.pub( msg_to_pub );
+  endtask
+
+  //----------------------------------------------------------------------
+  // Commit Notification
+  //----------------------------------------------------------------------
+
+  typedef struct packed {
+    logic                 [31:0] pc;
+    logic   [p_seq_num_bits-1:0] seq_num;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
+    logic [p_phys_addr_bits-1:0] ppreg;
+  } t_commit_msg;
+
+  t_commit_msg commit_msg;
+
+  assign commit_notif.pc      = commit_msg.pc;
+  assign commit_notif.seq_num = commit_msg.seq_num;
+  assign commit_notif.waddr   = commit_msg.waddr;
+  assign commit_notif.wdata   = commit_msg.wdata;
+  assign commit_notif.wen     = commit_msg.wen;
+  assign commit_notif.ppreg   = commit_msg.ppreg;
+
+  logic                 [31:0] unused_commit_pc;
+  logic                  [4:0] unused_commit_waddr;
+  logic                 [31:0] unused_commit_wdata;
+  logic                        unused_commit_wen;
+
+  assign unused_commit_pc    = commit_notif.pc;
+  assign unused_commit_waddr = commit_notif.waddr;
+  assign unused_commit_wdata = commit_notif.wdata;
+  assign unused_commit_wen   = commit_notif.wen;
+
+  TestPub #( t_commit_msg ) commit_pub (
+    .msg (commit_msg),
+    .val (commit_notif.val),
+    .*
+  );
+
+  t_commit_msg msg_to_commit;
+
+  task commit(
+    input logic                 [31:0] pc,
+    input logic   [p_seq_num_bits-1:0] seq_num,
+    input logic                  [4:0] waddr,
+    input logic                 [31:0] wdata,
+    input logic                        wen,
+    input logic [p_phys_addr_bits-1:0] ppreg
+  );
+    msg_to_commit.seq_num = seq_num;
+    msg_to_commit.pc      = pc;
+    msg_to_commit.waddr   = waddr;
+    msg_to_commit.wdata   = wdata;
+    msg_to_commit.wen     = wen;
+    msg_to_commit.ppreg   = ppreg;
+
+    commit_pub.pub( msg_to_commit );
   endtask
 
   //----------------------------------------------------------------------
@@ -331,6 +391,7 @@ module DecodeIssueUnitL3TestSuite #(
   string F_Istream_trace;
   string dut_trace;
   string complete_trace;
+  string commit_trace;
 
   // verilator lint_off BLKSEQ
   always_ff @( posedge clk ) begin
@@ -338,6 +399,7 @@ module DecodeIssueUnitL3TestSuite #(
     F_Istream_trace = F_Istream.trace();
     dut_trace       = dut.trace();
     complete_trace  = complete_pub.trace();
+    commit_trace    = commit_pub.trace();
 
     // Wait until X_Ostream traces are ready
     #1;
@@ -354,6 +416,8 @@ module DecodeIssueUnitL3TestSuite #(
     end
     trace = {trace, " | "};
     trace = {trace, complete_trace};
+    trace = {trace, " | "};
+    trace = {trace, commit_trace};
     
     t.trace( trace );
   end

@@ -12,7 +12,7 @@
 
 interface CompleteNotif
 #(
-  parameter p_seq_num_bits  = 5,
+  parameter p_seq_num_bits   = 5,
   parameter p_phys_addr_bits = 6
 );
 
@@ -33,7 +33,6 @@ interface CompleteNotif
 
   // Added in v3
   logic [p_phys_addr_bits-1:0] preg;
-  logic [p_phys_addr_bits-1:0] ppreg;
 
   // verilator lint_on UNUSEDSIGNAL
   // verilator lint_on UNDRIVEN
@@ -53,8 +52,7 @@ interface CompleteNotif
     output seq_num,
 
     // v3
-    output preg,
-    output ppreg
+    output preg
   );
 
   // Subscribe
@@ -68,8 +66,7 @@ interface CompleteNotif
     input seq_num,
 
     // v3
-    input preg,
-    input ppreg
+    input preg
   );
 
 endinterface

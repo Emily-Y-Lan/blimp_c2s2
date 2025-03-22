@@ -185,8 +185,7 @@ module WritebackCommitUnitL1TestSuite #(
     input logic               [31:0] wdata,
     input logic                      wen,
 
-    input logic [5:0] unused_preg,
-    input logic [5:0] unused_ppreg
+    input logic                [5:0] unused_preg
   );
     msg_to_complete_sub.seq_num = seq_num;
     msg_to_complete_sub.waddr   = waddr;
@@ -231,7 +230,9 @@ module WritebackCommitUnitL1TestSuite #(
     input logic [p_seq_num_bits-1:0] seq_num,
     input logic                [4:0] waddr,
     input logic               [31:0] wdata,
-    input logic                      wen
+    input logic                      wen,
+
+    input logic                [5:0] unused_ppreg
   );
     msg_to_commit_sub.pc      = pc;
     msg_to_commit_sub.seq_num = seq_num;

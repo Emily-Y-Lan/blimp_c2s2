@@ -153,7 +153,8 @@ module DecodeIssueUnitL5 #(
     .lookup_pending (lookup_pending),
     .lookup_en      ({1'b1, 1'b1}),
 
-    .complete       (complete)
+    .complete       (complete),
+    .commit         (commit)
   );
 
   Regfile #(

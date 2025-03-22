@@ -16,6 +16,7 @@
 `include "hw/decode_issue/RenameTable.v"
 `include "intf/F__DIntf.v"
 `include "intf/D__XIntf.v"
+`include "intf/CommitNotif.v"
 `include "intf/CompleteNotif.v"
 `include "intf/SquashNotif.v"
 
@@ -48,10 +49,16 @@ module DecodeIssueUnitL4 #(
   CompleteNotif.sub complete,
 
   //----------------------------------------------------------------------
+  // Commit Notification
+  //----------------------------------------------------------------------
+
+  CommitNotif.sub   commit,
+
+  //----------------------------------------------------------------------
   // Squash Notification
   //----------------------------------------------------------------------
 
-  SquashNotif.pub squash
+  SquashNotif.pub   squash
 );
 
   localparam p_seq_num_bits   = F.p_seq_num_bits;
@@ -147,7 +154,8 @@ module DecodeIssueUnitL4 #(
     .lookup_pending (lookup_pending),
     .lookup_en      ({1'b1, 1'b1}),
 
-    .complete       (complete)
+    .complete       (complete),
+    .commit         (commit)
   );
 
   Regfile #(

@@ -146,6 +146,7 @@ module WritebackCommitUnitL3 #(
     logic                  [4:0] waddr;
     logic                 [31:0] wdata;
     logic                        wen;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } X_input;
 
   X_input X_reg;
@@ -159,7 +160,8 @@ module WritebackCommitUnitL3 #(
         seq_num: 'x, 
         waddr: 'x, 
         wdata: 'x, 
-        wen: 1'b0
+        wen: 1'b0,
+        ppreg: 'x
       };
     else
       X_reg <= X_reg_next;
@@ -173,7 +175,8 @@ module WritebackCommitUnitL3 #(
         seq_num: Ex_seq_num_sel,
         waddr:   Ex_waddr_sel,
         wdata:   Ex_wdata_sel,
-        wen:     Ex_wen_sel
+        wen:     Ex_wen_sel,
+        ppreg:   Ex_ppreg_sel
       };
     else
       X_reg_next = '{ 
@@ -182,7 +185,8 @@ module WritebackCommitUnitL3 #(
         seq_num: 'x, 
         waddr: 'x, 
         wdata: 'x, 
-        wen: 1'b0
+        wen: 1'b0,
+        ppreg: 'x
       };
   end
 
@@ -192,17 +196,17 @@ module WritebackCommitUnitL3 #(
   assign complete.wdata   = Ex_wdata_sel;
   assign complete.wen     = ( Ex_waddr_sel == '0 ) ? 0 : Ex_wen_sel;
   assign complete.preg    = Ex_preg_sel;
-  assign complete.ppreg   = Ex_ppreg_sel;
 
   //----------------------------------------------------------------------
   // ROB
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    logic [31:0] pc;
-    logic  [4:0] waddr;
-    logic [31:0] wdata;
-    logic        wen;
+    logic                 [31:0] pc;
+    logic                  [4:0] waddr;
+    logic                 [31:0] wdata;
+    logic                        wen;
+    logic [p_phys_addr_bits-1:0] ppreg;
   } t_rob_msg;
 
   t_rob_msg rob_input, rob_output;
@@ -211,6 +215,7 @@ module WritebackCommitUnitL3 #(
   assign rob_input.waddr   = X_reg.waddr;
   assign rob_input.wdata   = X_reg.wdata;
   assign rob_input.wen     = ( X_reg.waddr == '0 ) ? 0 : X_reg.wen;
+  assign rob_input.ppreg   = X_reg.ppreg;
 
   localparam p_rob_depth = 2 ** p_seq_num_bits;
 
@@ -233,6 +238,7 @@ module WritebackCommitUnitL3 #(
   assign commit.waddr   = rob_output.waddr;
   assign commit.wdata   = rob_output.wdata;
   assign commit.wen     = rob_output.wen;
+  assign commit.ppreg   = rob_output.ppreg;
 
   //----------------------------------------------------------------------
   // Linetracing

@@ -23,8 +23,11 @@ task test_case_basic();
       //   pc     seq_num op1 op2  waddr preg ppreg uop
       recv('h200, 0,      0,   0,  1,    32,  1,    OP_MUL);
 
-      //  seq_num waddr wdata wen preg ppreg
-      pub(0,      1,    0,    1,  32,  1);
+      //       seq_num waddr wdata wen preg
+      complete(0,      1,    0,    1,  32 );
+
+      //      pc     seq_num waddr wdata wen ppreg
+      commit( 'h200, 0,      1,    0,    1,  1 );
 
       recv('h204, 1,      0,  10,  1,    1,   32,   OP_ADD);
     end
@@ -43,10 +46,13 @@ task test_case_pending();
 
   //   Initialize (ignore ppreg, write to preg)
   // 
-  //   seq_num waddr wdata wen preg ppreg
-  pub( 'x,     1,    1,    1,  1,   32 );
-  pub( 'x,     3,    3,    1,  3,   32 );
-  pub( 'x,     5,    5,    1,  5,   32 );
+  //        pc  seq_num waddr wdata wen preg ppreg
+  complete(     'x,     1,    1,    1,  1       );
+  commit  ( 'x, 'x,     1,    1,    1,       32 );
+  complete(     'x,     3,    3,    1,  3       );
+  commit  ( 'x, 'x,     3,    3,    1,       32 );
+  complete(     'x,     5,    5,    1,  5       );
+  commit  ( 'x, 'x,     5,    5,    1,       32 );
 
   fork
     begin
@@ -61,13 +67,21 @@ task test_case_pending();
     begin
       //   pc     seq_num op1 op2  waddr preg ppreg uop
       recv('h200, 0,      0,   1,  2,    32,  2,    OP_ADD);
-      pub( 'x, 2, 1, 1, 32, 2 );
+      complete(        'x, 2, 1, 1, 32 );
+      commit  ( 'h200, 'x, 2, 1, 1,  2 );
+
       recv('h204, 1,      3,   1,  4,    2,   4,    OP_ADD);
-      pub( 'x, 4, 4, 1, 2, 4 );
+      complete(        'x, 4, 4, 1,  2 );
+      commit  ( 'h204, 'x, 4, 4, 1,  4 );
+
       recv('h208, 2,      5,   4,  5,    4,   5,    OP_ADD);
-      pub( 'x, 5, 9, 1, 4, 5 );
+      complete(        'x, 5, 9, 1,  4 );
+      commit  ( 'h208, 'x, 5, 9, 1,  5 );
+      
       recv('h20c,  3,     9,   9,  5,    5,   4,    OP_ADD);
-      pub( 'x, 5, 18, 1, 5, 5 );
+      complete(        'x, 5, 18, 1, 5 );
+      commit  ( 'h20c, 'x, 5, 18, 1, 5 );
+
       recv('h210, 4,     18,   4,  6,    5,   6,    OP_ADD);
     end
   join

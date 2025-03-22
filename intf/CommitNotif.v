@@ -12,7 +12,8 @@
 
 interface CommitNotif
 #(
-  parameter p_seq_num_bits  = 5
+  parameter p_seq_num_bits   = 5,
+  parameter p_phys_addr_bits = 6
 );
   
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,6 +31,9 @@ interface CommitNotif
   // Added in v2
   logic [p_seq_num_bits-1:0] seq_num;
 
+  // Added in v3
+  logic [p_phys_addr_bits-1:0] ppreg;
+
   // verilator lint_on UNUSEDSIGNAL
 
 
@@ -46,7 +50,10 @@ interface CommitNotif
     output val,
 
     // v2
-    output seq_num
+    output seq_num,
+
+    // v3
+    output ppreg
   );
 
   // Subscribe
@@ -58,7 +65,10 @@ interface CommitNotif
     input val,
 
     // v2
-    input seq_num
+    input seq_num,
+
+    // v3
+    input ppreg
   );
 
 endinterface
