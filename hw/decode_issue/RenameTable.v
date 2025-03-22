@@ -59,8 +59,10 @@ module RenameTable #(
     logic [p_phys_addr_bits-1:0] preg;
   } rt_entry_t;
 
-  rt_entry_t rename_table [31:1]; // No x0
-  logic      free_list    [p_num_phys_regs-1:1];
+  rt_entry_t rename_table      [31:1]; // No x0
+  rt_entry_t rename_table_next [31:1];
+  logic      free_list         [p_num_phys_regs-1:1];
+  logic      free_list_next    [p_num_phys_regs-1:1];
 
   // ---------------------------------------------------------------------
   // Update Logic
@@ -81,34 +83,45 @@ module RenameTable #(
         if( rst ) begin
           rename_table[i] <= '{pending: 1'b0, preg: p_phys_addr_bits'(i)};
         end else begin
-          if( complete_val & ( complete_preg == rename_table[i].preg ) )
-            rename_table[i].pending <= 1'b0;
-          if( alloc_xfer & ( alloc_areg == i )) begin
-            rename_table[i].pending <= 1'b1;
-            rename_table[i].preg    <= alloc_preg;
-          end
+          rename_table[i] <= rename_table_next[i];
+        end
+      end
+      
+      always_comb begin
+        rename_table_next[i] = rename_table[i];
+        if( complete_val & ( complete_preg == rename_table[i].preg ) )
+          rename_table_next[i].pending = 1'b0;
+        if( alloc_xfer & ( alloc_areg == i )) begin
+          rename_table_next[i].pending = 1'b1;
+          rename_table_next[i].preg    = alloc_preg;
         end
       end
     end
   endgenerate
 
-  always_ff @( posedge clk ) begin
-    if( rst ) begin
-      for( int j = 1; j < 32; j = j + 1 ) begin
-        free_list[j] <= 1'b0;
+  generate
+    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin
+      always_ff @( posedge clk ) begin
+        if( rst ) begin
+          if( i < 32 )
+            free_list[i] <= 1'b0;
+          else
+            free_list[i] <= 1'b1;
+        end else begin
+          free_list[i] <= free_list_next[i];
+        end
       end
-      for( int j = 32; j < p_num_phys_regs; j = j + 1 ) begin
-        free_list[j] <= 1'b1;
-      end
-    end else begin
-      if( free_val & ( free_ppreg != 0 ) ) begin
-        free_list[free_ppreg] <= 1'b1;
-      end
-      if( alloc_xfer & ( alloc_preg != 0 ) ) begin
-        free_list[alloc_preg] <= 1'b0;
+
+      always_comb begin
+        free_list_next[i] = free_list[i];
+
+        if( free_val & ( free_ppreg == i ) )
+          free_list_next[i] = 1'b1;
+        if( alloc_xfer & ( alloc_preg == i ) )
+          free_list_next[i] = 1'b0;
       end
     end
-  end
+  endgenerate
 
   // ---------------------------------------------------------------------
   // Allocation
