@@ -37,7 +37,7 @@ module ROB #(
   // Entries
   //----------------------------------------------------------------------
 
-  typedef struct {
+  typedef struct packed {
     t_msg msg;
     logic val;
   } t_entry;

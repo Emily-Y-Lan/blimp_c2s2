@@ -32,10 +32,6 @@ class TestStatus;
   endtask
 endclass
 
-function int num_failed_tests();
-  return TestStatus::num_failed;
-endfunction
-
 //------------------------------------------------------------------------
 // TestEnv
 //------------------------------------------------------------------------

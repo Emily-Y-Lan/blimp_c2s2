@@ -164,13 +164,15 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
     VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
     VERILATOR_TOP_MODULE=V${V_TEST_BIN}
+    VL_USER_FINISH
+    VL_USER_FATAL
   )
   verilate(
     ${V_TEST_BIN} 
     SOURCES ${V_TEST_FILE_PATH} 
     TRACE
     TRACE_STRUCTS
-    VERILATOR_ARGS --timing --flatten --quiet-stats
+    VERILATOR_ARGS --timing --flatten --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
   )
 
   add_dependencies(check ${V_TEST_BIN})
