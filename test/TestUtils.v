@@ -19,24 +19,24 @@
 `define RESET  "\033[0m"
 
 //------------------------------------------------------------------------
-// TestStatus
-//------------------------------------------------------------------------
-// A class to statically track the number of failed tests, acting as a
-// way to hold a global variable of failed tests
-
-class TestStatus;
-  static int num_failed = 0;
-
-  static task test_fail();
-    num_failed += 1;
-  endtask
-endclass
-
-//------------------------------------------------------------------------
 // TestEnv
 //------------------------------------------------------------------------
 
 package TestEnv;
+
+  //----------------------------------------------------------------------
+  // TestStatus
+  //----------------------------------------------------------------------
+  // A class to statically track the number of failed tests, acting as a
+  // way to hold a global variable of failed tests
+
+  class TestStatus;
+    static int num_failed = 0;
+  
+    static task test_fail();
+      num_failed += 1;
+    endtask
+  endclass
 
   //----------------------------------------------------------------------
   // get_test_suite
@@ -170,9 +170,8 @@ module TestUtils
       cycles <= cycles + 1;
 
     if ( cycles > timeout ) begin
-      $display( "\nERROR (cycles=%0d): timeout!", cycles );
-      TestStatus::test_fail();
-      $finish;
+      $write("\n");
+      $fatal(0, "ERROR (cycles=%0d): timeout!", cycles );
     end
 
   end
@@ -256,7 +255,7 @@ endmodule
     else                                                                \
       $write( "%sF%s", `RED, `RESET );                                  \
     t.failed = 1;                                                       \
-    TestStatus::test_fail();                                            \
+    TestEnv::TestStatus::test_fail();                                   \
   end                                                                   \
   else begin                                                            \
     if ( !t.verbose )                                              \

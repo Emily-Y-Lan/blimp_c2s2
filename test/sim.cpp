@@ -32,7 +32,7 @@ extern void vl_fatal( const char* filename, int linenum, const char* hier,
   Verilated::threadContextp()->gotFinish( true );
 
   // Print the message
-  VL_PRINTF( "%s[ERROR]%s One or more tests failed\n", RED, RESET );
+  VL_PRINTF( "%s[ERROR]%s %s\n", RED, RESET, msg );
   Verilated::runFlushCallbacks();
 
   // Exit
