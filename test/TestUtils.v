@@ -36,8 +36,6 @@ function int num_failed_tests();
   return TestStatus::num_failed;
 endfunction
 
-export "DPI-C" function num_failed_tests;
-
 //------------------------------------------------------------------------
 // TestEnv
 //------------------------------------------------------------------------
@@ -75,7 +73,11 @@ package TestEnv;
 
   task test_bench_end();
     $write("\n\n");
-    $finish;
+    if( TestStatus::num_failed > 0 ) begin
+      $fatal(0, "One or more tests failed");
+    end else begin
+      $finish(0);
+    end
   endtask
 endpackage
 

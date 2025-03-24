@@ -163,7 +163,6 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
 
   target_compile_definitions(${V_TEST_BIN} PRIVATE 
     VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
-    VERILATOR_DPI_HEADER="V${V_TEST_BIN}__Dpi.h"
     VERILATOR_TOP_MODULE=V${V_TEST_BIN}
   )
   verilate(
