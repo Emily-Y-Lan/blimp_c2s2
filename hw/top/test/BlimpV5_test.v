@@ -120,7 +120,6 @@ module BlimpV5TestSuite #(
     input logic [31:0] wdata,
     input logic        wen
   );
-
     inst_trace_sub.check_trace(
       pc,
       waddr,

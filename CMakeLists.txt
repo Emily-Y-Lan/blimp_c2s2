@@ -298,7 +298,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
     ${VTRACE}
     # OPT_FAST ${OPT_FAST_FLAGS}
     # OPT_SLOW ${OPT_SLOW_FLAGS}
-    VERILATOR_ARGS --timing --quiet-stats -fno-inline -DVL_USER_FINISH -DVL_USER_FATAL
+    VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
   )
 
   add_dependencies(check ${V_TEST_BIN})
@@ -346,8 +346,8 @@ foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
     ${V_SIM_BIN} 
     SOURCES ${V_SIM_FILE_PATH} 
     ${VTRACE}
-    # OPT_FAST ${OPT_FAST_FLAGS}
-    # OPT_SLOW ${OPT_SLOW_FLAGS}
+    OPT_FAST ${OPT_FAST_FLAGS}
+    OPT_SLOW ${OPT_SLOW_FLAGS}
     VERILATOR_ARGS --timing --quiet-stats
   )
 endforeach(V_SIM_FILE_REL_PATH)
