@@ -3,8 +3,8 @@
 //========================================================================
 // An include to access FL program tracing
 
-`ifndef FL_PROC_FL_VTRACE_V
-`define FL_PROC_FL_VTRACE_V
+`ifndef FL_FL_VTRACE_V
+`define FL_FL_VTRACE_V
 
 `ifndef SYNTHESIS
 typedef struct packed {
@@ -20,4 +20,4 @@ import "DPI-C" function bit    fl_trace( output inst_trace trace );
 import "DPI-C" function string fl_trace_str( inst_trace trace );
 `endif
 
-`endif // FL_PROC_FL_VTRACE_V
+`endif // FL_FL_VTRACE_V

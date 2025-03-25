@@ -1,59 +1,41 @@
 // =======================================================================
-// sim.cpp
+// proc_sim.cpp
 // =======================================================================
-// A basic simulator for running testbenches
+// A basic simulator for running processor simulations
 
 // Include common routines
+#include <format>
+#include <iostream>
+#include <string>
 #include <verilated.h>
+
+// Include DPI functions
+#include "svdpi.h"
 
 // Include model header (ex. Vtop.h)
 #include VERILATOR_INCL_HEADER
 
-#define RED "\033[31m"
-#define RESET "\033[0m"
+// Include model's DPI header (ex. Vtop__Dpi.h)
+#include VERILATOR_DPI_HEADER
+
+// FL Utilities
+#include "fl/parse_elf.h"
+
+#define STRINGIFY( x ) #x
+#define STRINGIFY_MACRO( x ) STRINGIFY( x )
 
 // -----------------------------------------------------------------------
-// vl_fatal
+// init_proc_mem
 // -----------------------------------------------------------------------
-// Called from Verilog in Verilator with $fatal, overriden by compiling
-// with -DVL_USER_FATAL
+// Used to initialize memory
 
-extern void vl_fatal( const char* filename, int linenum, const char* hier,
-                      const char* msg )
+VERILATOR_TOP_MODULE* curr_top;
+
+void init_proc_mem( uint32_t addr, uint32_t data )
 {
-  // We don't currently use the filename, line number, or level
-  (void) filename;
-  (void) linenum;
-  (void) hier;
-
-  // Signal to the model that we got a fatal message
-  Verilated::threadContextp()->gotError( true );
-  Verilated::threadContextp()->gotFinish( true );
-
-  // Print the message
-  VL_PRINTF( "%s[ERROR]%s %s\n", RED, RESET, msg );
-  Verilated::runFlushCallbacks();
-
-  // Exit
-  Verilated::runExitCallbacks();
-  exit( 1 );
-}
-
-// -----------------------------------------------------------------------
-// vl_finish
-// -----------------------------------------------------------------------
-// Called from Verilog in Verilator with $finish, overriden by compiling
-// with -DVL_USER_FATAL
-
-extern void vl_finish( const char* filename, int linenum,
-                       const char* hier )
-{
-  // We don't currently use the filename or line number
-  (void) filename;
-  (void) linenum;
-
-  // Signal to the model that we've finished
-  Verilated::threadContextp()->gotFinish( true );
+  if ( curr_top ) {
+    curr_top->init_mem( &addr, &data );
+  }
 }
 
 // -----------------------------------------------------------------------
@@ -62,6 +44,11 @@ extern void vl_finish( const char* filename, int linenum,
 
 int main( int argc, char** argv )
 {
+  if ( argc < 2 ) {
+    std::cout << "Usage: " << argv[0] << " elf_file" << std::endl;
+    exit( 1 );
+  }
+
   // Construct a VerilatedContext to hold simulation time, etc.
   VerilatedContext* const contextp = new VerilatedContext;
 
@@ -75,6 +62,32 @@ int main( int argc, char** argv )
   // Construct the Verilated model, from Vtop.h generated from Verilating
   // "top.v"
   VERILATOR_TOP_MODULE* top = new VERILATOR_TOP_MODULE{ contextp };
+  curr_top                  = top;
+
+  // Set the scope, for access to DPI functions
+  std::string scope_name =
+      std::format( "TOP.{}", STRINGIFY_MACRO( VERILATOR_MODULE_NAME ) );
+  const svScope scope = svGetScopeFromName( scope_name.c_str() );
+  assert( scope );  // Check for nullptr if scope not found
+  svSetScope( scope );
+
+  // Reset the design
+  top->rst = 1;
+  for ( int i = 0; i < 3; i++ ) {
+    while ( !top->clk ) {
+      contextp->timeInc( 1 );
+      top->eval();
+    }
+    while ( top->clk ) {
+      contextp->timeInc( 1 );
+      top->eval();
+    }
+  }
+
+  top->rst = 0;
+
+  // Load the ELF file
+  parse_elf( argv[1], init_proc_mem );
 
   // Simulate until $finish
   while ( !contextp->gotFinish() ) {

@@ -4,7 +4,7 @@
 # A build system for Blimp
 
 #-------------------------------------------------------------------------
-# Get all of the test files
+# Get all of the source files
 #-------------------------------------------------------------------------
 
 set(V_TEST_FILES
@@ -49,6 +49,10 @@ set(V_TEST_FILES
   hw/writeback_commit/test/ROB_test.v
 )
 
+set(V_SIM_FILES
+  hw/top/sim/BlimpV7_sim.v
+)
+
 set(ASM_FILES
   asm/assemble.cpp
   asm/disassemble.cpp
@@ -64,6 +68,7 @@ set(FL_PROC_FILES
   fl/FLRegfile.cpp
   fl/FLTrace.cpp
   fl/fl_vtrace.cpp
+  fl/fl_peripherals.cpp
   fl/parse_elf.cpp
 
   fl/peripherals/FLExit.cpp
@@ -166,7 +171,11 @@ set(OPT_SLOW_FLAGS
 #-------------------------------------------------------------------------
 # Disable by default for speed
 
-if(DEFINED TRACE)
+if(NOT DEFINED TRACE)
+set(TRACE 0)
+endif()
+
+if(TRACE)
   set(VTRACE TRACE TRACE_STRUCTS)
 else()
   set(VTRACE "")
@@ -225,6 +234,18 @@ function(remove_extension VARNAME FILE_NAME)
 endfunction()
 
 #------------------------------------------------------------------------
+# sim_name
+#------------------------------------------------------------------------
+# A function to convert a simulation Verilog file name to an executable
+# name
+
+function(sim_name SIMNAME FILE_NAME)
+  string(REGEX MATCH "BlimpV([0-9]+)_sim\\.v" FILE_NAME ${FILE_NAME})
+  message("File Name: ${FILE_NAME}")
+  set(${SIMNAME} "v${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
+endfunction()
+
+#------------------------------------------------------------------------
 # add_prefix
 #------------------------------------------------------------------------
 # A function to add a prefix to all elements of a list
@@ -277,8 +298,8 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
     ${V_TEST_BIN} 
     SOURCES ${V_TEST_FILE_PATH} 
     ${VTRACE}
-    OPT_FAST ${OPT_FAST_FLAGS}
-    OPT_SLOW ${OPT_SLOW_FLAGS}
+    # OPT_FAST ${OPT_FAST_FLAGS}
+    # OPT_SLOW ${OPT_SLOW_FLAGS}
     VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
   )
 
@@ -303,6 +324,35 @@ add_custom_target(
   ${LIST_COMMANDS}
   COMMENT ${KNOWN_TEST_TEXT}
 )
+
+#------------------------------------------------------------------------
+# Add our SystemVerilog simulations
+#------------------------------------------------------------------------
+
+foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
+  set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
+  get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
+  remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
+  sim_name(V_SIM_BIN ${V_SIM_FILE})
+
+  add_executable(${V_SIM_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/hw/top/sim/utils/proc_sim.cpp")
+  target_link_libraries(${V_SIM_BIN} PRIVATE ASM FL_PROC) 
+
+  target_compile_definitions(${V_SIM_BIN} PRIVATE 
+    VERILATOR_INCL_HEADER="V${V_SIM_FILE_STUB}.h"
+    VERILATOR_DPI_HEADER="V${V_SIM_FILE_STUB}__Dpi.h"
+    VERILATOR_TOP_MODULE=V${V_SIM_FILE_STUB}
+    VERILATOR_MODULE_NAME=${V_SIM_FILE_STUB}
+  )
+  verilate(
+    ${V_SIM_BIN} 
+    SOURCES ${V_SIM_FILE_PATH} 
+    ${VTRACE}
+    # OPT_FAST ${OPT_FAST_FLAGS}
+    # OPT_SLOW ${OPT_SLOW_FLAGS}
+    VERILATOR_ARGS --timing --quiet-stats
+  )
+endforeach(V_SIM_FILE_REL_PATH)
 
 #------------------------------------------------------------------------
 # Include RISCV programs

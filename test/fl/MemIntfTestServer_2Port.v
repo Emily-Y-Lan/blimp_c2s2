@@ -1,11 +1,14 @@
 //========================================================================
 // MemIntfTestServer_2Port.v
 //========================================================================
-// A FL model of a memory server with two ports, to use in testing
+// A FL model of a memory server with two ports, to use in testing and
+// simulation
+//
+// Here, we also include support for our FL memory-mapped peripherals
 
+`include "fl/fl_peripherals.v"
 `include "hw/util/DelayStream.v"
 `include "intf/MemIntf.v"
-`include "test/FLTestUtils.v"
 `include "types/MemMsg.v"
 
 `ifndef TEST_FL_MEM_INTF_TEST_SERVER_TWO_PORT_V
@@ -25,8 +28,6 @@ module MemIntfTestServer_2Port #(
   
   MemIntf.server dut [2]
 );
-
-  FLTestUtils t( .* );
   
   //----------------------------------------------------------------------
   // Store memory values in association array
@@ -133,7 +134,8 @@ module MemIntfTestServer_2Port #(
       // Execute the transaction
       case( curr_req[0].op )
         MEM_MSG_READ: begin
-          if( mem.exists( curr_req[0].addr ) == 1 )
+          if( try_fl_read(curr_req[0].addr, curr_resp[0].data) );
+          else if( mem.exists( curr_req[0].addr ) == 1 )
             curr_resp[0].data = mem[curr_req[0].addr];
           else
             curr_resp[0].data = 'x;
@@ -141,7 +143,9 @@ module MemIntfTestServer_2Port #(
         end
         MEM_MSG_WRITE: begin
           // TODO: Support len - right now, assume all bytes
-          mem[curr_req[0].addr] = curr_req[0].data;
+          if( try_fl_write(curr_req[0].addr, curr_req[0].data) );
+          else
+            mem[curr_req[0].addr] = curr_req[0].data;
           curr_resp[0].data = 'x;
           curr_resp[0].len  = curr_req[0].len;
         end
@@ -163,7 +167,8 @@ module MemIntfTestServer_2Port #(
       // Execute the transaction
       case( curr_req[1].op )
         MEM_MSG_READ: begin
-          if( mem.exists( curr_req[1].addr ) == 1 )
+          if( try_fl_read(curr_req[1].addr, curr_resp[1].data) );
+          else if( mem.exists( curr_req[1].addr ) == 1 )
             curr_resp[1].data = mem[curr_req[1].addr];
           else
             curr_resp[1].data = 'x;
@@ -171,7 +176,9 @@ module MemIntfTestServer_2Port #(
         end
         MEM_MSG_WRITE: begin
           // TODO: Support len - right now, assume all bytes
-          mem[curr_req[1].addr] = curr_req[1].data;
+          if( try_fl_write(curr_req[1].addr, curr_req[1].data) );
+          else
+            mem[curr_req[1].addr] = curr_req[1].data;
           curr_resp[1].data = 'x;
           curr_resp[1].len  = curr_req[1].len;
         end
