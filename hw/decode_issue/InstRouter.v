@@ -34,13 +34,29 @@ module InstRouterUnit #(
     always_comb begin
       val_uop = 0;
 
-      if( ( p_isa_subset & OP_ADD_VEC  ) > 0 ) val_uop |= ( uop == OP_ADD  );
-      if( ( p_isa_subset & OP_MUL_VEC  ) > 0 ) val_uop |= ( uop == OP_MUL  );
-      if( ( p_isa_subset & OP_LW_VEC   ) > 0 ) val_uop |= ( uop == OP_LW   );
-      if( ( p_isa_subset & OP_SW_VEC   ) > 0 ) val_uop |= ( uop == OP_SW   );
-      if( ( p_isa_subset & OP_JAL_VEC  ) > 0 ) val_uop |= ( uop == OP_JAL  );
-      if( ( p_isa_subset & OP_JALR_VEC ) > 0 ) val_uop |= ( uop == OP_JALR );
-      if( ( p_isa_subset & OP_BNE_VEC  ) > 0 ) val_uop |= ( uop == OP_BNE  );
+      if( ( p_isa_subset & OP_ADD_VEC   ) > 0 ) val_uop |= ( uop == OP_ADD   );
+      if( ( p_isa_subset & OP_SUB_VEC   ) > 0 ) val_uop |= ( uop == OP_SUB   );
+      if( ( p_isa_subset & OP_AND_VEC   ) > 0 ) val_uop |= ( uop == OP_AND   );
+      if( ( p_isa_subset & OP_OR_VEC    ) > 0 ) val_uop |= ( uop == OP_OR    );
+      if( ( p_isa_subset & OP_XOR_VEC   ) > 0 ) val_uop |= ( uop == OP_XOR   );
+      if( ( p_isa_subset & OP_SLT_VEC   ) > 0 ) val_uop |= ( uop == OP_SLT   );
+      if( ( p_isa_subset & OP_SLTU_VEC  ) > 0 ) val_uop |= ( uop == OP_SLTU  );
+      if( ( p_isa_subset & OP_SRA_VEC   ) > 0 ) val_uop |= ( uop == OP_SRA   );
+      if( ( p_isa_subset & OP_SRL_VEC   ) > 0 ) val_uop |= ( uop == OP_SRL   );
+      if( ( p_isa_subset & OP_SLL_VEC   ) > 0 ) val_uop |= ( uop == OP_SLL   );
+      if( ( p_isa_subset & OP_MUL_VEC   ) > 0 ) val_uop |= ( uop == OP_MUL   );
+      if( ( p_isa_subset & OP_LUI_VEC   ) > 0 ) val_uop |= ( uop == OP_LUI   );
+      if( ( p_isa_subset & OP_AUIPC_VEC ) > 0 ) val_uop |= ( uop == OP_AUIPC );
+      if( ( p_isa_subset & OP_LW_VEC    ) > 0 ) val_uop |= ( uop == OP_LW    );
+      if( ( p_isa_subset & OP_SW_VEC    ) > 0 ) val_uop |= ( uop == OP_SW    );
+      if( ( p_isa_subset & OP_JAL_VEC   ) > 0 ) val_uop |= ( uop == OP_JAL   );
+      if( ( p_isa_subset & OP_JALR_VEC  ) > 0 ) val_uop |= ( uop == OP_JALR  );
+      if( ( p_isa_subset & OP_BEQ_VEC   ) > 0 ) val_uop |= ( uop == OP_BEQ   );
+      if( ( p_isa_subset & OP_BNE_VEC   ) > 0 ) val_uop |= ( uop == OP_BNE   );
+      if( ( p_isa_subset & OP_BLT_VEC   ) > 0 ) val_uop |= ( uop == OP_BLT   );
+      if( ( p_isa_subset & OP_BGE_VEC   ) > 0 ) val_uop |= ( uop == OP_BGE   );
+      if( ( p_isa_subset & OP_BLTU_VEC  ) > 0 ) val_uop |= ( uop == OP_BLTU  );
+      if( ( p_isa_subset & OP_BGEU_VEC  ) > 0 ) val_uop |= ( uop == OP_BGEU  );
     end
   endgenerate
 

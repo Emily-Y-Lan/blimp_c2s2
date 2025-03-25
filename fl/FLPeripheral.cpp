@@ -19,7 +19,7 @@ bool can_write( const access_type_t access_type )
 }
 bool addr_in_range( uint32_t addr, const address_range_t& address_range )
 {
-  return ( addr >= address_range.start_addr ) &
+  return ( addr >= address_range.start_addr ) &&
          ( addr <= address_range.end_addr );
 }
 
@@ -30,7 +30,7 @@ bool addr_in_range( uint32_t addr, const address_range_t& address_range )
 bool FLPeripheral::try_read( uint32_t addr, uint32_t* data )
 {
   for ( const address_range_t& address_range : get_address_ranges() ) {
-    if ( addr_in_range( addr, address_range ) &
+    if ( addr_in_range( addr, address_range ) &&
          can_read( address_range.access_type ) ) {
       read( addr, data );
       return true;
@@ -46,7 +46,7 @@ bool FLPeripheral::try_read( uint32_t addr, uint32_t* data )
 bool FLPeripheral::try_write( uint32_t addr, uint32_t data )
 {
   for ( const address_range_t& address_range : get_address_ranges() ) {
-    if ( addr_in_range( addr, address_range ) &
+    if ( addr_in_range( addr, address_range ) &&
          can_write( address_range.access_type ) ) {
       write( addr, data );
       return true;

@@ -95,16 +95,43 @@ module InstDecoder (
 
   generate
     always_comb begin
-      casez ( inst ) //        uop      jal     raddr0 raddr1 waddr wen imm_sel op2_sel  op3_sel
-        `RVI_INST_ADD:  cs( y, OP_ADD,  j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
-        `RVI_INST_ADDI: cs( y, OP_ADD,  j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
-        `RVI_INST_MUL:  cs( y, OP_MUL,  j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
-        `RVI_INST_LW:   cs( y, OP_LW,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
-        `RVI_INST_SW:   cs( y, OP_SW,   j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
-        `RVI_INST_JAL:  cs( y, OP_JAL,  j_jal,  rx,    rx,    rd,   y,  IMM_J,  op2_x,   op3_x   );
-        `RVI_INST_JALR: cs( y, OP_JALR, j_jalr, rs1,   rx,    rd,   y,  IMM_I,  op2_x,   op3_x   );
-        `RVI_INST_BNE:  cs( y, OP_BNE,  j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
-        default:        cs( n, 'x,      j_n,    'x,    'x,    'x,   n,  'x,     'x,      'x      );
+      casez ( inst ) //         uop       jal     raddr0 raddr1 waddr wen imm_sel op2_sel  op3_sel
+        `RVI_INST_ADD:   cs( y, OP_ADD,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_SUB:   cs( y, OP_SUB,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_AND:   cs( y, OP_AND,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_OR:    cs( y, OP_OR,    j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_XOR:   cs( y, OP_XOR,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_SLT:   cs( y, OP_SLT,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_SLTU:  cs( y, OP_SLTU,  j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_SRA:   cs( y, OP_SRA,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_SRL:   cs( y, OP_SRL,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVI_INST_SLL:   cs( y, OP_SLL,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+        `RVM_INST_MUL:   cs( y, OP_MUL,   j_n,    rs1,   rs2,   rd,   y,  'x,     op2_rf,  op3_x   );
+
+        `RVI_INST_ADDI:  cs( y, OP_ADD,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_ANDI:  cs( y, OP_AND,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_ORI:   cs( y, OP_OR,    j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_XORI:  cs( y, OP_XOR,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_SLTI:  cs( y, OP_SLT,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_SLTIU: cs( y, OP_SLTU,  j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_SRAI:  cs( y, OP_SRA,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_SRLI:  cs( y, OP_SRL,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_SLLI:  cs( y, OP_SLL,   j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_x   );
+        `RVI_INST_LUI:   cs( y, OP_LUI,   j_n,    rx,    rx,    rd,   y,  IMM_U,  op2_imm, op3_x   );
+        `RVI_INST_AUIPC: cs( y, OP_AUIPC, j_n,    rx,    rx,    rd,   y,  IMM_U,  op2_imm, op3_x   );
+
+        `RVI_INST_LW:    cs( y, OP_LW,    j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
+        `RVI_INST_SW:    cs( y, OP_SW,    j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
+
+        `RVI_INST_JAL:   cs( y, OP_JAL,   j_jal,  rx,    rx,    rd,   y,  IMM_J,  op2_x,   op3_x   );
+        `RVI_INST_JALR:  cs( y, OP_JALR,  j_jalr, rs1,   rx,    rd,   y,  IMM_I,  op2_x,   op3_x   );
+        `RVI_INST_BEQ:   cs( y, OP_BEQ,   j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
+        `RVI_INST_BNE:   cs( y, OP_BNE,   j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
+        `RVI_INST_BLT:   cs( y, OP_BLT,   j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
+        `RVI_INST_BGE:   cs( y, OP_BGE,   j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
+        `RVI_INST_BLTU:  cs( y, OP_BLTU,  j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
+        `RVI_INST_BGEU:  cs( y, OP_BGEU,  j_n,    rs1,   rs2,   rx,   n,  IMM_B,  op2_rf,  op3_br  );
+        default:         cs( n, 'x,       j_n,    'x,    'x,    'x,   n,  'x,     'x,      'x      );
       endcase
     end
   endgenerate

@@ -1,11 +1,11 @@
 //========================================================================
-// ControlFlowUnitL5.v
+// ControlFlowUnitL6.v
 //========================================================================
 // An execute unit for handling control flow operations (conditional
 // and unconditional)
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L5_CONTROLFLOWUNITL5_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L5_CONTROLFLOWUNITL5_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L6_CONTROLFLOWUNITL6_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L6_CONTROLFLOWUNITL6_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -14,7 +14,7 @@
 
 import UArch::*;
 
-module ControlFlowUnitL5 (
+module ControlFlowUnitL6 (
   input  logic clk,
   input  logic rst,
 
@@ -104,10 +104,15 @@ module ControlFlowUnitL5 (
   
   always_comb begin
     case( D_reg.uop )
-      OP_BNE:  should_branch = ( D_reg.op1 != D_reg.op2 );
-      OP_JAL:  should_branch = 1'b0;
-      OP_JALR: should_branch = 1'b0;
-      default: should_branch = 1'bx;
+      OP_BEQ:   should_branch = ( D_reg.op1 == D_reg.op2 );
+      OP_BNE:   should_branch = ( D_reg.op1 != D_reg.op2 );
+      OP_BLT:   should_branch = ( $signed(D_reg.op1) <  $signed(D_reg.op2) );
+      OP_BGE:   should_branch = ( $signed(D_reg.op1) >= $signed(D_reg.op2) );
+      OP_BLTU:  should_branch = ( D_reg.op1 <  D_reg.op2 );
+      OP_BGEU:  should_branch = ( D_reg.op1 >= D_reg.op2 );
+      OP_JAL:   should_branch = 1'b0;
+      OP_JALR:  should_branch = 1'b0;
+      default:  should_branch = 1'bx;
     endcase
   end
 
@@ -184,4 +189,4 @@ module ControlFlowUnitL5 (
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L5_CONTROLFLOWUNITL5_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L6_CONTROLFLOWUNITL6_V

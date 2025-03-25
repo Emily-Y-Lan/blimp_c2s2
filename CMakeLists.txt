@@ -25,6 +25,8 @@ set(V_TEST_FILES
   hw/execute/test/l3/LoadStoreUnitL3_test.v
   hw/execute/test/l4/ControlFlowUnitL4_test.v
   hw/execute/test/l5/ControlFlowUnitL5_test.v
+  hw/execute/test/l6/ALUL6_test.v
+  hw/execute/test/l6/ControlFlowUnitL6_test.v
   hw/fetch/test/FetchUnitL1_test.v
   hw/fetch/test/FetchUnitL2_test.v
   hw/fetch/test/FetchUnitL3_test.v
@@ -38,6 +40,7 @@ set(V_TEST_FILES
   hw/top/test/BlimpV4_test.v
   hw/top/test/BlimpV5_test.v
   hw/top/test/BlimpV6_test.v
+  hw/top/test/BlimpV7_test.v
   hw/top/test/FLProc_test.v
   hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
@@ -72,14 +75,117 @@ set(APP_SUBDIRS
 )
 
 #-------------------------------------------------------------------------
-# Boilerplate
+# Verilator Flags
 #-------------------------------------------------------------------------
+# Used for fast compilation
+#
+# Source: https://github.com/pymtl/pymtl3/blob/eea5ff49e06b303123097dc4d9e163790c0f58d6/pymtl3/passes/backends/verilog/import_/VerilogVerilatorImportConfigs.py
+
+set(OPT_FAST_FLAGS
+  -O1
+  -fno-guess-branch-probability
+  -fno-reorder-blocks
+  -fno-if-conversion
+  -fno-if-conversion2
+  -fno-dce
+  -fno-delayed-branch
+  -fno-dse
+  -fno-auto-inc-dec
+  -fno-branch-count-reg
+  -fno-combine-stack-adjustments
+  -fno-cprop-registers
+  -fno-forward-propagate
+  -fno-inline-functions-called-once
+  -fno-ipa-profile
+  -fno-ipa-pure-const
+  -fno-ipa-reference
+  -fno-move-loop-invariants
+  -fno-omit-frame-pointer
+  -fno-split-wide-types
+  -fno-tree-bit-ccp
+  -fno-tree-ccp
+  -fno-tree-ch
+  -fno-tree-coalesce-vars
+  -fno-tree-copy-prop
+  -fno-tree-dce
+  -fno-tree-dominator-opts
+  -fno-tree-dse
+  -fno-tree-fre
+  -fno-tree-phiprop
+  -fno-tree-pta
+  -fno-tree-scev-cprop
+  -fno-tree-sink
+  -fno-tree-slsr
+  -fno-tree-sra
+  -fno-tree-ter
+  -fno-tree-reassoc
+)
+
+set(OPT_SLOW_FLAGS
+  -O0
+  -fno-guess-branch-probability
+  -fno-reorder-blocks
+  -fno-if-conversion
+  -fno-if-conversion2
+  -fno-dce
+  -fno-delayed-branch
+  -fno-dse
+  -fno-auto-inc-dec
+  -fno-branch-count-reg
+  -fno-combine-stack-adjustments
+  -fno-cprop-registers
+  -fno-forward-propagate
+  -fno-inline-functions-called-once
+  -fno-ipa-profile
+  -fno-ipa-pure-const
+  -fno-ipa-reference
+  -fno-move-loop-invariants
+  -fno-omit-frame-pointer
+  -fno-split-wide-types
+  -fno-tree-bit-ccp
+  -fno-tree-ccp
+  -fno-tree-ch
+  -fno-tree-coalesce-vars
+  -fno-tree-copy-prop
+  -fno-tree-dce
+  -fno-tree-dominator-opts
+  -fno-tree-dse
+  -fno-tree-fre
+  -fno-tree-phiprop
+  -fno-tree-pta
+  -fno-tree-scev-cprop
+  -fno-tree-sink
+  -fno-tree-slsr
+  -fno-tree-sra
+  -fno-tree-ter
+  -fno-tree-reassoc
+)
+
+#-------------------------------------------------------------------------
+# Tracing
+#-------------------------------------------------------------------------
+# Disable by default for speed
+
+if(DEFINED TRACE)
+  set(VTRACE TRACE TRACE_STRUCTS)
+else()
+  set(VTRACE "")
+endif()
+
+#-------------------------------------------------------------------------
+# Set the compiler
+#-------------------------------------------------------------------------
+# Use clang if available, then gcc if not
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+#-------------------------------------------------------------------------
+# Boilerplate
+#-------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.10)
 project(
@@ -170,9 +276,10 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   verilate(
     ${V_TEST_BIN} 
     SOURCES ${V_TEST_FILE_PATH} 
-    TRACE
-    TRACE_STRUCTS
-    VERILATOR_ARGS --timing --flatten --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
+    ${VTRACE}
+    OPT_FAST ${OPT_FAST_FLAGS}
+    OPT_SLOW ${OPT_SLOW_FLAGS}
+    VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
   )
 
   add_dependencies(check ${V_TEST_BIN})
