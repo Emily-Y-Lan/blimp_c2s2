@@ -184,13 +184,12 @@ endif()
 #-------------------------------------------------------------------------
 # Set the compiler
 #-------------------------------------------------------------------------
-# Use clang if available, then gcc if not
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 #-------------------------------------------------------------------------
 # Boilerplate
@@ -241,7 +240,6 @@ endfunction()
 
 function(sim_name SIMNAME FILE_NAME)
   string(REGEX MATCH "BlimpV([0-9]+)_sim\\.v" FILE_NAME ${FILE_NAME})
-  message("File Name: ${FILE_NAME}")
   set(${SIMNAME} "v${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
 endfunction()
 
@@ -300,7 +298,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
     ${VTRACE}
     # OPT_FAST ${OPT_FAST_FLAGS}
     # OPT_SLOW ${OPT_SLOW_FLAGS}
-    VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
+    VERILATOR_ARGS --timing --quiet-stats -fno-inline -DVL_USER_FINISH -DVL_USER_FATAL
   )
 
   add_dependencies(check ${V_TEST_BIN})
