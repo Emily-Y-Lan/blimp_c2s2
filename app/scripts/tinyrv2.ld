@@ -10,7 +10,7 @@
    execute). The symbol _start is defined in crt0.S */
 
 ENTRY( _start )
-
+STARTUP( crt0.o )
 
 /*----------------------------------------------------------------------*/
 /* Sections                                                             */

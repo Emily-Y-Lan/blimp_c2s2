@@ -25,6 +25,21 @@ set(UTIL_FILES
 )
 
 #-------------------------------------------------------------------------
+# Object library for entry point
+#-------------------------------------------------------------------------
+# Need to do this with a custom command, so our linker script can later
+# find it (otherwise CMake will put it somewhere crazy with a weird name)
+
+string(REPLACE " " ";" CMAKE_CXX_CUSTOM_FLAGS ${CMAKE_CXX_FLAGS})
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/crt0.o
+    COMMAND ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_CUSTOM_FLAGS} -c ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S -o ${CMAKE_CURRENT_BINARY_DIR}/crt0.o
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S
+)
+add_custom_target(compile_crt ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/crt0.o)
+
+#-------------------------------------------------------------------------
 # Build the libraries
 #-------------------------------------------------------------------------
 
@@ -57,8 +72,8 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
       app-${APP_BIN} 
       ${APP_FILE_PATH}
       ${ABSOLUTE_SRC_FILES}
-      ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S
     )
+    add_dependencies(app-${APP_BIN} compile_crt)
     set_target_properties(app-${APP_BIN} PROPERTIES OUTPUT_NAME ${APP_BIN})
     target_compile_options(app-${APP_BIN} PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
     target_link_libraries(app-${APP_BIN} PRIVATE UTILS)
