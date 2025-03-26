@@ -39,8 +39,6 @@ set(ALL_SRC_FILES)
 
 foreach(APP_SUBDIR ${APP_SUBDIRS})
   add_subdirectory(${APP_SUBDIR} "${CMAKE_CURRENT_BINARY_DIR}/${APP_SUBDIR}_cmake")
-  message("Apps: ${APP_FILES}")
-  message("Sources: ${SRC_FILES}")
   add_prefix(SRC_FILES "${APP_SUBDIR}/")
   add_prefix(APP_FILES "${APP_SUBDIR}/")
 
@@ -62,6 +60,7 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
       ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S
     )
     set_target_properties(app-${APP_BIN} PROPERTIES OUTPUT_NAME ${APP_BIN})
+    target_compile_options(app-${APP_BIN} PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
     target_link_libraries(app-${APP_BIN} PRIVATE UTILS)
   endforeach(APP_FILE_REL_PATH)
 endforeach(APP_SUBDIR)

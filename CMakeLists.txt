@@ -261,7 +261,7 @@ endfunction()
 #------------------------------------------------------------------------
 
 add_library(ASM STATIC ${ASM_FILES})
-target_compile_options(ASM PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_compile_options(ASM PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 
 #------------------------------------------------------------------------
 # FL_PROC Library
@@ -269,7 +269,7 @@ target_compile_options(ASM PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 add_library(FL_PROC STATIC ${FL_PROC_FILES})
 target_link_libraries(FL_PROC PRIVATE ASM)
-target_compile_options(FL_PROC PRIVATE -Wall -Wextra -Wpedantic -Werror)
+target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
@@ -368,7 +368,7 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
     get_leaf(APP_FILE ${APP_FILE_PATH})
     remove_extension(APP_BIN ${APP_FILE})
     add_executable(app-${APP_BIN}-native ${APP_FILE_PATH} ${SRC_FILES})
-    target_compile_options(app-${APP_BIN}-native PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(app-${APP_BIN}-native PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
     target_include_directories(app-${APP_BIN}-native PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR})
     set_target_properties(app-${APP_BIN}-native PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${APP_SUBDIR}"
