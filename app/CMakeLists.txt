@@ -13,6 +13,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(APP_SUBDIRS
   hello
+  sqrt
 )
 
 #-------------------------------------------------------------------------
@@ -20,7 +21,7 @@ set(APP_SUBDIRS
 #-------------------------------------------------------------------------
 
 set(UTIL_FILES
-  utils/blimp_wprintf.cpp
+  utils/blimp_wprintf.c
 )
 
 #-------------------------------------------------------------------------
@@ -38,6 +39,8 @@ set(ALL_SRC_FILES)
 
 foreach(APP_SUBDIR ${APP_SUBDIRS})
   add_subdirectory(${APP_SUBDIR} "${CMAKE_CURRENT_BINARY_DIR}/${APP_SUBDIR}_cmake")
+  message("Apps: ${APP_FILES}")
+  message("Sources: ${SRC_FILES}")
   add_prefix(SRC_FILES "${APP_SUBDIR}/")
   add_prefix(APP_FILES "${APP_SUBDIR}/")
 
@@ -52,7 +55,12 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
     get_leaf(APP_FILE ${APP_FILE_PATH})
     remove_extension(APP_BIN ${APP_FILE})
   
-    add_executable(app-${APP_BIN} ${APP_FILE_PATH} ${ABSOLUTE_SRC_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S)
+    add_executable(
+      app-${APP_BIN} 
+      ${APP_FILE_PATH}
+      ${ABSOLUTE_SRC_FILES}
+      ${CMAKE_CURRENT_SOURCE_DIR}/scripts/crt0.S
+    )
     set_target_properties(app-${APP_BIN} PROPERTIES OUTPUT_NAME ${APP_BIN})
     target_link_libraries(app-${APP_BIN} PRIVATE UTILS)
   endforeach(APP_FILE_REL_PATH)
