@@ -50,7 +50,7 @@ set(V_TEST_FILES
 )
 
 set(V_SIM_FILES
-  hw/top/sim/BlimpV7_sim.v
+  # hw/top/sim/BlimpV7_sim.v
 )
 
 set(ASM_FILES
@@ -195,13 +195,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Boilerplate
 #-------------------------------------------------------------------------
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 cmake_minimum_required(VERSION 3.10)
 project(
   BLIMP 
   VERSION 1.0
   DESCRIPTION "BLIMP: BRG's Luculently-Interfaced Modular Processor"
-  LANGUAGES C CXX ASM
+  LANGUAGES Verilog C CXX ASM
 )
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vdeps.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/verilator.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vlint.cmake)
 
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -277,13 +283,11 @@ target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/test/tests.cmake)
 add_prefix(BLIMPV1_TESTS "hw/top/test/")
-message("Blimp: ${BLIMPV1_TESTS}")
 
 set(V_TEST_FILES
   ${V_TEST_FILES}
   ${BLIMPV1_TESTS}
 )
-message("Test Files: ${V_TEST_FILES}")
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
@@ -296,29 +300,42 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   get_leaf(V_TEST_FILE ${V_TEST_FILE_PATH})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
-  add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
+  add_executable(${V_TEST_BIN} ${V_TEST_FILE_PATH})
   target_link_libraries(${V_TEST_BIN} PRIVATE ASM FL_PROC) 
   set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
 
-  target_compile_definitions(${V_TEST_BIN} PRIVATE 
-    VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
-    VERILATOR_TOP_MODULE=V${V_TEST_BIN}
-    VL_USER_FINISH
-    VL_USER_FATAL
-  )
-  verilate(
-    ${V_TEST_BIN} 
-    SOURCES ${V_TEST_FILE_PATH} 
+  # target_compile_definitions(${V_TEST_BIN} PRIVATE 
+  #   VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
+  #   VERILATOR_TOP_MODULE=V${V_TEST_BIN}
+  #   VL_USER_FINISH
+  #   VL_USER_FATAL
+  # )
+  verilator_target(${V_TEST_BIN}
     ${VTRACE}
-    # OPT_FAST ${OPT_FAST_FLAGS}
-    # OPT_SLOW ${OPT_SLOW_FLAGS}
-    VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
+    # DEFINES "VL_USER_FINISH" "VL_USER_FATAL"
+    VERILATOR_ARGS --quiet-stats
   )
+  # verilate(
+  #   ${V_TEST_BIN} 
+  #   SOURCES ${V_TEST_FILE_PATH} 
+  #   ${VTRACE}
+  #   # OPT_FAST ${OPT_FAST_FLAGS}
+  #   # OPT_SLOW ${OPT_SLOW_FLAGS}
+  #   VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
+  # )
 
-  add_dependencies(check ${V_TEST_BIN})
-  file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
-  remove_extension(TEST_NAME ${TEST_PATH})
-  add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
+  # Track dependencies
+  vdeps(TEST_DEPS
+    SOURCES ${V_TEST_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+  add_prefix(TEST_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
+  set_property(SOURCE ${V_TEST_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${TEST_DEPS})
+
+  # add_dependencies(check ${V_TEST_BIN})
+  # file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
+  # remove_extension(TEST_NAME ${TEST_PATH})
+  # add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
 endforeach(V_TEST_FILE_REL_PATH)
 
 #------------------------------------------------------------------------
