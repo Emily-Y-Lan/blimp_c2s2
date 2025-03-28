@@ -1,10 +1,13 @@
 //========================================================================
-// BlimpV3_test.v
+// BlimpV1TestHarness.v
 //========================================================================
-// The top-level testing module for Blimp V3
+// A top-level testing harness for a basic implementation of Blimp
+
+`ifndef HW_TOP_TEST_BLIMPV1TESTHARNESS_V
+`define HW_TOP_TEST_BLIMPV1TESTHARNESS_V
 
 `include "asm/assemble.v"
-`include "hw/top/BlimpV3.v"
+`include "hw/top/BlimpV1.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
 `include "test/fl/MemIntfTestServer.v"
@@ -14,24 +17,17 @@
 import TestEnv::*;
 
 //========================================================================
-// BlimpV3TestSuite
+// BlimpV1TestSuite
 //========================================================================
-// A test suite for a particular parametrization of the Blimp V3 module
+// A test suite for a particular parametrization of the Blimp V1 module
 
-module BlimpV3TestSuite #(
-  parameter p_suite_num     = 0,
-  parameter p_opaq_bits     = 8,
-  parameter p_seq_num_bits  = 5,
-  parameter p_num_phys_regs = 36,
+module BlimpV1TestHarness #(
+  parameter p_opaq_bits    = 8,
+  parameter p_seq_num_bits = 5,
 
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1
 );
-
-  string suite_name = $sformatf("%0d: BlimpV3TestSuite_%0d_%0d_%0d_%0d", 
-                                p_suite_num,
-                                p_opaq_bits, p_seq_num_bits,
-                                p_mem_send_intv_delay, p_mem_recv_intv_delay);
 
   //----------------------------------------------------------------------
   // Setup
@@ -54,9 +50,8 @@ module BlimpV3TestSuite #(
 
   InstTraceNotif inst_trace_notif();
 
-  BlimpV3 #(
-    .p_seq_num_bits  (p_seq_num_bits),
-    .p_num_phys_regs (p_num_phys_regs)
+  BlimpV1 #(
+    .p_seq_num_bits (p_seq_num_bits)
   ) dut (
     .inst_mem   (mem_intf),
     .inst_trace (inst_trace_notif),
@@ -154,66 +149,6 @@ module BlimpV3TestSuite #(
     t.trace( trace );
   end
   // verilator lint_on BLKSEQ
-
-  //----------------------------------------------------------------------
-  // Include Tests
-  //----------------------------------------------------------------------
-
-  `include "hw/top/test/test_cases/directed/addi_test_cases.v"
-  `include "hw/top/test/test_cases/directed/add_test_cases.v"
-  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
-
-  `include "hw/top/test/test_cases/golden/addi_test_cases.v"
-  `include "hw/top/test/test_cases/golden/add_test_cases.v"
-  `include "hw/top/test/test_cases/golden/mul_test_cases.v"
-
-  //----------------------------------------------------------------------
-  // run_test_suite
-  //----------------------------------------------------------------------
-
-  task run_test_suite();
-    t.test_suite_begin( suite_name );
-
-    run_directed_addi_tests();
-    run_directed_add_tests();
-    run_directed_mul_tests();
-
-    run_golden_addi_tests();
-    run_golden_add_tests();
-    run_golden_mul_tests();
-
-  endtask
 endmodule
 
-//========================================================================
-// BlimpV3_test
-//========================================================================
-
-module BlimpV3_test;
-  BlimpV3TestSuite #(1)                  suite_1();
-  BlimpV3TestSuite #(2,  8, 5, 36, 1, 1) suite_2();
-  BlimpV3TestSuite #(3,  8, 5, 50, 1, 1) suite_3();
-  BlimpV3TestSuite #(4,  4, 5, 48, 1, 1) suite_4();
-  BlimpV3TestSuite #(4,  4, 3, 33, 1, 1) suite_5();
-  BlimpV3TestSuite #(5, 32, 4, 48, 3, 1) suite_6();
-  BlimpV3TestSuite #(6,  2, 2, 64, 1, 3) suite_7();
-  BlimpV3TestSuite #(7,  4, 6, 52, 3, 3) suite_8();
-
-  int s;
-
-  initial begin
-    test_bench_begin( `__FILE__ );
-    s = get_test_suite();
-
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
-    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
-    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
-    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
-    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
-    if ((s <= 0) || (s == 8)) suite_8.run_test_suite();
-
-    test_bench_end();
-  end
-endmodule
+`endif // HW_TOP_TEST_BLIMPV1TESTHARNESS_V

@@ -1,24 +1,27 @@
 //========================================================================
-// BlimpV5_test.v
+// BlimpV3TestHarness.v
 //========================================================================
-// The top-level testing module for Blimp V5
+// A top-level testing harness for Blimp V3
+
+`ifndef HW_TOP_TEST_BLIMPV3TESTHARNESS_V
+`define HW_TOP_TEST_BLIMPV3TESTHARNESS_V
 
 `include "asm/assemble.v"
-`include "hw/top/BlimpV5.v"
+`include "hw/top/BlimpV3.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
-`include "test/fl/MemIntfTestServer_2Port.v"
+`include "test/fl/MemIntfTestServer.v"
 `include "test/fl/InstTraceSub.v"
 `include "fl/fl_vtrace.v"
 
 import TestEnv::*;
 
 //========================================================================
-// BlimpV5TestSuite
+// BlimpV3TestSuite
 //========================================================================
-// A test suite for a particular parametrization of the Blimp V5 module
+// A test suite for a particular parametrization of the Blimp V3 module
 
-module BlimpV5TestSuite #(
+module BlimpV3TestSuite #(
   parameter p_suite_num     = 0,
   parameter p_opaq_bits     = 8,
   parameter p_seq_num_bits  = 5,
@@ -28,7 +31,7 @@ module BlimpV5TestSuite #(
   parameter p_mem_recv_intv_delay = 1
 );
 
-  string suite_name = $sformatf("%0d: BlimpV5TestSuite_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: BlimpV3TestSuite_%0d_%0d_%0d_%0d", 
                                 p_suite_num,
                                 p_opaq_bits, p_seq_num_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay);
@@ -40,8 +43,6 @@ module BlimpV5TestSuite #(
   logic clk, rst;
   TestUtils t( .* );
 
-  initial t.timeout = 20000;
-
   `MEM_REQ_DEFINE ( p_opaq_bits );
   `MEM_RESP_DEFINE( p_opaq_bits );
 
@@ -52,17 +53,15 @@ module BlimpV5TestSuite #(
   MemIntf #(
     .t_req_msg  (`MEM_REQ ( p_opaq_bits )),
     .t_resp_msg (`MEM_RESP( p_opaq_bits ))
-  ) mem_intf[2]();
+  ) mem_intf();
 
   InstTraceNotif inst_trace_notif();
 
-  BlimpV5 #(
-    .p_opaq_bits     (p_opaq_bits),
+  BlimpV3 #(
     .p_seq_num_bits  (p_seq_num_bits),
     .p_num_phys_regs (p_num_phys_regs)
   ) dut (
-    .inst_mem   (mem_intf[0]),
-    .data_mem   (mem_intf[1]),
+    .inst_mem   (mem_intf),
     .inst_trace (inst_trace_notif),
     .*
   );
@@ -71,7 +70,7 @@ module BlimpV5TestSuite #(
   // FL Memory
   //----------------------------------------------------------------------
 
-  MemIntfTestServer_2Port #(
+  MemIntfTestServer #(
     .t_req_msg         (`MEM_REQ ( p_opaq_bits )),
     .t_resp_msg        (`MEM_RESP( p_opaq_bits )),
     .p_send_intv_delay (p_mem_send_intv_delay),
@@ -93,14 +92,6 @@ module BlimpV5TestSuite #(
     fl_init        ( addr, asm_binary );
   endtask
 
-  task data(
-    input logic [31:0] addr,
-    input logic [31:0] data
-  );
-    fl_mem.init_mem( addr, data );
-    fl_init        ( addr, data );
-  endtask
-
   //----------------------------------------------------------------------
   // Instruction Tracing
   //----------------------------------------------------------------------
@@ -120,6 +111,7 @@ module BlimpV5TestSuite #(
     input logic [31:0] wdata,
     input logic        wen
   );
+
     inst_trace_sub.check_trace(
       pc,
       waddr,
@@ -173,18 +165,10 @@ module BlimpV5TestSuite #(
   `include "hw/top/test/test_cases/directed/addi_test_cases.v"
   `include "hw/top/test/test_cases/directed/add_test_cases.v"
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
-  `include "hw/top/test/test_cases/directed/lw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/jal_test_cases.v"
-  `include "hw/top/test/test_cases/directed/jalr_test_cases.v"
 
   `include "hw/top/test/test_cases/golden/addi_test_cases.v"
   `include "hw/top/test/test_cases/golden/add_test_cases.v"
   `include "hw/top/test/test_cases/golden/mul_test_cases.v"
-  `include "hw/top/test/test_cases/golden/lw_test_cases.v"
-  `include "hw/top/test/test_cases/golden/sw_test_cases.v"
-  `include "hw/top/test/test_cases/golden/jal_test_cases.v"
-  `include "hw/top/test/test_cases/golden/jalr_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_test_suite
@@ -192,39 +176,23 @@ module BlimpV5TestSuite #(
 
   task run_test_suite();
     t.test_suite_begin( suite_name );
-
-    run_directed_addi_tests();
-    run_directed_add_tests();
-    run_directed_mul_tests();
-    run_directed_lw_tests();
-    run_directed_sw_tests();
-    run_directed_jal_tests();
-    run_directed_jalr_tests();
-
-    run_golden_addi_tests();
-    run_golden_add_tests();
-    run_golden_mul_tests();
-    run_golden_lw_tests();
-    run_golden_sw_tests();
-    run_golden_jal_tests();
-    run_golden_jalr_tests();
-
+    run_instruction_tests();
   endtask
 endmodule
 
 //========================================================================
-// BlimpV5_test
+// BlimpV3TestHarness
 //========================================================================
 
-module BlimpV5_test;
-  BlimpV5TestSuite #(1)                  suite_1();
-  BlimpV5TestSuite #(2,  8, 5, 36, 1, 1) suite_2();
-  BlimpV5TestSuite #(3,  8, 5, 50, 1, 1) suite_3();
-  BlimpV5TestSuite #(4,  4, 5, 48, 1, 1) suite_4();
-  BlimpV5TestSuite #(4,  4, 3, 33, 1, 1) suite_5();
-  BlimpV5TestSuite #(5, 32, 4, 48, 3, 1) suite_6();
-  BlimpV5TestSuite #(6,  2, 2, 64, 1, 3) suite_7();
-  BlimpV5TestSuite #(7,  4, 6, 52, 3, 3) suite_8();
+module BlimpV3TestHarness;
+  BlimpV3TestSuite #(1)                  suite_1();
+  BlimpV3TestSuite #(2,  8, 5, 36, 1, 1) suite_2();
+  BlimpV3TestSuite #(3,  8, 5, 50, 1, 1) suite_3();
+  BlimpV3TestSuite #(4,  4, 5, 48, 1, 1) suite_4();
+  BlimpV3TestSuite #(4,  4, 3, 33, 1, 1) suite_5();
+  BlimpV3TestSuite #(5, 32, 4, 48, 3, 1) suite_6();
+  BlimpV3TestSuite #(6,  2, 2, 64, 1, 3) suite_7();
+  BlimpV3TestSuite #(7,  4, 6, 52, 3, 3) suite_8();
 
   int s;
 
@@ -244,3 +212,5 @@ module BlimpV5_test;
     test_bench_end();
   end
 endmodule
+
+`endif // HW_TOP_TEST_BLIMPV3TESTHARNESS_V

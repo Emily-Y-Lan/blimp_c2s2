@@ -1,8 +1,11 @@
 //========================================================================
-// FLProc_test.v
+// FLProcTestHarness.v
 //========================================================================
-// A testing module to run directed tests on the functional-level
+// A testing harness to run directed tests on the functional-level
 // processor
+
+`ifndef HW_TOP_TEST_FLPROCTESTHARNESS_V
+`define HW_TOP_TEST_FLPROCTESTHARNESS_V
 
 `include "asm/assemble.v"
 `include "fl/fl_vtrace.v"
@@ -10,7 +13,7 @@
 
 import TestEnv::*;
 
-module FLProc_test;
+module FLProcTestHarness;
   //----------------------------------------------------------------------
   // Setup
   //----------------------------------------------------------------------
@@ -122,53 +125,17 @@ module FLProc_test;
   `include "hw/top/test/test_cases/directed/bgeu_test_cases.v"
 
   //----------------------------------------------------------------------
-  // run_tests
+  // Run tests
   //----------------------------------------------------------------------
 
-  task run_tests();
+  initial begin
     test_bench_begin( `__FILE__ );
 
     t.test_suite_begin( "FLProc_test" );
-    run_directed_addi_tests();
-    run_directed_add_tests();
-    run_directed_mul_tests();
-    run_directed_lw_tests();
-    run_directed_sw_tests();
-    run_directed_jal_tests();
-    run_directed_jalr_tests();
-    run_directed_bne_tests();
-
-    run_directed_sub_tests();
-    run_directed_and_tests();
-    run_directed_or_tests();
-    run_directed_xor_tests();
-    run_directed_slt_tests();
-    run_directed_sltu_tests();
-    run_directed_sra_tests();
-    run_directed_srl_tests();
-    run_directed_sll_tests();
-
-    run_directed_andi_tests();
-    run_directed_ori_tests();
-    run_directed_xori_tests();
-    run_directed_slti_tests();
-    run_directed_sltiu_tests();
-    run_directed_srai_tests();
-    run_directed_srli_tests();
-    run_directed_slli_tests();
-    run_directed_lui_tests();
-    run_directed_auipc_tests();
-
-    run_directed_beq_tests();
-    run_directed_blt_tests();
-    run_directed_bge_tests();
-    run_directed_bltu_tests();
-    run_directed_bgeu_tests();
+    run_instruction_tests();
 
     test_bench_end();
-  endtask
-
-  initial begin
-    run_tests();
   end
 endmodule
+
+`endif // HW_TOP_TEST_FLPROCTESTHARNESS_V

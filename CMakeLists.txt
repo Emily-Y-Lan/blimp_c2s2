@@ -34,14 +34,14 @@ set(V_TEST_FILES
   hw/fetch/test/SeqNumGenL3_test.v
   hw/squash/test/SquashUnitL1_test.v
   hw/squash/test/SquashUnitL1Chain_test.v
-  hw/top/test/BlimpV1_test.v
-  hw/top/test/BlimpV2_test.v
-  hw/top/test/BlimpV3_test.v
-  hw/top/test/BlimpV4_test.v
-  hw/top/test/BlimpV5_test.v
-  hw/top/test/BlimpV6_test.v
-  hw/top/test/BlimpV7_test.v
-  hw/top/test/FLProc_test.v
+  # hw/top/test/BlimpV1_test.v
+  # hw/top/test/BlimpV2_test.v
+  # hw/top/test/BlimpV3_test.v
+  # hw/top/test/BlimpV4_test.v
+  # hw/top/test/BlimpV5_test.v
+  # hw/top/test/BlimpV6_test.v
+  # hw/top/test/BlimpV7_test.v
+  # hw/top/test/FLProc_test.v
   hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
   hw/writeback_commit/test/WritebackCommitUnitL2_test.v
@@ -270,6 +270,20 @@ target_compile_options(ASM PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 add_library(FL_PROC STATIC ${FL_PROC_FILES})
 target_link_libraries(FL_PROC PRIVATE ASM)
 target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
+
+#------------------------------------------------------------------------
+# Add Blimp's tests
+#------------------------------------------------------------------------
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/test/tests.cmake)
+add_prefix(BLIMPV1_TESTS "hw/top/test/")
+message("Blimp: ${BLIMPV1_TESTS}")
+
+set(V_TEST_FILES
+  ${V_TEST_FILES}
+  ${BLIMPV1_TESTS}
+)
+message("Test Files: ${V_TEST_FILES}")
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests

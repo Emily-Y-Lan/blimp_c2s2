@@ -131,7 +131,7 @@ module BlimpV7 #(
                             OP_BGEU_VEC;
 
   FetchUnitL3 #(
-    .p_max_in_flight (32)
+    .p_max_in_flight (2)
   ) FU (
     .mem    (inst_mem),
     .D      (f__d_intf),

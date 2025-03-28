@@ -1,10 +1,13 @@
 //========================================================================
-// BlimpV1_test.v
+// BlimpV2TestHarness.v
 //========================================================================
-// The top-level testing module for a basic implementation of Blimp
+// A top-level testing harness for Blimp V2
+
+`ifndef HW_TOP_TEST_BLIMPV2TESTHARNESS_V
+`define HW_TOP_TEST_BLIMPV2TESTHARNESS_V
 
 `include "asm/assemble.v"
-`include "hw/top/BlimpV1.v"
+`include "hw/top/BlimpV2.v"
 `include "intf/MemIntf.v"
 `include "intf/InstTraceNotif.v"
 `include "test/fl/MemIntfTestServer.v"
@@ -14,11 +17,11 @@
 import TestEnv::*;
 
 //========================================================================
-// BlimpV1TestSuite
+// BlimpV2TestSuite
 //========================================================================
-// A test suite for a particular parametrization of the Blimp V1 module
+// A test suite for a particular parametrization of the Blimp V2 module
 
-module BlimpV1TestSuite #(
+module BlimpV2TestSuite #(
   parameter p_suite_num    = 0,
   parameter p_opaq_bits    = 8,
   parameter p_seq_num_bits = 5,
@@ -27,7 +30,7 @@ module BlimpV1TestSuite #(
   parameter p_mem_recv_intv_delay = 1
 );
 
-  string suite_name = $sformatf("%0d: BlimpV1TestSuite_%0d_%0d_%0d_%0d", 
+  string suite_name = $sformatf("%0d: BlimpV2TestSuite_%0d_%0d_%0d_%0d", 
                                 p_suite_num,
                                 p_opaq_bits, p_seq_num_bits,
                                 p_mem_send_intv_delay, p_mem_recv_intv_delay);
@@ -53,7 +56,7 @@ module BlimpV1TestSuite #(
 
   InstTraceNotif inst_trace_notif();
 
-  BlimpV1 #(
+  BlimpV2 #(
     .p_seq_num_bits (p_seq_num_bits)
   ) dut (
     .inst_mem   (mem_intf),
@@ -171,31 +174,23 @@ module BlimpV1TestSuite #(
 
   task run_test_suite();
     t.test_suite_begin( suite_name );
-
-    run_directed_addi_tests();
-    run_directed_add_tests();
-    run_directed_mul_tests();
-
-    run_golden_addi_tests();
-    run_golden_add_tests();
-    run_golden_mul_tests();
-
+    run_instruction_tests();
   endtask
 endmodule
 
 //========================================================================
-// BlimpV1_test
+// BlimpV2TestHarness
 //========================================================================
 
-module BlimpV1_test;
-  BlimpV1TestSuite #(1)             suite_1();
-  BlimpV1TestSuite #(2, 8, 5, 1, 1) suite_2();
-  BlimpV1TestSuite #(3, 8, 5, 1, 1) suite_3();
-  BlimpV1TestSuite #(4, 4, 5, 1, 1) suite_4();
-  BlimpV1TestSuite #(4, 4, 3, 1, 1) suite_5();
-  BlimpV1TestSuite #(5,32, 4, 3, 1) suite_6();
-  BlimpV1TestSuite #(6, 2, 2, 1, 3) suite_7();
-  BlimpV1TestSuite #(7, 4, 6, 3, 3) suite_8();
+module BlimpV2TestHarness;
+  BlimpV2TestSuite #(1)             suite_1();
+  BlimpV2TestSuite #(2, 8, 5, 1, 1) suite_2();
+  BlimpV2TestSuite #(3, 8, 5, 1, 1) suite_3();
+  BlimpV2TestSuite #(4, 4, 5, 1, 1) suite_4();
+  BlimpV2TestSuite #(4, 4, 3, 1, 1) suite_5();
+  BlimpV2TestSuite #(5,32, 4, 3, 1) suite_6();
+  BlimpV2TestSuite #(6, 2, 2, 1, 3) suite_7();
+  BlimpV2TestSuite #(7, 4, 6, 3, 3) suite_8();
 
   int s;
 
@@ -215,3 +210,5 @@ module BlimpV1_test;
     test_bench_end();
   end
 endmodule
+
+`endif // HW_TOP_TEST_BLIMPV2TESTHARNESS_V
