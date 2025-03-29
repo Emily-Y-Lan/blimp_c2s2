@@ -307,23 +307,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   # Add our main simulation loop and libraries
-  # vadd_source(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
   target_link_libraries(${V_TEST_BIN} ASM FL_PROC)
-  # set_property(TARGET ${V_TEST_BIN} PROPERTY LINKER_LANGUAGE Verilog)
-  # vlink_library(${V_TEST_BIN} ASM)
-  # vlink_library(${V_TEST_BIN} FL_PROC)
-  set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
-
-  # target_compile_definitions(${V_TEST_BIN} PRIVATE 
-  #   VERILATOR_INCL_HEADER="'<${V_TEST_BIN}.h>'"
-  #   VERILATOR_TOP_MODULE=${V_TEST_BIN}
-  #   VL_USER_FINISH
-  #   VL_USER_FATAL
-  # )
-
-  # Build our Verilog executable with Verilator
-  #  - Do this after adding definitions and include paths
-  # vbuild(${V_TEST_BIN} ${V_TEST_BIN})
 
   # Track dependencies
   vdeps(TEST_DEPS
@@ -337,6 +321,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
   remove_extension(TEST_NAME ${TEST_PATH})
   add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
+  set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
 endforeach(V_TEST_FILE_REL_PATH)
 
 #------------------------------------------------------------------------

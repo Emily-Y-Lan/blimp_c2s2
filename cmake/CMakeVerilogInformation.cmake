@@ -7,8 +7,9 @@
 if(NOT CMAKE_Verilog_COMPILE_OBJECT)
   set(CMAKE_Verilog_COMPILE_OBJECT
     "<CMAKE_Verilog_COMPILER> <FLAGS> --cc --main <DEFINES> <INCLUDES> <SOURCE> --Mdir <OBJECT>.vobjs --prefix VModel"
-    "+make -C <OBJECT>.vobjs -f VModel.mk"
-    "<CMAKE_AR> rc --thin <OBJECT> <OBJECT>.vobjs/libVModel.a <OBJECT>.vobjs/libverilated.a"
+    "+make -C <OBJECT>.vobjs -f VModel.mk VM_PARALLEL_BUILDS=1"
+    "<CMAKE_AR> rcs <OBJECT> <OBJECT>.vobjs/*.o"
+    "rm -r <OBJECT>.vobjs" # Otherwise it won't be cleaned by CMake
   )
 endif()
 
