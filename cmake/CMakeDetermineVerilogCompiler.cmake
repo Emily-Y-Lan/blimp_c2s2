@@ -13,7 +13,7 @@ find_program(
 mark_as_advanced(CMAKE_Verilog_COMPILER)
 
 set(CMAKE_Verilog_SOURCE_FILE_EXTENSIONS v;sv)
-set(CMAKE_Verilog_OUTPUT_EXTENSION .vo)
+set(CMAKE_Verilog_OUTPUT_EXTENSION .dir)
 set(CMAKE_Verilog_COMPILER_ENV_VAR "Verilog")
 
 # Configure variables set in this file for fast reload later on

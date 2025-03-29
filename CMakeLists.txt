@@ -3,6 +3,8 @@
 # ========================================================================
 # A build system for Blimp
 
+SET(CMAKE_CXX_STANDARD_LIBRARIES "")
+
 #-------------------------------------------------------------------------
 # Get all of the source files
 #-------------------------------------------------------------------------
@@ -301,20 +303,30 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
   add_executable(${V_TEST_BIN} ${V_TEST_FILE_PATH})
-  target_link_libraries(${V_TEST_BIN} PRIVATE ASM FL_PROC) 
+  target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats ${VTRACE})
+  target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+  # Add our main simulation loop and libraries
+  vadd_source(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
+  vlink_library(${V_TEST_BIN} ASM)
+  vlink_library(${V_TEST_BIN} FL_PROC)
   set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
 
-  # target_compile_definitions(${V_TEST_BIN} PRIVATE 
-  #   VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
-  #   VERILATOR_TOP_MODULE=V${V_TEST_BIN}
-  #   VL_USER_FINISH
-  #   VL_USER_FATAL
-  # )
-  verilator_target(${V_TEST_BIN}
-    ${VTRACE}
-    # DEFINES "VL_USER_FINISH" "VL_USER_FATAL"
-    VERILATOR_ARGS --quiet-stats
+  target_compile_definitions(${V_TEST_BIN} PRIVATE 
+    VERILATOR_INCL_HEADER="'<${V_TEST_BIN}.h>'"
+    VERILATOR_TOP_MODULE=${V_TEST_BIN}
+    VL_USER_FINISH
+    VL_USER_FATAL
   )
+
+  # Define the Verilator command for our executable
+  #  - Do this after adding definitions and include paths
+  vbuild(${V_TEST_BIN} ${V_TEST_BIN})
+  # verilator_target(${V_TEST_BIN}
+  #   ${VTRACE}
+  #   # DEFINES "VL_USER_FINISH" "VL_USER_FATAL"
+  #   VERILATOR_ARGS --quiet-stats
+  # )
   # verilate(
   #   ${V_TEST_BIN} 
   #   SOURCES ${V_TEST_FILE_PATH} 
@@ -332,10 +344,10 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   add_prefix(TEST_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
   set_property(SOURCE ${V_TEST_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${TEST_DEPS})
 
-  # add_dependencies(check ${V_TEST_BIN})
-  # file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
-  # remove_extension(TEST_NAME ${TEST_PATH})
-  # add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
+  add_dependencies(check ${V_TEST_BIN})
+  file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
+  remove_extension(TEST_NAME ${TEST_PATH})
+  add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
 endforeach(V_TEST_FILE_REL_PATH)
 
 #------------------------------------------------------------------------

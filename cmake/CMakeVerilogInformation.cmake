@@ -3,14 +3,14 @@
 # ========================================================================
 # Information about how to use our compiler
 
-# No separate object files - just run preprocessor
+# Verilate files
 if(NOT CMAKE_Verilog_COMPILE_OBJECT)
-  set(CMAKE_Verilog_COMPILE_OBJECT "<CMAKE_Verilog_COMPILER> -E <DEFINES> <INCLUDES> <SOURCE> > <OBJECT>")
+  set(CMAKE_Verilog_COMPILE_OBJECT "<CMAKE_Verilog_COMPILER> --cc --exe <FLAGS> <DEFINES> <INCLUDES> <SOURCE> -Mdir <OBJECT>")
 endif()
 
-# Use linker to actually compile
+# Copy built executable to "link"
 if(NOT CMAKE_Verilog_LINK_EXECUTABLE)
-  set(CMAKE_Verilog_LINK_EXECUTABLE "<CMAKE_Verilog_COMPILER> <LINK_FLAGS> <OBJECTS> -o <TARGET>")
+  set(CMAKE_Verilog_LINK_EXECUTABLE "cp <OBJECTS>/vsim <TARGET>")
 endif()
 
 # Set flag for includes
@@ -22,4 +22,5 @@ endif()
 if(NOT CMAKE_Verilog_DEFINE_FLAG)
   set(CMAKE_Verilog_DEFINE_FLAG "-D")
 endif()
+
 set(CMAKE_Verilog_INFORMATION_LOADED 1)
