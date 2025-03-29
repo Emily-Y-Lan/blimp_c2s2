@@ -307,34 +307,23 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   # Add our main simulation loop and libraries
-  vadd_source(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
-  vlink_library(${V_TEST_BIN} ASM)
-  vlink_library(${V_TEST_BIN} FL_PROC)
+  # vadd_source(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
+  target_link_libraries(${V_TEST_BIN} ASM FL_PROC)
+  # set_property(TARGET ${V_TEST_BIN} PROPERTY LINKER_LANGUAGE Verilog)
+  # vlink_library(${V_TEST_BIN} ASM)
+  # vlink_library(${V_TEST_BIN} FL_PROC)
   set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
 
-  target_compile_definitions(${V_TEST_BIN} PRIVATE 
-    VERILATOR_INCL_HEADER="'<${V_TEST_BIN}.h>'"
-    VERILATOR_TOP_MODULE=${V_TEST_BIN}
-    VL_USER_FINISH
-    VL_USER_FATAL
-  )
+  # target_compile_definitions(${V_TEST_BIN} PRIVATE 
+  #   VERILATOR_INCL_HEADER="'<${V_TEST_BIN}.h>'"
+  #   VERILATOR_TOP_MODULE=${V_TEST_BIN}
+  #   VL_USER_FINISH
+  #   VL_USER_FATAL
+  # )
 
-  # Define the Verilator command for our executable
+  # Build our Verilog executable with Verilator
   #  - Do this after adding definitions and include paths
-  vbuild(${V_TEST_BIN} ${V_TEST_BIN})
-  # verilator_target(${V_TEST_BIN}
-  #   ${VTRACE}
-  #   # DEFINES "VL_USER_FINISH" "VL_USER_FATAL"
-  #   VERILATOR_ARGS --quiet-stats
-  # )
-  # verilate(
-  #   ${V_TEST_BIN} 
-  #   SOURCES ${V_TEST_FILE_PATH} 
-  #   ${VTRACE}
-  #   # OPT_FAST ${OPT_FAST_FLAGS}
-  #   # OPT_SLOW ${OPT_SLOW_FLAGS}
-  #   VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
-  # )
+  # vbuild(${V_TEST_BIN} ${V_TEST_BIN})
 
   # Track dependencies
   vdeps(TEST_DEPS

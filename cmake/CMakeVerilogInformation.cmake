@@ -5,12 +5,11 @@
 
 # Verilate files
 if(NOT CMAKE_Verilog_COMPILE_OBJECT)
-  set(CMAKE_Verilog_COMPILE_OBJECT "<CMAKE_Verilog_COMPILER> --cc --exe <FLAGS> <DEFINES> <INCLUDES> <SOURCE> -Mdir <OBJECT>")
-endif()
-
-# Copy built executable to "link"
-if(NOT CMAKE_Verilog_LINK_EXECUTABLE)
-  set(CMAKE_Verilog_LINK_EXECUTABLE "cp <OBJECTS>/vsim <TARGET>")
+  set(CMAKE_Verilog_COMPILE_OBJECT
+    "<CMAKE_Verilog_COMPILER> <FLAGS> --cc --main <DEFINES> <INCLUDES> <SOURCE> --Mdir <OBJECT>.vobjs --prefix VModel"
+    "+make -C <OBJECT>.vobjs -f VModel.mk"
+    "<CMAKE_AR> rc --thin <OBJECT> <OBJECT>.vobjs/libVModel.a <OBJECT>.vobjs/libverilated.a"
+  )
 endif()
 
 # Set flag for includes
