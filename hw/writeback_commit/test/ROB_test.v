@@ -3,6 +3,7 @@
 //========================================================================
 // A testbench for our ROB
 
+
 `include "hw/writeback_commit/ROB.v"
 `include "test/fl/TestCaller.v"
 `include "test/TestUtils.v"
@@ -150,7 +151,7 @@ module ROBTestSuite #(
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 

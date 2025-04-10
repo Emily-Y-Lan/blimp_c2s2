@@ -94,7 +94,7 @@ module SquashUnitL1ChainTestSuite #(
 
   generate
     for( i = 0; i < p_num_arb; i = i + 1 ) begin
-      always_ff @( posedge clk ) begin
+      always @( posedge clk ) begin
         #1;
         if (msgs_to_send_val[i]) begin
           squash_arb_pubs[i].squash_arb_pub.pub(
@@ -207,7 +207,7 @@ module SquashUnitL1ChainTestSuite #(
   generate
     for( i = 0; i < p_num_arb; i = i + 1 ) begin
       // verilator lint_off BLKSEQ
-      always_ff @( posedge clk ) begin
+      always @( posedge clk ) begin
         #2;
         arb_traces[i] = squash_arb_pubs[i].squash_arb_pub.trace();
       end
@@ -222,7 +222,7 @@ module SquashUnitL1ChainTestSuite #(
   string commit_trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     dut_trace    = dut.trace();
     gnt_trace    = squash_gnt_sub.trace();

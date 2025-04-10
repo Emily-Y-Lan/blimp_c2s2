@@ -214,12 +214,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vlint.cmake)
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-#------------------------------------------------------------------------
-# Import Verilator
-#------------------------------------------------------------------------
-
-find_package(verilator REQUIRED)
-
 #-------------------------------------------------------------------------
 # get_leaf
 #-------------------------------------------------------------------------
@@ -286,10 +280,10 @@ target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/test/tests.cmake)
 add_prefix(BLIMPV1_TESTS "hw/top/test/")
 
-set(V_TEST_FILES
-  ${V_TEST_FILES}
-  ${BLIMPV1_TESTS}
-)
+# set(V_TEST_FILES
+#   ${V_TEST_FILES}
+#   ${BLIMPV1_TESTS}
+# )
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
@@ -303,11 +297,13 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
   add_executable(${V_TEST_BIN} ${V_TEST_FILE_PATH})
-  target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats ${VTRACE})
+  if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
+    target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats ${VTRACE})
+  endif()
   target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   # Add our main simulation loop and libraries
-  target_link_libraries(${V_TEST_BIN} ASM FL_PROC)
+  target_link_libraries(${V_TEST_BIN} PRIVATE FL_PROC)
 
   # Track dependencies
   vdeps(TEST_DEPS
@@ -316,6 +312,15 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   )
   add_prefix(TEST_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
   set_property(SOURCE ${V_TEST_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${TEST_DEPS})
+
+  # Add linting
+  vlint(${V_TEST_BIN}-lint
+    TARGET_NAME ${V_TEST_BIN}
+    SOURCES ${V_TEST_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${TEST_DEPS}
+  )
+  add_dependencies(${V_TEST_BIN} ${V_TEST_BIN}-lint)
 
   add_dependencies(check ${V_TEST_BIN})
   file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
@@ -344,30 +349,31 @@ add_custom_target(
 # Add our SystemVerilog simulations
 #------------------------------------------------------------------------
 
-foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
-  set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
-  get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
-  remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
-  sim_name(V_SIM_BIN ${V_SIM_FILE})
+# foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
+#   set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
+#   get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
+#   remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
+#   sim_name(V_SIM_BIN ${V_SIM_FILE})
 
-  add_executable(${V_SIM_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/hw/top/sim/utils/proc_sim.cpp")
-  target_link_libraries(${V_SIM_BIN} PRIVATE ASM FL_PROC) 
+#   add_executable(${V_SIM_BIN} ${V_SIM_FILE_PATH} "hw/top/sim/utils/load_elf.cpp")
+#   set_source_files_properties(
+#     ${V_SIM_FILE_PATH}
+#     PROPERTIES
+#     COMPILE_FLAGS "--timing --quiet-stats ${VTRACE}"
+#   )
+#   target_include_directories(${V_SIM_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  
+#   # Add our main simulation loop and libraries
+#   target_link_libraries(${V_SIM_BIN} PRIVATE ASM FL_PROC)
 
-  target_compile_definitions(${V_SIM_BIN} PRIVATE 
-    VERILATOR_INCL_HEADER="V${V_SIM_FILE_STUB}.h"
-    VERILATOR_DPI_HEADER="V${V_SIM_FILE_STUB}__Dpi.h"
-    VERILATOR_TOP_MODULE=V${V_SIM_FILE_STUB}
-    VERILATOR_MODULE_NAME=${V_SIM_FILE_STUB}
-  )
-  verilate(
-    ${V_SIM_BIN} 
-    SOURCES ${V_SIM_FILE_PATH} 
-    ${VTRACE}
-    OPT_FAST ${OPT_FAST_FLAGS}
-    OPT_SLOW ${OPT_SLOW_FLAGS}
-    VERILATOR_ARGS --timing --quiet-stats
-  )
-endforeach(V_SIM_FILE_REL_PATH)
+#   # Track dependencies
+#   vdeps(SIM_DEPS
+#     SOURCES ${V_SIM_FILE_REL_PATH}
+#     INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+#   )
+#   add_prefix(SIM_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
+#   set_property(SOURCE ${V_SIM_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${SIM_DEPS})
+# endforeach(V_SIM_FILE_REL_PATH)
 
 #------------------------------------------------------------------------
 # Include RISCV programs

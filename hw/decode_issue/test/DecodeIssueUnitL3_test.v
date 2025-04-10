@@ -289,7 +289,7 @@ module DecodeIssueUnitL3TestSuite #(
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      always_ff @( posedge clk ) begin
+      always @( posedge clk ) begin
         #1;
         if (msgs_to_recv_val[i]) begin
           X_Ostreams[i].X_Ostream.recv(
@@ -312,7 +312,7 @@ module DecodeIssueUnitL3TestSuite #(
   int        pipe_found, first_iter;
   t_d__x_msg pipe_msg;
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     if( rst ) begin
       pipe_delays <= '{default: 0};
     end
@@ -326,7 +326,7 @@ module DecodeIssueUnitL3TestSuite #(
     input logic                  [4:0] waddr,
     input logic [p_phys_addr_bits-1:0] preg,
     input logic [p_phys_addr_bits-1:0] ppreg,
-    input rv_uop                       uop,
+    input rv_uop                       uop
   );
     // Set message correctly
     pipe_msg.pc      = pc;
@@ -378,7 +378,7 @@ module DecodeIssueUnitL3TestSuite #(
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       // verilator lint_off BLKSEQ
-      always_ff @( posedge clk ) begin
+      always @( posedge clk ) begin
         #2;
         X_traces[i] = X_Ostreams[i].X_Ostream.trace();
       end
@@ -394,7 +394,7 @@ module DecodeIssueUnitL3TestSuite #(
   string commit_trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     F_Istream_trace = F_Istream.trace();
     dut_trace       = dut.trace();

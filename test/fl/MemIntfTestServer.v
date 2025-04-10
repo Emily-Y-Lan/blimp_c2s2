@@ -34,7 +34,7 @@ module MemIntfTestServer #(
 
   logic [31:0] mem [logic [31:0]];
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     if( rst )
       mem.delete();
   end

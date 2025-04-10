@@ -153,7 +153,7 @@ module TestUtils
 
   // Seed random test cases
   int seed = 32'hdeadbeef;
-  initial $urandom(seed);
+  initial seed = $urandom(seed);
 
   // ---------------------------------------------------------------------
   // Cycle counter with timeout check

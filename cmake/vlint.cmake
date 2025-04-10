@@ -18,8 +18,7 @@ endif()
 set(VLINT_FLAGS
   --quiet
   --timing
-  -Wall
-  -Wno-DECLFILENAME
+  ${CMAKE_CURRENT_LIST_DIR}/../verilator_waivers.vlt
 )
 
 cmake_minimum_required(VERSION 3.19)
@@ -41,19 +40,18 @@ function(vlint TARGET)
     --lint-only
     ${VLINT_FLAGS}
     ${INCLUDE_FLAGS}
-    --top-module Top
     ${VLINT_SOURCES}
   )
 
   add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${VLINT_TARGET_NAME}-vlint.in
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-vlint.in
     COMMAND ${LINT_CMD}
-    COMMAND ${CMAKE_COMMAND} "-E" "touch" ${CMAKE_CURRENT_BINARY_DIR}/${VLINT_TARGET_NAME}-vlint.in
+    COMMAND ${CMAKE_COMMAND} "-E" "touch" ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-vlint.in
     COMMENT "Linting sources for ${VLINT_TARGET_NAME}"
     DEPENDS ${VLINT_DEPENDS}
   )
   add_custom_target(
     ${TARGET}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${VLINT_TARGET_NAME}-vlint.in
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}-vlint.in
   )
 endfunction()

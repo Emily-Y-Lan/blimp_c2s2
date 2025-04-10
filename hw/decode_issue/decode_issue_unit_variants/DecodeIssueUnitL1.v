@@ -17,8 +17,6 @@
 `include "intf/D__XIntf.v"
 `include "intf/CompleteNotif.v"
 
-import ISA::*;
-
 module DecodeIssueUnitL1 #(
   parameter p_num_pipes                                = 1,
   parameter rv_op_vec [p_num_pipes-1:0] p_pipe_subsets = '{default: p_tinyrv1}
@@ -122,8 +120,8 @@ module DecodeIssueUnitL1 #(
   ) regfile (
     .clk              (clk),
     .rst              (rst),
-    .raddr            ({decoder_raddr1, decoder_raddr0}),
-    .rdata            ({rdata1, rdata0}),
+    .raddr            ('{decoder_raddr1, decoder_raddr0}),
+    .rdata            ('{rdata1, rdata0}),
     .waddr            (complete.waddr),
     .wdata            (complete.wdata),
     .wen              (complete.wen & complete.val),

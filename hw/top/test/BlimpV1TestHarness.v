@@ -136,7 +136,7 @@ module BlimpV1TestHarness #(
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 

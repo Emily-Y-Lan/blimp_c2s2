@@ -66,7 +66,7 @@ module SeqNumGenL3 #(
   generate
     for( i = 0; i < p_num_entries; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
-        if( rst ) seq_num_list <= '{default: 1'b0};
+        if( rst ) seq_num_list[i] <= 1'b0;
         else begin
 
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

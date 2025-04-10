@@ -6,9 +6,25 @@
 `ifndef HW_TOP_SIM_SIM_UTILS_V
 `define HW_TOP_SIM_SIM_UTILS_V
 
+//------------------------------------------------------------------------
+// Colors
+//------------------------------------------------------------------------
+
+`define RED    "\033[31m"
+`define YELLOW "\033[33m"
+`define GREEN  "\033[32m"
+`define BLUE   "\033[34m"
+`define PURPLE "\033[35m"
+`define RESET  "\033[0m"
+
+//------------------------------------------------------------------------
+// SimUtils
+//------------------------------------------------------------------------
+
 module SimUtils
 (
-  output logic clk
+  output logic clk,
+  output logic rst
 );
 
   // ---------------------------------------------------------------------
@@ -37,6 +53,12 @@ module SimUtils
       verbose = 1'b0;
   end
 
+  string elf_file;
+  initial begin
+    if( !$value$plusargs( "elf=%s", elf_file ) )
+      $fatal(0, "No ELF file specified with +elf=/path/to/elf" );
+  end
+
   // ---------------------------------------------------------------------
   // Waveform Dumping
   // ---------------------------------------------------------------------
@@ -56,6 +78,15 @@ module SimUtils
   // Seed random test cases
   int seed = 32'hdeadbeef;
   initial $urandom(seed);
+
+  task sim_begin( string taskname );
+    $write("\n  %s%s%s", `PURPLE, taskname, `RESET);
+    rst = 1'b1;
+    for( int i = 0; i < 3; i = i + 1 ) begin
+      @(posedge clk);
+    end
+    rst = 1'b0;
+  endtask
 
   //----------------------------------------------------------------------
   // trace

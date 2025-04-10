@@ -3,6 +3,7 @@
 //========================================================================
 // A testbench for our basic load-store unit
 
+
 `include "defs/UArch.v"
 `include "hw/execute/execute_units_l3/LoadStoreUnitL3.v"
 `include "test/fl/MemIntfTestServer.v"
@@ -193,7 +194,7 @@ module LoadStoreUnitL3TestSuite #(
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 

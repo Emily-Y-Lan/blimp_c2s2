@@ -11,7 +11,9 @@
 `include "intf/CommitNotif.v"
 
 module RenameTable #(
-  parameter p_num_phys_regs = 36
+  parameter p_num_phys_regs  = 36,
+
+  parameter p_phys_addr_bits = $clog2(p_num_phys_regs)
 ) (
   input  logic clk,
   input  logic rst,
@@ -47,8 +49,6 @@ module RenameTable #(
 
   CommitNotif.sub commit
 );
-
-  localparam p_phys_addr_bits = complete.p_phys_addr_bits;
 
   // ---------------------------------------------------------------------
   // Data Structures
@@ -224,7 +224,7 @@ module RenameTable #(
     test_trace = $sformatf("%x > %x (%x)", alloc_areg, alloc_preg, alloc_ppreg);
     alloc_len  = test_trace.len();
 
-    test_trace = $sformatf("%x > %x", lookup_areg, lookup_preg);
+    test_trace = $sformatf("%x > %x", lookup_areg[0], lookup_preg[0]);
     lookup_len = test_trace.len();
 
     test_trace   = $sformatf("%x", complete_preg);

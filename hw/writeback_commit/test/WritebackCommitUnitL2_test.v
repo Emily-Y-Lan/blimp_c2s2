@@ -104,7 +104,7 @@ module WritebackCommitUnitL2TestSuite #(
 
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      always_ff @( posedge clk ) begin
+      always @( posedge clk ) begin
         #1;
         if (msgs_to_send_val[i]) begin
           X_Istreams[i].X_Istream.send(
@@ -251,7 +251,7 @@ module WritebackCommitUnitL2TestSuite #(
   generate
     for( i = 0; i < p_num_pipes; i = i + 1 ) begin
       // verilator lint_off BLKSEQ
-      always_ff @( posedge clk ) begin
+      always @( posedge clk ) begin
         #2;
         X_traces[i] = X_Istreams[i].X_Istream.trace();
       end
@@ -266,7 +266,7 @@ module WritebackCommitUnitL2TestSuite #(
   string CommitSub_trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     dut_trace         = dut.trace();
     CompleteSub_trace = CompleteSub.trace();

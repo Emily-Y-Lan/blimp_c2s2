@@ -8,7 +8,7 @@
 
 `include "defs/UArch.v"
 
-import UArch::*;
+import UArch::rv_uop;
 
 //------------------------------------------------------------------------
 // D__XIntf

@@ -128,7 +128,7 @@ module SeqNumGenL2TestSuite #(
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 
