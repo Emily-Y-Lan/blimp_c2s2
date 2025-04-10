@@ -44,8 +44,6 @@ module FetchUnitL2
 
   localparam p_rst_addr     = 32'h200;
   localparam p_seq_num_bits = D.p_seq_num_bits;
-  
-  localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
   // Request

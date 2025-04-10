@@ -82,108 +82,6 @@ set(APP_SUBDIRS
 )
 
 #-------------------------------------------------------------------------
-# Verilator Flags
-#-------------------------------------------------------------------------
-# Used for fast compilation
-#
-# Source: https://github.com/pymtl/pymtl3/blob/eea5ff49e06b303123097dc4d9e163790c0f58d6/pymtl3/passes/backends/verilog/import_/VerilogVerilatorImportConfigs.py
-
-set(OPT_FAST_FLAGS
-  -O1
-  -fno-guess-branch-probability
-  -fno-reorder-blocks
-  -fno-if-conversion
-  -fno-if-conversion2
-  -fno-dce
-  -fno-delayed-branch
-  -fno-dse
-  -fno-auto-inc-dec
-  -fno-branch-count-reg
-  -fno-combine-stack-adjustments
-  -fno-cprop-registers
-  -fno-forward-propagate
-  -fno-inline-functions-called-once
-  -fno-ipa-profile
-  -fno-ipa-pure-const
-  -fno-ipa-reference
-  -fno-move-loop-invariants
-  -fno-omit-frame-pointer
-  -fno-split-wide-types
-  -fno-tree-bit-ccp
-  -fno-tree-ccp
-  -fno-tree-ch
-  -fno-tree-coalesce-vars
-  -fno-tree-copy-prop
-  -fno-tree-dce
-  -fno-tree-dominator-opts
-  -fno-tree-dse
-  -fno-tree-fre
-  -fno-tree-phiprop
-  -fno-tree-pta
-  -fno-tree-scev-cprop
-  -fno-tree-sink
-  -fno-tree-slsr
-  -fno-tree-sra
-  -fno-tree-ter
-  -fno-tree-reassoc
-)
-
-set(OPT_SLOW_FLAGS
-  -O0
-  -fno-guess-branch-probability
-  -fno-reorder-blocks
-  -fno-if-conversion
-  -fno-if-conversion2
-  -fno-dce
-  -fno-delayed-branch
-  -fno-dse
-  -fno-auto-inc-dec
-  -fno-branch-count-reg
-  -fno-combine-stack-adjustments
-  -fno-cprop-registers
-  -fno-forward-propagate
-  -fno-inline-functions-called-once
-  -fno-ipa-profile
-  -fno-ipa-pure-const
-  -fno-ipa-reference
-  -fno-move-loop-invariants
-  -fno-omit-frame-pointer
-  -fno-split-wide-types
-  -fno-tree-bit-ccp
-  -fno-tree-ccp
-  -fno-tree-ch
-  -fno-tree-coalesce-vars
-  -fno-tree-copy-prop
-  -fno-tree-dce
-  -fno-tree-dominator-opts
-  -fno-tree-dse
-  -fno-tree-fre
-  -fno-tree-phiprop
-  -fno-tree-pta
-  -fno-tree-scev-cprop
-  -fno-tree-sink
-  -fno-tree-slsr
-  -fno-tree-sra
-  -fno-tree-ter
-  -fno-tree-reassoc
-)
-
-#-------------------------------------------------------------------------
-# Tracing
-#-------------------------------------------------------------------------
-# Disable by default for speed
-
-if(NOT DEFINED TRACE)
-set(TRACE 0)
-endif()
-
-if(TRACE)
-  set(VTRACE TRACE TRACE_STRUCTS)
-else()
-  set(VTRACE "")
-endif()
-
-#-------------------------------------------------------------------------
 # Set the compiler
 #-------------------------------------------------------------------------
 
@@ -213,6 +111,22 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vlint.cmake)
 
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+if(CMAKE_Verilog_COMPILER_ID STREQUAL "Iverilog")
+  message(WARNING
+    "Blimp uses many SystemVerilog features that Iverilog doesn't support\n"
+    "Results may vary"
+  )
+endif()
+
+#-------------------------------------------------------------------------
+# Tracing
+#-------------------------------------------------------------------------
+# Disable by default for speed
+
+if(NOT DEFINED TRACE)
+set(TRACE 0)
+endif()
 
 #-------------------------------------------------------------------------
 # get_leaf
@@ -280,16 +194,16 @@ target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/test/tests.cmake)
 add_prefix(BLIMPV1_TESTS "hw/top/test/")
 
-# set(V_TEST_FILES
-#   ${V_TEST_FILES}
-#   ${BLIMPV1_TESTS}
-# )
+set(V_TEST_FILES
+  ${V_TEST_FILES}
+  ${BLIMPV1_TESTS}
+)
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
 #------------------------------------------------------------------------
 
-add_custom_target(check COMMAND "ctest" "--timeout" "20")
+add_custom_target(check COMMAND "ctest")
 
 foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   set(V_TEST_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_TEST_FILE_REL_PATH}")
@@ -297,9 +211,14 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
   add_executable(${V_TEST_BIN} ${V_TEST_FILE_PATH})
+
   if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
-    target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats ${VTRACE})
+    target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats)
+    if(TRACE)
+      target_compile_options(${V_TEST_BIN} PRIVATE --trace --trace-structs)
+    endif()
   endif()
+
   target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   # Add our main simulation loop and libraries
@@ -327,6 +246,11 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(TEST_NAME ${TEST_PATH})
   add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
   set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
+  set_tests_properties(
+    ${TEST_NAME} PROPERTIES 
+    FAIL_REGULAR_EXPRESSION "timeout!|One or more tests failed"
+    TIMEOUT 20
+  )
 endforeach(V_TEST_FILE_REL_PATH)
 
 #------------------------------------------------------------------------

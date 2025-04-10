@@ -42,17 +42,36 @@ elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "VCS")
   )
   set(CMAKE_Verilog_OUTPUT_EXTENSION .v)
   set(CMAKE_Verilog_LINKER_PREFERENCE 100) # Always use our linker
-  set(CMAKE_Verilog_COMPILER_LAUNCHER bash -c) # Use bash for compilation
 
   # Get the version and report
   execute_process(
     COMMAND ${CMAKE_Verilog_COMPILER} -ID
     OUTPUT_VARIABLE VERILOG_INFO
-    OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET
   )
   string(REGEX MATCH "Compiler version = (VCS [^\t\r\n]+)" VERILOG_INFO ${VERILOG_INFO})
   message(STATUS "The Verilog compiler identification is ${CMAKE_MATCH_1}")
+
+# ------------------------------------------------------------------------
+# Iverilog
+# ------------------------------------------------------------------------
+
+elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "Iverilog")
+  find_program(
+    CMAKE_Verilog_COMPILER 
+    NAMES iverilog
+    DOC "Verilog compiler" 
+  )
+  set(CMAKE_Verilog_OUTPUT_EXTENSION .v)
+  set(CMAKE_Verilog_LINKER_PREFERENCE 100) # Always use our linker
+
+  execute_process(
+    COMMAND ${CMAKE_Verilog_COMPILER} -V
+    OUTPUT_VARIABLE VERILOG_INFO
+    ERROR_QUIET
+  )
+  string(REGEX MATCH "Icarus Verilog [^\t\r\n]+" VERILOG_INFO ${VERILOG_INFO})
+  message(STATUS "The Verilog compiler identification is ${VERILOG_INFO}")
 
 else()
   message(FATAL_ERROR "Unrecognized Verilog compiler: ${CMAKE_Verilog_COMPILER_ID}")

@@ -3,7 +3,6 @@
 //========================================================================
 // A testbench for our ROB
 
-
 `include "hw/writeback_commit/ROB.v"
 `include "test/fl/TestCaller.v"
 `include "test/TestUtils.v"
