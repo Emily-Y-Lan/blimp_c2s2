@@ -4,6 +4,7 @@
 # Identify all of Blimp's sub-tests
 
 set(BLIMP_VERSIONS
+  FLProc
   BlimpV1
   BlimpV2
   BlimpV3
@@ -11,6 +12,14 @@ set(BLIMP_VERSIONS
   BlimpV5
   BlimpV6
   BlimpV7
+)
+
+# ------------------------------------------------------------------------
+# FLProc
+# ------------------------------------------------------------------------
+
+set(FLProc_TESTS
+  FLProc_test/FLProc_test.v
 )
 
 # ------------------------------------------------------------------------

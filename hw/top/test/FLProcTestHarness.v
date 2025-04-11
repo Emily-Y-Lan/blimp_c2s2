@@ -13,7 +13,8 @@
 
 import TestEnv::*;
 
-module FLProcTestHarness;
+module FLProcTestHarness();
+
   //----------------------------------------------------------------------
   // Setup
   //----------------------------------------------------------------------
@@ -83,59 +84,6 @@ module FLProcTestHarness;
       `CHECK_EQ( dut_trace.wdata, wdata );
     end
   endtask
-
-  //----------------------------------------------------------------------
-  // Include test cases
-  //----------------------------------------------------------------------
-
-  `include "hw/top/test/test_cases/directed/addi_test_cases.v"
-  `include "hw/top/test/test_cases/directed/add_test_cases.v"
-  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
-  `include "hw/top/test/test_cases/directed/lw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/jal_test_cases.v"
-  `include "hw/top/test/test_cases/directed/jalr_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bne_test_cases.v"
-
-  `include "hw/top/test/test_cases/directed/sub_test_cases.v"
-  `include "hw/top/test/test_cases/directed/and_test_cases.v"
-  `include "hw/top/test/test_cases/directed/or_test_cases.v"
-  `include "hw/top/test/test_cases/directed/xor_test_cases.v"
-  `include "hw/top/test/test_cases/directed/slt_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sltu_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sra_test_cases.v"
-  `include "hw/top/test/test_cases/directed/srl_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sll_test_cases.v"
-
-  `include "hw/top/test/test_cases/directed/andi_test_cases.v"
-  `include "hw/top/test/test_cases/directed/ori_test_cases.v"
-  `include "hw/top/test/test_cases/directed/xori_test_cases.v"
-  `include "hw/top/test/test_cases/directed/slti_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sltiu_test_cases.v"
-  `include "hw/top/test/test_cases/directed/srai_test_cases.v"
-  `include "hw/top/test/test_cases/directed/srli_test_cases.v"
-  `include "hw/top/test/test_cases/directed/slli_test_cases.v"
-  `include "hw/top/test/test_cases/directed/lui_test_cases.v"
-  `include "hw/top/test/test_cases/directed/auipc_test_cases.v"
-
-  `include "hw/top/test/test_cases/directed/beq_test_cases.v"
-  `include "hw/top/test/test_cases/directed/blt_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bge_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bltu_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bgeu_test_cases.v"
-
-  //----------------------------------------------------------------------
-  // Run tests
-  //----------------------------------------------------------------------
-
-  initial begin
-    test_bench_begin( `__FILE__ );
-
-    t.test_suite_begin( "FLProc_test" );
-    run_instruction_tests();
-
-    test_bench_end();
-  end
 endmodule
 
 `endif // HW_TOP_TEST_FLPROCTESTHARNESS_V

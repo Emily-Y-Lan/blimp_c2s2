@@ -154,6 +154,12 @@ endfunction()
 # A function to get the version indicator from a Blimp version
 
 function(version_name VNAME BLIMP_VERSION)
+  # Check for FL
+  if(BLIMP_VERSION STREQUAL "FLProc")
+    set(${VNAME} "fl" PARENT_SCOPE)
+    return()
+  endif()
+
   string(REGEX MATCH "Blimp(V[0-9]+)" BLIMP_VERSION ${BLIMP_VERSION})
   set(${VNAME} "${CMAKE_MATCH_1}" PARENT_SCOPE)
 endfunction()
