@@ -4,8 +4,11 @@
 // A C++ interface to load an ELF file into memory
 
 #include "fl/parse_elf.h"
-#include "hw/top/sim/utils/load_elf.h"
+#include "svdpi.h"
 #include <cstdint>
+
+extern "C" void init_mem( const svBitVecVal* addr,
+                          const svBitVecVal* data );
 
 //------------------------------------------------------------------------
 // init_proc_mem
