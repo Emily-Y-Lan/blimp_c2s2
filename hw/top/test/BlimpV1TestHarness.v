@@ -16,11 +16,6 @@
 
 import TestEnv::*;
 
-//========================================================================
-// BlimpV1TestSuite
-//========================================================================
-// A test suite for a particular parametrization of the Blimp V1 module
-
 module BlimpV1TestHarness #(
   parameter p_opaq_bits    = 8,
   parameter p_seq_num_bits = 5,
