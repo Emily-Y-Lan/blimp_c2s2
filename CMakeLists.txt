@@ -149,6 +149,16 @@ function(remove_extension VARNAME FILE_NAME)
 endfunction()
 
 #------------------------------------------------------------------------
+# version_name
+#------------------------------------------------------------------------
+# A function to get the version indicator from a Blimp version
+
+function(version_name VNAME BLIMP_VERSION)
+  string(REGEX MATCH "Blimp(V[0-9]+)" BLIMP_VERSION ${BLIMP_VERSION})
+  set(${VNAME} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+endfunction()
+
+#------------------------------------------------------------------------
 # sim_name
 #------------------------------------------------------------------------
 # A function to convert a simulation Verilog file name to an executable
@@ -192,18 +202,24 @@ target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 #------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/test/tests.cmake)
-add_prefix(BLIMPV1_TESTS "hw/top/test/")
 
-set(V_TEST_FILES
-  ${V_TEST_FILES}
-  ${BLIMPV1_TESTS}
-)
+foreach(BLIMP_VERSION ${BLIMP_VERSIONS})
+  add_prefix(${BLIMP_VERSION}_TESTS "hw/top/test/")
+  set(V_TEST_FILES
+    ${V_TEST_FILES}
+    ${${BLIMP_VERSION}_TESTS}
+  )
+endforeach()
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
 #------------------------------------------------------------------------
 
 add_custom_target(check COMMAND "ctest")
+foreach(BLIMP_VERSION ${BLIMP_VERSIONS})
+  version_name(BLIMP_VERSION_SHORT ${BLIMP_VERSION})
+  add_custom_target(check-${BLIMP_VERSION_SHORT} COMMAND "ctest" "-L" "${BLIMP_VERSION}")
+endforeach()
 
 foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   set(V_TEST_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_TEST_FILE_REL_PATH}")
@@ -251,6 +267,15 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
     FAIL_REGULAR_EXPRESSION "timeout!|One or more tests failed"
     TIMEOUT 20
   )
+
+  # Include check commands for each version
+  foreach(BLIMP_VERSION ${BLIMP_VERSIONS})
+    if(${V_TEST_FILE_REL_PATH} IN_LIST ${BLIMP_VERSION}_TESTS)
+      version_name(BLIMP_VERSION_SHORT ${BLIMP_VERSION})
+      add_dependencies(check-${BLIMP_VERSION_SHORT} ${V_TEST_BIN})
+      set_tests_properties(${TEST_NAME} PROPERTIES LABELS "${BLIMP_VERSION}")
+    endif()
+  endforeach(BLIMP_VERSION)
 endforeach(V_TEST_FILE_REL_PATH)
 
 #------------------------------------------------------------------------

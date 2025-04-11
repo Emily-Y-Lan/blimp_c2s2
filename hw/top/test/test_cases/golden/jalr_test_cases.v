@@ -8,47 +8,47 @@
 //------------------------------------------------------------------------
 
 task test_case_golden_jalr_1_regs();
-  t.test_case_begin( "test_case_golden_jalr_1_regs" );
-  if( !t.run_test ) return;
+  h.t.test_case_begin( "test_case_golden_jalr_1_regs" );
+  if( !h.t.run_test ) return;
   fl_reset();
 
   // Write assembly program into memory
 
-  asm( 'h200, "jalr x1, x0, 0x208" );
-  asm( 'h204, "addi x2, x0, 1"     );
-  asm( 'h208, "addi x3, x0, 2"     );
+  h.asm( 'h200, "jalr x1, x0, 0x208" );
+  h.asm( 'h204, "addi x2, x0, 1"     );
+  h.asm( 'h208, "addi x3, x0, 2"     );
 
-  asm( 'h20c, "jalr x2, x0, 0x214" );
-  asm( 'h210, "addi x3, x0, 3"     );
-  asm( 'h214, "addi x4, x0, 4"     );
+  h.asm( 'h20c, "jalr x2, x0, 0x214" );
+  h.asm( 'h210, "addi x3, x0, 3"     );
+  h.asm( 'h214, "addi x4, x0, 4"     );
 
-  asm( 'h218, "jalr x3, x0, 0x220" );
-  asm( 'h21c, "addi x4, x0, 5"     );
-  asm( 'h220, "addi x5, x0, 6"     );
+  h.asm( 'h218, "jalr x3, x0, 0x220" );
+  h.asm( 'h21c, "addi x4, x0, 5"     );
+  h.asm( 'h220, "addi x5, x0, 6"     );
 
-  asm( 'h224, "jalr x4, x0, 0x22c" );
-  asm( 'h228, "addi x5, x0, 7"     );
-  asm( 'h22c, "addi x6, x0, 8"     );
+  h.asm( 'h224, "jalr x4, x0, 0x22c" );
+  h.asm( 'h228, "addi x5, x0, 7"     );
+  h.asm( 'h22c, "addi x6, x0, 8"     );
 
-  asm( 'h230, "jalr x31, x0, 0x238" );
-  asm( 'h234, "addi x30, x0, 9"     );
-  asm( 'h238, "addi x29, x0, 10"    );
+  h.asm( 'h230, "jalr x31, x0, 0x238" );
+  h.asm( 'h234, "addi x30, x0, 9"     );
+  h.asm( 'h238, "addi x29, x0, 10"    );
 
-  asm( 'h23c, "jalr x30, x0, 0x244" );
-  asm( 'h240, "addi x29, x0, 11"    );
-  asm( 'h244, "addi x28, x0, 12"    );
+  h.asm( 'h23c, "jalr x30, x0, 0x244" );
+  h.asm( 'h240, "addi x29, x0, 11"    );
+  h.asm( 'h244, "addi x28, x0, 12"    );
 
-  asm( 'h248, "jalr x29, x0, 0x250" );
-  asm( 'h24c, "addi x28, x0, 13"    );
-  asm( 'h250, "addi x27, x0, 14"    );
+  h.asm( 'h248, "jalr x29, x0, 0x250" );
+  h.asm( 'h24c, "addi x28, x0, 13"    );
+  h.asm( 'h250, "addi x27, x0, 14"    );
 
-  asm( 'h254, "jalr x28, x0, 0x25c" );
-  asm( 'h258, "addi x27, x0, 15"    );
-  asm( 'h25c, "addi x26, x0, 16"    );
+  h.asm( 'h254, "jalr x28, x0, 0x25c" );
+  h.asm( 'h258, "addi x27, x0, 15"    );
+  h.asm( 'h25c, "addi x26, x0, 16"    );
 
-  check_traces();
+  h.check_traces();
 
-  t.test_case_end();
+  h.t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------
@@ -56,23 +56,23 @@ endtask
 //------------------------------------------------------------------------
 
 task test_case_golden_jalr_2_deps();
-  t.test_case_begin( "test_case_golden_jalr_2_deps" );
-  if( !t.run_test ) return;
+  h.t.test_case_begin( "test_case_golden_jalr_2_deps" );
+  if( !h.t.run_test ) return;
   fl_reset();
 
   // Write assembly program into memory
 
-  asm( 'h200, "jalr x2, x0, 0x208" );
-  asm( 'h204, "addi x1, x0, 2"     );
-  asm( 'h208, "addi x1, x2, 3"     );
+  h.asm( 'h200, "jalr x2, x0, 0x208" );
+  h.asm( 'h204, "addi x1, x0, 2"     );
+  h.asm( 'h208, "addi x1, x2, 3"     );
 
-  asm( 'h20c, "jalr x3, x0, 0x214" );
-  asm( 'h210, "addi x1, x0, 2"     );
-  asm( 'h214, "addi x1, x3, 7"     );
+  h.asm( 'h20c, "jalr x3, x0, 0x214" );
+  h.asm( 'h210, "addi x1, x0, 2"     );
+  h.asm( 'h214, "addi x1, x3, 7"     );
 
-  check_traces();
+  h.check_traces();
 
-  t.test_case_end();
+  h.t.test_case_end();
 endtask
 
 //------------------------------------------------------------------------

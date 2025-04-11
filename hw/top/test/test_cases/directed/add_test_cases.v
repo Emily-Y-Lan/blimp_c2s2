@@ -192,7 +192,7 @@ endtask
 // run_instruction_tests
 //------------------------------------------------------------------------
 
-task run_instruction_tests();
+task run_directed_add_tests();
   test_case_directed_add_1_basic();
   test_case_directed_add_2_x0();
   test_case_directed_add_3_pos();

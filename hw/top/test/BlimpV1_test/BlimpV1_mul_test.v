@@ -1,10 +1,10 @@
 //========================================================================
-// BlimpV1_add_test.v
+// BlimpV1_mul_test.v
 //========================================================================
 
 `include "hw/top/test/BlimpV1TestHarness.v"
 
-module BlimpV1TestSuite_add #(
+module BlimpV1TestSuite_mul #(
   parameter p_suite_num    = 0,
   parameter p_opaq_bits    = 8,
   parameter p_seq_num_bits = 5,
@@ -23,22 +23,22 @@ module BlimpV1TestSuite_add #(
     .p_mem_recv_intv_delay (p_mem_recv_intv_delay)
   ) h();
 
-  `include "hw/top/test/test_cases/directed/add_test_cases.v"
-  `include "hw/top/test/test_cases/golden/add_test_cases.v"
+  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
+  `include "hw/top/test/test_cases/golden/mul_test_cases.v"
   task run_test_suite();
     h.t.test_suite_begin( suite_name );
-    run_directed_add_tests();
-    run_golden_add_tests();
+    run_directed_mul_tests();
+    run_golden_mul_tests();
   endtask
 endmodule
 
-module BlimpV1_add_test;
-  BlimpV1TestSuite_add #(1)             suite_1();
-  BlimpV1TestSuite_add #(2, 8, 5, 1, 1) suite_2();
-  BlimpV1TestSuite_add #(3, 4, 3, 1, 1) suite_3();
-  BlimpV1TestSuite_add #(4,32, 4, 3, 1) suite_4();
-  BlimpV1TestSuite_add #(5, 2, 2, 1, 3) suite_5();
-  BlimpV1TestSuite_add #(6, 4, 6, 3, 3) suite_6();
+module BlimpV1_mul_test;
+  BlimpV1TestSuite_mul #(1)             suite_1();
+  BlimpV1TestSuite_mul #(2, 8, 5, 1, 1) suite_2();
+  BlimpV1TestSuite_mul #(3, 4, 3, 1, 1) suite_3();
+  BlimpV1TestSuite_mul #(4,32, 4, 3, 1) suite_4();
+  BlimpV1TestSuite_mul #(5, 2, 2, 1, 3) suite_5();
+  BlimpV1TestSuite_mul #(6, 4, 6, 3, 3) suite_6();
   int s;
 
   initial begin
