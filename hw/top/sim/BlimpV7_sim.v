@@ -96,7 +96,7 @@ module BlimpV7_sim;
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 
@@ -113,7 +113,7 @@ module BlimpV7_sim;
   //----------------------------------------------------------------------
 
   initial begin
-    t.sim_begin( "BlimpV7_sim" );
+    t.sim_begin();
     load_elf( t.elf_file );
   end
 

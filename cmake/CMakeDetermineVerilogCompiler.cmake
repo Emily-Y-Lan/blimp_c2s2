@@ -30,6 +30,18 @@ if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
   )
   message(STATUS "The Verilog compiler identification is ${VERILOG_INFO}")
 
+  # Get the DPI includes
+  execute_process(
+    COMMAND ${CMAKE_Verilog_COMPILER} --getenv VERILATOR_ROOT
+    OUTPUT_VARIABLE VERILATOR_ROOT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+  )
+  set(CMAKE_Verilog_DPI_INCLUDES 
+    "${VERILATOR_ROOT}/include"
+    "${VERILATOR_ROOT}/include/vltstd"
+  )
+
 # ------------------------------------------------------------------------
 # VCS
 # ------------------------------------------------------------------------
@@ -52,6 +64,9 @@ elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "VCS")
   string(REGEX MATCH "Compiler version = (VCS [^\t\r\n]+)" VERILOG_INFO ${VERILOG_INFO})
   message(STATUS "The Verilog compiler identification is ${CMAKE_MATCH_1}")
 
+  # Get the DPI include path
+  set(CMAKE_Verilog_DPI_INCLUDES "$ENV{VCS_HOME}/include")
+
 # ------------------------------------------------------------------------
 # Iverilog
 # ------------------------------------------------------------------------
@@ -72,12 +87,17 @@ elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "Iverilog")
   )
   string(REGEX MATCH "Icarus Verilog [^\t\r\n]+" VERILOG_INFO ${VERILOG_INFO})
   message(STATUS "The Verilog compiler identification is ${VERILOG_INFO}")
+  set(CMAKE_Verilog_DPI_INCLUDES "")
 
 else()
   message(FATAL_ERROR "Unrecognized Verilog compiler: ${CMAKE_Verilog_COMPILER_ID}")
 endif()
 
 mark_as_advanced(CMAKE_Verilog_COMPILER)
+
+foreach(DPI_PATH ${CMAKE_Verilog_DPI_INCLUDES})
+  message(STATUS "DPI include path: ${DPI_PATH}")
+endforeach()
 
 set(CMAKE_Verilog_SOURCE_FILE_EXTENSIONS v;sv)
 set(CMAKE_Verilog_COMPILER_ENV_VAR "Verilog")

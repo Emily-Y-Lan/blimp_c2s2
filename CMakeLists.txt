@@ -52,7 +52,7 @@ set(V_TEST_FILES
 )
 
 set(V_SIM_FILES
-  # hw/top/sim/BlimpV7_sim.v
+  hw/top/sim/BlimpV7_sim.v
 )
 
 set(ASM_FILES
@@ -112,7 +112,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vlint.cmake)
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-if(CMAKE_Verilog_COMPILER_ID STREQUAL "Iverilog")
+if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
+  add_compile_definitions("BLIMP_VERILATOR")
+elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "VCS")
+  add_compile_definitions("BLIMP_VCS")
+elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "Iverilog")
   message(WARNING
     "Blimp uses many SystemVerilog features that Iverilog doesn't support\n"
     "Results may vary"
@@ -160,8 +164,8 @@ function(version_name VNAME BLIMP_VERSION)
     return()
   endif()
 
-  string(REGEX MATCH "Blimp(V[0-9]+)" BLIMP_VERSION ${BLIMP_VERSION})
-  set(${VNAME} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+  string(REGEX MATCH "BlimpV([0-9]+)" BLIMP_VERSION ${BLIMP_VERSION})
+  set(${VNAME} "v${CMAKE_MATCH_1}" PARENT_SCOPE)
 endfunction()
 
 #------------------------------------------------------------------------
@@ -172,7 +176,7 @@ endfunction()
 
 function(sim_name SIMNAME FILE_NAME)
   string(REGEX MATCH "BlimpV([0-9]+)_sim\\.v" FILE_NAME ${FILE_NAME})
-  set(${SIMNAME} "V${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
+  set(${SIMNAME} "v${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
 endfunction()
 
 #------------------------------------------------------------------------
@@ -233,6 +237,7 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
   add_executable(${V_TEST_BIN} ${V_TEST_FILE_PATH})
+  target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_Verilog_DPI_INCLUDES})
 
   if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
     target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats)
@@ -240,8 +245,6 @@ foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
       target_compile_options(${V_TEST_BIN} PRIVATE --trace --trace-structs)
     endif()
   endif()
-
-  target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
   # Add our main simulation loop and libraries
   target_link_libraries(${V_TEST_BIN} PRIVATE FL_PROC)
@@ -301,36 +304,6 @@ add_custom_target(
 )
 
 #------------------------------------------------------------------------
-# Add our SystemVerilog simulations
-#------------------------------------------------------------------------
-
-# foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
-#   set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
-#   get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
-#   remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
-#   sim_name(V_SIM_BIN ${V_SIM_FILE})
-
-#   add_executable(${V_SIM_BIN} ${V_SIM_FILE_PATH} "hw/top/sim/utils/load_elf.cpp")
-#   set_source_files_properties(
-#     ${V_SIM_FILE_PATH}
-#     PROPERTIES
-#     COMPILE_FLAGS "--timing --quiet-stats ${VTRACE}"
-#   )
-#   target_include_directories(${V_SIM_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-  
-#   # Add our main simulation loop and libraries
-#   target_link_libraries(${V_SIM_BIN} PRIVATE ASM FL_PROC)
-
-#   # Track dependencies
-#   vdeps(SIM_DEPS
-#     SOURCES ${V_SIM_FILE_REL_PATH}
-#     INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
-#   )
-#   add_prefix(SIM_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
-#   set_property(SOURCE ${V_SIM_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${SIM_DEPS})
-# endforeach(V_SIM_FILE_REL_PATH)
-
-#------------------------------------------------------------------------
 # Include RISCV programs
 #------------------------------------------------------------------------
 
@@ -356,9 +329,55 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
 endforeach(APP_SUBDIR)
 
 #-------------------------------------------------------------------------
-# Include FL Simulator
+# Include FL simulator
 #-------------------------------------------------------------------------
 
 add_executable(fl-sim fl/fl_sim.cpp)
 target_compile_options(fl-sim PRIVATE -Wall -Wextra -Wpedantic -Werror)
 target_link_libraries(fl-sim PRIVATE FL_PROC)
+
+#------------------------------------------------------------------------
+# Add our SystemVerilog simulators
+#------------------------------------------------------------------------
+
+foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
+  set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
+  get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
+  remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
+  sim_name(V_SIM_BIN ${V_SIM_FILE})
+
+  add_executable(${V_SIM_BIN} ${V_SIM_FILE_PATH} "hw/top/sim/utils/load_elf.cpp")
+  target_include_directories(${V_SIM_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_Verilog_DPI_INCLUDES})
+
+  if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
+    set(V_COMPILE_FLAGS "--timing --quiet-stats")
+    if(TRACE)
+      set(V_COMPILE_FLAGS "${V_COMPILE_FLAGS} --trace --trace-structs")
+    endif()
+    set_source_files_properties(
+      ${V_SIM_FILE_PATH}
+      PROPERTIES
+      COMPILE_FLAGS "${V_COMPILE_FLAGS}"
+    )
+  endif()
+  
+  # Add our main simulation loop and libraries
+  target_link_libraries(${V_SIM_BIN} PRIVATE FL_PROC)
+
+  # Track dependencies
+  vdeps(SIM_DEPS
+    SOURCES ${V_SIM_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+  add_prefix(SIM_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
+  set_property(SOURCE ${V_SIM_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${SIM_DEPS})
+
+  # Add linting
+  vlint(${V_SIM_BIN}-lint
+    TARGET_NAME ${V_SIM_BIN}
+    SOURCES ${V_SIM_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${SIM_DEPS}
+  )
+  add_dependencies(${V_SIM_BIN} ${V_SIM_BIN}-lint)
+endforeach(V_SIM_FILE_REL_PATH)

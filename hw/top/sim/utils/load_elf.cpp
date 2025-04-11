@@ -4,9 +4,8 @@
 // A C++ interface to load an ELF file into memory
 
 #include "fl/parse_elf.h"
+#include "hw/top/sim/utils/load_elf.h"
 #include <cstdint>
-
-extern "C" void init_mem( uint32_t* addr, uint32_t* data );
 
 //------------------------------------------------------------------------
 // init_proc_mem

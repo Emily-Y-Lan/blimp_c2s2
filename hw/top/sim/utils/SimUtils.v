@@ -77,10 +77,9 @@ module SimUtils
 
   // Seed random test cases
   int seed = 32'hdeadbeef;
-  initial $urandom(seed);
+  initial seed = $urandom(seed);
 
-  task sim_begin( string taskname );
-    $write("\n  %s%s%s", `PURPLE, taskname, `RESET);
+  task sim_begin();
     rst = 1'b1;
     for( int i = 0; i < 3; i = i + 1 ) begin
       @(posedge clk);
