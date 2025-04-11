@@ -171,21 +171,20 @@ module BlimpV5 #(
 
 `ifndef SYNTHESIS
   function string trace();
-    trace = {
-      FU.trace(),
-      " | ",
-      DIU.trace(),
-      " | ",
-      ALU_XU.trace(),
-      " | ",
-      MUL_XU.trace(),
-      " | ",
-      MEM_XU.trace(),
-      " | ",
-      CTRL_XU.trace(),
-      " | ",
-      WCU.trace()
-    };
+    trace = "";
+    trace = {trace, FU.trace()};
+    trace = {trace, " | "};
+    trace = {trace, DIU.trace()};
+    trace = {trace, " | "};
+    trace = {trace, ALU_XU.trace()};
+    trace = {trace, " | "};
+    trace = {trace, MUL_XU.trace()};
+    trace = {trace, " | "};
+    trace = {trace, MEM_XU.trace()};
+    trace = {trace, " | "};
+    trace = {trace, CTRL_XU.trace()};
+    trace = {trace, " | "};
+    trace = {trace, WCU.trace()};
   endfunction
 `endif
 

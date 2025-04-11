@@ -166,7 +166,7 @@ endfunction()
 
 function(sim_name SIMNAME FILE_NAME)
   string(REGEX MATCH "BlimpV([0-9]+)_sim\\.v" FILE_NAME ${FILE_NAME})
-  set(${SIMNAME} "v${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
+  set(${SIMNAME} "V${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
 endfunction()
 
 #------------------------------------------------------------------------

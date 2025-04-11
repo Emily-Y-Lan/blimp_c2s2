@@ -16,13 +16,7 @@
 
 import TestEnv::*;
 
-//========================================================================
-// BlimpV7TestSuite
-//========================================================================
-// A test suite for a particular parametrization of the Blimp V7 module
-
-module BlimpV7TestSuite #(
-  parameter p_suite_num     = 0,
+module BlimpV7TestHarness #(
   parameter p_opaq_bits     = 8,
   parameter p_seq_num_bits  = 5,
   parameter p_num_phys_regs = 36,
@@ -30,11 +24,6 @@ module BlimpV7TestSuite #(
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1
 );
-
-  string suite_name = $sformatf("%0d: BlimpV7TestSuite_%0d_%0d_%0d_%0d", 
-                                p_suite_num,
-                                p_opaq_bits, p_seq_num_bits,
-                                p_mem_send_intv_delay, p_mem_recv_intv_delay);
 
   //----------------------------------------------------------------------
   // Setup
@@ -156,7 +145,7 @@ module BlimpV7TestSuite #(
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 
@@ -169,91 +158,6 @@ module BlimpV7TestSuite #(
     t.trace( trace );
   end
   // verilator lint_on BLKSEQ
-
-  //----------------------------------------------------------------------
-  // Include Tests
-  //----------------------------------------------------------------------
-
-  `include "hw/top/test/test_cases/directed/addi_test_cases.v"
-  `include "hw/top/test/test_cases/directed/add_test_cases.v"
-  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
-  `include "hw/top/test/test_cases/directed/lw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/jal_test_cases.v"
-  `include "hw/top/test/test_cases/directed/jalr_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bne_test_cases.v"
-
-  `include "hw/top/test/test_cases/directed/sub_test_cases.v"
-  `include "hw/top/test/test_cases/directed/and_test_cases.v"
-  `include "hw/top/test/test_cases/directed/or_test_cases.v"
-  `include "hw/top/test/test_cases/directed/xor_test_cases.v"
-  `include "hw/top/test/test_cases/directed/slt_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sltu_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sra_test_cases.v"
-  `include "hw/top/test/test_cases/directed/srl_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sll_test_cases.v"
-
-  `include "hw/top/test/test_cases/directed/andi_test_cases.v"
-  `include "hw/top/test/test_cases/directed/ori_test_cases.v"
-  `include "hw/top/test/test_cases/directed/xori_test_cases.v"
-  `include "hw/top/test/test_cases/directed/slti_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sltiu_test_cases.v"
-  `include "hw/top/test/test_cases/directed/srai_test_cases.v"
-  `include "hw/top/test/test_cases/directed/srli_test_cases.v"
-  `include "hw/top/test/test_cases/directed/slli_test_cases.v"
-  `include "hw/top/test/test_cases/directed/lui_test_cases.v"
-  `include "hw/top/test/test_cases/directed/auipc_test_cases.v"
-
-  `include "hw/top/test/test_cases/directed/beq_test_cases.v"
-  `include "hw/top/test/test_cases/directed/blt_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bge_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bltu_test_cases.v"
-  `include "hw/top/test/test_cases/directed/bgeu_test_cases.v"
-
-  `include "hw/top/test/test_cases/golden/addi_test_cases.v"
-  `include "hw/top/test/test_cases/golden/add_test_cases.v"
-  `include "hw/top/test/test_cases/golden/mul_test_cases.v"
-  `include "hw/top/test/test_cases/golden/lw_test_cases.v"
-  `include "hw/top/test/test_cases/golden/sw_test_cases.v"
-  `include "hw/top/test/test_cases/golden/jal_test_cases.v"
-  `include "hw/top/test/test_cases/golden/jalr_test_cases.v"
-  `include "hw/top/test/test_cases/golden/bne_test_cases.v"
-
-  //----------------------------------------------------------------------
-  // run_test_suite
-  //----------------------------------------------------------------------
-
-  task run_test_suite();
-    t.test_suite_begin( suite_name );
-    run_instruction_tests();
-  endtask
-endmodule
-
-//========================================================================
-// BlimpV7TestHarness
-//========================================================================
-
-module BlimpV7TestHarness;
-  BlimpV7TestSuite #(1)                  suite_1();
-  BlimpV7TestSuite #(2,  8, 5, 36, 1, 1) suite_2();
-  BlimpV7TestSuite #(3,  2, 2, 48, 1, 1) suite_3();
-  BlimpV7TestSuite #(4,  4, 3, 33, 1, 1) suite_4();
-  BlimpV7TestSuite #(7,  4, 6, 52, 3, 3) suite_5();
-
-  int s;
-
-  initial begin
-    test_bench_begin( `__FILE__ );
-    s = get_test_suite();
-
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
-    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
-    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
-
-    test_bench_end();
-  end
 endmodule
 
 `endif // HW_TOP_TEST_BLIMPV7TESTHARNESS_V
