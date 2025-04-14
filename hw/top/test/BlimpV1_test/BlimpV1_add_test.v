@@ -24,9 +24,11 @@ module BlimpV1TestSuite_add #(
   ) h();
 
   `include "hw/top/test/test_cases/directed/add_test_cases.v"
+  `include "hw/top/test/test_cases/golden/add_test_cases.v"
   task run_test_suite();
     h.t.test_suite_begin( suite_name );
-    run_instruction_tests();
+    run_directed_add_tests();
+    run_golden_add_tests();
   endtask
 endmodule
 

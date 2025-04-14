@@ -3,6 +3,134 @@
 # ========================================================================
 # Identify all of Blimp's sub-tests
 
-set(BLIMPV1_TESTS
+set(BLIMP_VERSIONS
+  FLProc
+  BlimpV1
+  BlimpV2
+  BlimpV3
+  BlimpV4
+  BlimpV5
+  BlimpV6
+  BlimpV7
+)
+
+# ------------------------------------------------------------------------
+# FLProc
+# ------------------------------------------------------------------------
+
+set(FLProc_TESTS
+  FLProc_test/FLProc_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV1
+# ------------------------------------------------------------------------
+
+set(BlimpV1_TESTS
   BlimpV1_test/BlimpV1_add_test.v
+  BlimpV1_test/BlimpV1_addi_test.v
+  BlimpV1_test/BlimpV1_mul_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV2
+# ------------------------------------------------------------------------
+
+set(BlimpV2_TESTS
+  BlimpV2_test/BlimpV2_add_test.v
+  BlimpV2_test/BlimpV2_addi_test.v
+  BlimpV2_test/BlimpV2_mul_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV3
+# ------------------------------------------------------------------------
+
+set(BlimpV3_TESTS
+  BlimpV3_test/BlimpV3_add_test.v
+  BlimpV3_test/BlimpV3_addi_test.v
+  BlimpV3_test/BlimpV3_mul_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV4
+# ------------------------------------------------------------------------
+
+set(BlimpV4_TESTS
+  BlimpV4_test/BlimpV4_add_test.v
+  BlimpV4_test/BlimpV4_addi_test.v
+  BlimpV4_test/BlimpV4_mul_test.v
+  BlimpV4_test/BlimpV4_lw_test.v
+  BlimpV4_test/BlimpV4_sw_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV5
+# ------------------------------------------------------------------------
+
+set(BlimpV5_TESTS
+  BlimpV5_test/BlimpV5_add_test.v
+  BlimpV5_test/BlimpV5_addi_test.v
+  BlimpV5_test/BlimpV5_mul_test.v
+  BlimpV5_test/BlimpV5_lw_test.v
+  BlimpV5_test/BlimpV5_sw_test.v
+  BlimpV5_test/BlimpV5_jal_test.v
+  BlimpV5_test/BlimpV5_jalr_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV6
+# ------------------------------------------------------------------------
+
+set(BlimpV6_TESTS
+  BlimpV6_test/BlimpV6_add_test.v
+  BlimpV6_test/BlimpV6_addi_test.v
+  BlimpV6_test/BlimpV6_mul_test.v
+  BlimpV6_test/BlimpV6_lw_test.v
+  BlimpV6_test/BlimpV6_sw_test.v
+  BlimpV6_test/BlimpV6_jal_test.v
+  BlimpV6_test/BlimpV6_jalr_test.v
+  BlimpV6_test/BlimpV6_bne_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV6
+# ------------------------------------------------------------------------
+
+set(BlimpV7_TESTS
+  BlimpV7_test/BlimpV7_add_test.v
+  BlimpV7_test/BlimpV7_addi_test.v
+  BlimpV7_test/BlimpV7_mul_test.v
+  BlimpV7_test/BlimpV7_lw_test.v
+  BlimpV7_test/BlimpV7_sw_test.v
+  BlimpV7_test/BlimpV7_jal_test.v
+  BlimpV7_test/BlimpV7_jalr_test.v
+  BlimpV7_test/BlimpV7_bne_test.v
+
+  BlimpV7_test/BlimpV7_sub_test.v
+  BlimpV7_test/BlimpV7_and_test.v
+  BlimpV7_test/BlimpV7_or_test.v
+  BlimpV7_test/BlimpV7_xor_test.v
+  BlimpV7_test/BlimpV7_slt_test.v
+  BlimpV7_test/BlimpV7_sltu_test.v
+  BlimpV7_test/BlimpV7_sra_test.v
+  BlimpV7_test/BlimpV7_srl_test.v
+  BlimpV7_test/BlimpV7_sll_test.v
+
+  BlimpV7_test/BlimpV7_andi_test.v
+  BlimpV7_test/BlimpV7_ori_test.v
+  BlimpV7_test/BlimpV7_xori_test.v
+  BlimpV7_test/BlimpV7_slti_test.v
+  BlimpV7_test/BlimpV7_sltiu_test.v
+  BlimpV7_test/BlimpV7_srai_test.v
+  BlimpV7_test/BlimpV7_srli_test.v
+  BlimpV7_test/BlimpV7_slli_test.v
+  BlimpV7_test/BlimpV7_lui_test.v
+  BlimpV7_test/BlimpV7_auipc_test.v
+
+  BlimpV7_test/BlimpV7_beq_test.v
+  BlimpV7_test/BlimpV7_blt_test.v
+  BlimpV7_test/BlimpV7_bge_test.v
+  BlimpV7_test/BlimpV7_bltu_test.v
+  BlimpV7_test/BlimpV7_bgeu_test.v
 )

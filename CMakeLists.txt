@@ -3,6 +3,8 @@
 # ========================================================================
 # A build system for Blimp
 
+SET(CMAKE_CXX_STANDARD_LIBRARIES "")
+
 #-------------------------------------------------------------------------
 # Get all of the source files
 #-------------------------------------------------------------------------
@@ -80,108 +82,6 @@ set(APP_SUBDIRS
 )
 
 #-------------------------------------------------------------------------
-# Verilator Flags
-#-------------------------------------------------------------------------
-# Used for fast compilation
-#
-# Source: https://github.com/pymtl/pymtl3/blob/eea5ff49e06b303123097dc4d9e163790c0f58d6/pymtl3/passes/backends/verilog/import_/VerilogVerilatorImportConfigs.py
-
-set(OPT_FAST_FLAGS
-  -O1
-  -fno-guess-branch-probability
-  -fno-reorder-blocks
-  -fno-if-conversion
-  -fno-if-conversion2
-  -fno-dce
-  -fno-delayed-branch
-  -fno-dse
-  -fno-auto-inc-dec
-  -fno-branch-count-reg
-  -fno-combine-stack-adjustments
-  -fno-cprop-registers
-  -fno-forward-propagate
-  -fno-inline-functions-called-once
-  -fno-ipa-profile
-  -fno-ipa-pure-const
-  -fno-ipa-reference
-  -fno-move-loop-invariants
-  -fno-omit-frame-pointer
-  -fno-split-wide-types
-  -fno-tree-bit-ccp
-  -fno-tree-ccp
-  -fno-tree-ch
-  -fno-tree-coalesce-vars
-  -fno-tree-copy-prop
-  -fno-tree-dce
-  -fno-tree-dominator-opts
-  -fno-tree-dse
-  -fno-tree-fre
-  -fno-tree-phiprop
-  -fno-tree-pta
-  -fno-tree-scev-cprop
-  -fno-tree-sink
-  -fno-tree-slsr
-  -fno-tree-sra
-  -fno-tree-ter
-  -fno-tree-reassoc
-)
-
-set(OPT_SLOW_FLAGS
-  -O0
-  -fno-guess-branch-probability
-  -fno-reorder-blocks
-  -fno-if-conversion
-  -fno-if-conversion2
-  -fno-dce
-  -fno-delayed-branch
-  -fno-dse
-  -fno-auto-inc-dec
-  -fno-branch-count-reg
-  -fno-combine-stack-adjustments
-  -fno-cprop-registers
-  -fno-forward-propagate
-  -fno-inline-functions-called-once
-  -fno-ipa-profile
-  -fno-ipa-pure-const
-  -fno-ipa-reference
-  -fno-move-loop-invariants
-  -fno-omit-frame-pointer
-  -fno-split-wide-types
-  -fno-tree-bit-ccp
-  -fno-tree-ccp
-  -fno-tree-ch
-  -fno-tree-coalesce-vars
-  -fno-tree-copy-prop
-  -fno-tree-dce
-  -fno-tree-dominator-opts
-  -fno-tree-dse
-  -fno-tree-fre
-  -fno-tree-phiprop
-  -fno-tree-pta
-  -fno-tree-scev-cprop
-  -fno-tree-sink
-  -fno-tree-slsr
-  -fno-tree-sra
-  -fno-tree-ter
-  -fno-tree-reassoc
-)
-
-#-------------------------------------------------------------------------
-# Tracing
-#-------------------------------------------------------------------------
-# Disable by default for speed
-
-if(NOT DEFINED TRACE)
-set(TRACE 0)
-endif()
-
-if(TRACE)
-  set(VTRACE TRACE TRACE_STRUCTS)
-else()
-  set(VTRACE "")
-endif()
-
-#-------------------------------------------------------------------------
 # Set the compiler
 #-------------------------------------------------------------------------
 
@@ -195,22 +95,42 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Boilerplate
 #-------------------------------------------------------------------------
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 cmake_minimum_required(VERSION 3.10)
 project(
   BLIMP 
   VERSION 1.0
   DESCRIPTION "BLIMP: BRG's Luculently-Interfaced Modular Processor"
-  LANGUAGES C CXX ASM
+  LANGUAGES Verilog C CXX ASM
 )
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vdeps.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/verilator.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/vlint.cmake)
 
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-#------------------------------------------------------------------------
-# Import Verilator
-#------------------------------------------------------------------------
+if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
+  add_compile_definitions("BLIMP_VERILATOR")
+elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "VCS")
+  add_compile_definitions("BLIMP_VCS")
+elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "Iverilog")
+  message(WARNING
+    "Blimp uses many SystemVerilog features that Iverilog doesn't support\n"
+    "Results may vary"
+  )
+endif()
 
-find_package(verilator REQUIRED)
+#-------------------------------------------------------------------------
+# Tracing
+#-------------------------------------------------------------------------
+# Disable by default for speed
+
+if(NOT DEFINED TRACE)
+set(TRACE 0)
+endif()
 
 #-------------------------------------------------------------------------
 # get_leaf
@@ -230,6 +150,22 @@ endfunction()
 function(remove_extension VARNAME FILE_NAME)
   string(REGEX REPLACE "\\.[^.]*$" "" NAME_WITHOUT_EXT ${FILE_NAME})
   set(${VARNAME} "${NAME_WITHOUT_EXT}" PARENT_SCOPE)
+endfunction()
+
+#------------------------------------------------------------------------
+# version_name
+#------------------------------------------------------------------------
+# A function to get the version indicator from a Blimp version
+
+function(version_name VNAME BLIMP_VERSION)
+  # Check for FL
+  if(BLIMP_VERSION STREQUAL "FLProc")
+    set(${VNAME} "fl" PARENT_SCOPE)
+    return()
+  endif()
+
+  string(REGEX MATCH "BlimpV([0-9]+)" BLIMP_VERSION ${BLIMP_VERSION})
+  set(${VNAME} "v${CMAKE_MATCH_1}" PARENT_SCOPE)
 endfunction()
 
 #------------------------------------------------------------------------
@@ -276,49 +212,79 @@ target_compile_options(FL_PROC PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
 #------------------------------------------------------------------------
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/test/tests.cmake)
-add_prefix(BLIMPV1_TESTS "hw/top/test/")
-message("Blimp: ${BLIMPV1_TESTS}")
 
-set(V_TEST_FILES
-  ${V_TEST_FILES}
-  ${BLIMPV1_TESTS}
-)
-message("Test Files: ${V_TEST_FILES}")
+foreach(BLIMP_VERSION ${BLIMP_VERSIONS})
+  add_prefix(${BLIMP_VERSION}_TESTS "hw/top/test/")
+  set(V_TEST_FILES
+    ${V_TEST_FILES}
+    ${${BLIMP_VERSION}_TESTS}
+  )
+endforeach()
 
 #------------------------------------------------------------------------
 # Add our SystemVerilog tests
 #------------------------------------------------------------------------
 
-add_custom_target(check COMMAND "ctest" "--timeout" "20")
+add_custom_target(check COMMAND "ctest")
+foreach(BLIMP_VERSION ${BLIMP_VERSIONS})
+  version_name(BLIMP_VERSION_SHORT ${BLIMP_VERSION})
+  add_custom_target(check-${BLIMP_VERSION_SHORT} COMMAND "ctest" "-L" "${BLIMP_VERSION}")
+endforeach()
 
 foreach(V_TEST_FILE_REL_PATH ${V_TEST_FILES})
   set(V_TEST_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_TEST_FILE_REL_PATH}")
   get_leaf(V_TEST_FILE ${V_TEST_FILE_PATH})
   remove_extension(V_TEST_BIN ${V_TEST_FILE})
 
-  add_executable(${V_TEST_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/test/sim.cpp")
-  target_link_libraries(${V_TEST_BIN} PRIVATE ASM FL_PROC) 
-  set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
+  add_executable(${V_TEST_BIN} ${V_TEST_FILE_PATH})
+  target_include_directories(${V_TEST_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_Verilog_DPI_INCLUDES})
 
-  target_compile_definitions(${V_TEST_BIN} PRIVATE 
-    VERILATOR_INCL_HEADER="V${V_TEST_BIN}.h"
-    VERILATOR_TOP_MODULE=V${V_TEST_BIN}
-    VL_USER_FINISH
-    VL_USER_FATAL
+  if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
+    target_compile_options(${V_TEST_BIN} PRIVATE --timing --quiet-stats)
+    if(TRACE)
+      target_compile_options(${V_TEST_BIN} PRIVATE --trace --trace-structs)
+    endif()
+  endif()
+
+  # Add our main simulation loop and libraries
+  target_link_libraries(${V_TEST_BIN} PRIVATE FL_PROC)
+
+  # Track dependencies
+  vdeps(TEST_DEPS
+    SOURCES ${V_TEST_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
   )
-  verilate(
-    ${V_TEST_BIN} 
-    SOURCES ${V_TEST_FILE_PATH} 
-    ${VTRACE}
-    # OPT_FAST ${OPT_FAST_FLAGS}
-    # OPT_SLOW ${OPT_SLOW_FLAGS}
-    VERILATOR_ARGS --timing --quiet-stats -DVL_USER_FINISH -DVL_USER_FATAL
+  add_prefix(TEST_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
+  set_property(SOURCE ${V_TEST_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${TEST_DEPS})
+
+  # Add linting
+  vlint(${V_TEST_BIN}-lint
+    TARGET_NAME ${V_TEST_BIN}
+    SOURCES ${V_TEST_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${TEST_DEPS}
   )
+  add_dependencies(${V_TEST_BIN} ${V_TEST_BIN}-lint)
 
   add_dependencies(check ${V_TEST_BIN})
   file(RELATIVE_PATH TEST_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${V_TEST_FILE_PATH})
   remove_extension(TEST_NAME ${TEST_PATH})
   add_test(NAME ${TEST_NAME} COMMAND ${V_TEST_BIN})
+  set(CMAKE_VTESTS ${CMAKE_VTESTS} ${V_TEST_BIN})
+  set_tests_properties(
+    ${TEST_NAME} PROPERTIES 
+    FAIL_REGULAR_EXPRESSION "timeout!|One or more tests failed"
+    TIMEOUT 20
+  )
+
+  # Include check commands for each version
+  foreach(BLIMP_VERSION ${BLIMP_VERSIONS})
+    if(${V_TEST_FILE_REL_PATH} IN_LIST ${BLIMP_VERSION}_TESTS)
+      version_name(BLIMP_VERSION_SHORT ${BLIMP_VERSION})
+      add_dependencies(check-${BLIMP_VERSION_SHORT} ${V_TEST_BIN})
+      set_tests_properties(${TEST_NAME} PROPERTIES LABELS "${BLIMP_VERSION}")
+    endif()
+  endforeach(BLIMP_VERSION)
 endforeach(V_TEST_FILE_REL_PATH)
 
 #------------------------------------------------------------------------
@@ -336,35 +302,6 @@ add_custom_target(
   ${LIST_COMMANDS}
   COMMENT ${KNOWN_TEST_TEXT}
 )
-
-#------------------------------------------------------------------------
-# Add our SystemVerilog simulations
-#------------------------------------------------------------------------
-
-foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
-  set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
-  get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
-  remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
-  sim_name(V_SIM_BIN ${V_SIM_FILE})
-
-  add_executable(${V_SIM_BIN} "${CMAKE_CURRENT_SOURCE_DIR}/hw/top/sim/utils/proc_sim.cpp")
-  target_link_libraries(${V_SIM_BIN} PRIVATE ASM FL_PROC) 
-
-  target_compile_definitions(${V_SIM_BIN} PRIVATE 
-    VERILATOR_INCL_HEADER="V${V_SIM_FILE_STUB}.h"
-    VERILATOR_DPI_HEADER="V${V_SIM_FILE_STUB}__Dpi.h"
-    VERILATOR_TOP_MODULE=V${V_SIM_FILE_STUB}
-    VERILATOR_MODULE_NAME=${V_SIM_FILE_STUB}
-  )
-  verilate(
-    ${V_SIM_BIN} 
-    SOURCES ${V_SIM_FILE_PATH} 
-    ${VTRACE}
-    OPT_FAST ${OPT_FAST_FLAGS}
-    OPT_SLOW ${OPT_SLOW_FLAGS}
-    VERILATOR_ARGS --timing --quiet-stats
-  )
-endforeach(V_SIM_FILE_REL_PATH)
 
 #------------------------------------------------------------------------
 # Include RISCV programs
@@ -392,9 +329,55 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
 endforeach(APP_SUBDIR)
 
 #-------------------------------------------------------------------------
-# Include FL Simulator
+# Include FL simulator
 #-------------------------------------------------------------------------
 
 add_executable(fl-sim fl/fl_sim.cpp)
 target_compile_options(fl-sim PRIVATE -Wall -Wextra -Wpedantic -Werror)
 target_link_libraries(fl-sim PRIVATE FL_PROC)
+
+#------------------------------------------------------------------------
+# Add our SystemVerilog simulators
+#------------------------------------------------------------------------
+
+foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
+  set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
+  get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
+  remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
+  sim_name(V_SIM_BIN ${V_SIM_FILE})
+
+  add_executable(${V_SIM_BIN} ${V_SIM_FILE_PATH} "hw/top/sim/utils/load_elf.cpp")
+  target_include_directories(${V_SIM_BIN} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_Verilog_DPI_INCLUDES})
+
+  if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
+    set(V_COMPILE_FLAGS "--timing --quiet-stats")
+    if(TRACE)
+      set(V_COMPILE_FLAGS "${V_COMPILE_FLAGS} --trace --trace-structs")
+    endif()
+    set_source_files_properties(
+      ${V_SIM_FILE_PATH}
+      PROPERTIES
+      COMPILE_FLAGS "${V_COMPILE_FLAGS}"
+    )
+  endif()
+  
+  # Add our main simulation loop and libraries
+  target_link_libraries(${V_SIM_BIN} PRIVATE FL_PROC)
+
+  # Track dependencies
+  vdeps(SIM_DEPS
+    SOURCES ${V_SIM_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+  )
+  add_prefix(SIM_DEPS "${CMAKE_CURRENT_SOURCE_DIR}/")
+  set_property(SOURCE ${V_SIM_FILE_PATH} APPEND PROPERTY OBJECT_DEPENDS ${SIM_DEPS})
+
+  # Add linting
+  vlint(${V_SIM_BIN}-lint
+    TARGET_NAME ${V_SIM_BIN}
+    SOURCES ${V_SIM_FILE_REL_PATH}
+    INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
+    DEPENDS ${SIM_DEPS}
+  )
+  add_dependencies(${V_SIM_BIN} ${V_SIM_BIN}-lint)
+endforeach(V_SIM_FILE_REL_PATH)

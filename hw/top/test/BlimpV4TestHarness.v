@@ -16,13 +16,7 @@
 
 import TestEnv::*;
 
-//========================================================================
-// BlimpV4TestSuite
-//========================================================================
-// A test suite for a particular parametrization of the Blimp V4 module
-
-module BlimpV4TestSuite #(
-  parameter p_suite_num     = 0,
+module BlimpV4TestHarness #(
   parameter p_opaq_bits     = 8,
   parameter p_seq_num_bits  = 5,
   parameter p_num_phys_regs = 36,
@@ -30,11 +24,6 @@ module BlimpV4TestSuite #(
   parameter p_mem_send_intv_delay = 1,
   parameter p_mem_recv_intv_delay = 1
 );
-
-  string suite_name = $sformatf("%0d: BlimpV4TestSuite_%0d_%0d_%0d_%0d", 
-                                p_suite_num,
-                                p_opaq_bits, p_seq_num_bits,
-                                p_mem_send_intv_delay, p_mem_recv_intv_delay);
 
   //----------------------------------------------------------------------
   // Setup
@@ -154,7 +143,7 @@ module BlimpV4TestSuite #(
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 
@@ -167,64 +156,6 @@ module BlimpV4TestSuite #(
     t.trace( trace );
   end
   // verilator lint_on BLKSEQ
-
-  //----------------------------------------------------------------------
-  // Include Tests
-  //----------------------------------------------------------------------
-
-  `include "hw/top/test/test_cases/directed/addi_test_cases.v"
-  `include "hw/top/test/test_cases/directed/add_test_cases.v"
-  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
-  `include "hw/top/test/test_cases/directed/lw_test_cases.v"
-  `include "hw/top/test/test_cases/directed/sw_test_cases.v"
-
-  `include "hw/top/test/test_cases/golden/addi_test_cases.v"
-  `include "hw/top/test/test_cases/golden/add_test_cases.v"
-  `include "hw/top/test/test_cases/golden/mul_test_cases.v"
-  `include "hw/top/test/test_cases/golden/lw_test_cases.v"
-  `include "hw/top/test/test_cases/golden/sw_test_cases.v"
-
-  //----------------------------------------------------------------------
-  // run_test_suite
-  //----------------------------------------------------------------------
-
-  task run_test_suite();
-    t.test_suite_begin( suite_name );
-    run_instruction_tests();
-  endtask
-endmodule
-
-//========================================================================
-// BlimpV4TestHarness
-//========================================================================
-
-module BlimpV4TestHarness;
-  BlimpV4TestSuite #(1)                  suite_1();
-  BlimpV4TestSuite #(2,  8, 5, 36, 1, 1) suite_2();
-  BlimpV4TestSuite #(3,  8, 5, 50, 1, 1) suite_3();
-  BlimpV4TestSuite #(4,  4, 5, 48, 1, 1) suite_4();
-  BlimpV4TestSuite #(4,  4, 3, 33, 1, 1) suite_5();
-  BlimpV4TestSuite #(5, 32, 4, 48, 3, 1) suite_6();
-  BlimpV4TestSuite #(6,  2, 2, 64, 1, 3) suite_7();
-  BlimpV4TestSuite #(7,  4, 6, 52, 3, 3) suite_8();
-
-  int s;
-
-  initial begin
-    test_bench_begin( `__FILE__ );
-    s = get_test_suite();
-
-    if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
-    if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
-    if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
-    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
-    if ((s <= 0) || (s == 5)) suite_5.run_test_suite();
-    if ((s <= 0) || (s == 6)) suite_6.run_test_suite();
-    if ((s <= 0) || (s == 7)) suite_7.run_test_suite();
-    if ((s <= 0) || (s == 8)) suite_8.run_test_suite();
-
-    test_bench_end();
-  end
 endmodule
 
 `endif // HW_TOP_TEST_BLIMPV4TESTHARNESS_V

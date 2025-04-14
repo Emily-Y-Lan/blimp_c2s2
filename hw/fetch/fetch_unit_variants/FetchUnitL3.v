@@ -54,7 +54,6 @@ module FetchUnitL3
   localparam p_seq_num_bits = D.p_seq_num_bits;
   
   localparam p_flight_bits   = $clog2(p_max_in_flight) + 1;
-  localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
   // Request

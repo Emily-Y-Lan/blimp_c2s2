@@ -66,7 +66,7 @@ module SeqNumGenL3 #(
   generate
     for( i = 0; i < p_num_entries; i = i + 1 ) begin
       always_ff @( posedge clk ) begin
-        if( rst ) seq_num_list <= '{default: 1'b0};
+        if( rst ) seq_num_list[i] <= 1'b0;
         else begin
 
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,11 +151,11 @@ module SeqNumGenL3 #(
   generate
     for( i = 0; i < p_reclaim_width; i = i + 1 ) begin
       if( i == 0 )
-        assign reclaim_valid[i] = ( seq_num_list[curr_tail_ptr + i] == FREE ) &
-                                  (p_seq_num_bits'(i) < entries_allocated   );
+        assign reclaim_valid[i] = ( seq_num_list[p_seq_num_bits'(curr_tail_ptr + i)] == FREE ) &
+                                  (p_seq_num_bits'(i) < entries_allocated                    );
       else
-        assign reclaim_valid[i] = ( seq_num_list[curr_tail_ptr + i] == FREE ) &
-                                  (p_seq_num_bits'(i) < entries_allocated   ) &
+        assign reclaim_valid[i] = ( seq_num_list[p_seq_num_bits'(curr_tail_ptr + i)] == FREE ) &
+                                  (p_seq_num_bits'(i) < entries_allocated                    ) &
                                   reclaim_valid[i - 1];
     end
   endgenerate

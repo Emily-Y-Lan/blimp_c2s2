@@ -10,10 +10,9 @@
 `include "intf/InstTraceNotif.v"
 `include "test/fl/MemIntfTestServer_2Port.v"
 
-module BlimpV7_sim (
-  input  logic rst,
-  output logic clk
-);
+import "DPI-C" context function void load_elf ( string elf_file );
+
+module BlimpV7_sim;
 
   // Define default simulation parameters
   localparam p_num_phys_regs = 36;
@@ -23,6 +22,9 @@ module BlimpV7_sim (
   //----------------------------------------------------------------------
   // Setup
   //----------------------------------------------------------------------
+
+  logic clk;
+  logic rst;
 
   SimUtils t( .* );
 
@@ -94,7 +96,7 @@ module BlimpV7_sim (
   string trace;
 
   // verilator lint_off BLKSEQ
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #2;
     trace = "";
 
@@ -105,5 +107,14 @@ module BlimpV7_sim (
     t.trace( trace );
   end
   // verilator lint_on BLKSEQ
+
+  //----------------------------------------------------------------------
+  // Run the simulation
+  //----------------------------------------------------------------------
+
+  initial begin
+    t.sim_begin();
+    load_elf( t.elf_file );
+  end
 
 endmodule

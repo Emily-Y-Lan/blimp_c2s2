@@ -110,11 +110,11 @@ module SeqNumGenL2 #(
   generate
     for( i = 0; i < p_reclaim_width; i = i + 1 ) begin
       if( i == 0 )
-        assign reclaim_valid[i] = ( seq_num_list[curr_tail_ptr + i] == FREE ) &
-                                  (p_seq_num_bits'(i) < entries_allocated   );
+        assign reclaim_valid[i] = ( seq_num_list[p_seq_num_bits'(curr_tail_ptr + i)] == FREE ) &
+                                  (p_seq_num_bits'(i) < entries_allocated                    );
       else
-        assign reclaim_valid[i] = ( seq_num_list[curr_tail_ptr + i] == FREE ) &
-                                  (p_seq_num_bits'(i) < entries_allocated   ) &
+        assign reclaim_valid[i] = ( seq_num_list[p_seq_num_bits'(curr_tail_ptr + i)] == FREE ) &
+                                  (p_seq_num_bits'(i) < entries_allocated                    ) &
                                   reclaim_valid[i - 1];
     end
   endgenerate

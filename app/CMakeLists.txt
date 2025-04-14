@@ -30,6 +30,7 @@ set(UTIL_FILES
 # Need to do this with a custom command, so our linker script can later
 # find it (otherwise CMake will put it somewhere crazy with a weird name)
 
+# Need to replace spaces to avoid CMake escaping them
 string(REPLACE " " ";" CMAKE_CXX_CUSTOM_FLAGS ${CMAKE_CXX_FLAGS})
 
 add_custom_command(

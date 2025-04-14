@@ -70,7 +70,7 @@ package TestEnv;
   task test_bench_end();
     $write("\n\n");
     if( TestStatus::num_failed > 0 ) begin
-      $fatal(0, "One or more tests failed");
+      $fatal("One or more tests failed");
     end else begin
       $finish(0);
     end
@@ -153,7 +153,7 @@ module TestUtils
 
   // Seed random test cases
   int seed = 32'hdeadbeef;
-  initial $urandom(seed);
+  initial seed = $urandom(seed);
 
   // ---------------------------------------------------------------------
   // Cycle counter with timeout check
@@ -171,7 +171,7 @@ module TestUtils
 
     if ( cycles > timeout ) begin
       $write("\n");
-      $fatal(0, "ERROR (cycles=%0d): timeout!", cycles );
+      $fatal("ERROR (cycles=%0d): timeout!", cycles );
     end
 
   end

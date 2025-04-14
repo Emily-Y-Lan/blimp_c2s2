@@ -31,8 +31,6 @@ module FetchUnitL1 (
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   localparam p_rst_addr = 32'h200;
-  
-  localparam type t_req_msg  = type(mem.req_msg);
 
   //----------------------------------------------------------------------
   // Request

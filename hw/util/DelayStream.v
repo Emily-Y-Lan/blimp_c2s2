@@ -42,7 +42,7 @@ module DelayStream #(
 `else
   t_msg msg_queue [$];
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     if( rst )
       msg_queue.delete();
   end
@@ -65,13 +65,13 @@ module DelayStream #(
 
   int send_intv_delay;
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     if( send_intv_delay > 0 ) send_intv_delay <= send_intv_delay - 1;
   end
 
   initial send_rdy = 1'b0;
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #1;
     if( rst ) begin
       send_rdy <= 1'b0;
@@ -96,7 +96,7 @@ module DelayStream #(
 
   int recv_intv_delay;
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     if( recv_intv_delay > 0 ) recv_intv_delay <= recv_intv_delay - 1;
   end
 
@@ -105,7 +105,7 @@ module DelayStream #(
     recv_msg = 'x;
   end
 
-  always_ff @( posedge clk ) begin
+  always @( posedge clk ) begin
     #1;
     if( rst ) begin
       recv_val <= 1'b0;
