@@ -57,6 +57,10 @@ FLTrace FLProc::step()
   uint32_t    inst_pc   = pc;
 
   switch ( inst_name ) {
+      //------------------------------------------------------------------
+      // RV32I
+      //------------------------------------------------------------------
+
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // add
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,16 +159,6 @@ FLTrace FLProc::step()
 
     case SLL:
       regs[inst.rd()] = regs[inst.rs1()] << ( regs[inst.rs2()] & 0x1f );
-      pc              = pc + 4;
-      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
-                      inst.rd() != 0 );
-
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // mul
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    case MUL:
-      regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
       pc              = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -281,21 +275,81 @@ FLTrace FLProc::step()
                       inst.rd() != 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // lb
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case LB:
+      regs[inst.rd()] =
+          (int8_t) mem.loadb( regs[inst.rs1()] + inst.imm_i() );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // lh
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case LH:
+      regs[inst.rd()] =
+          (int16_t) mem.loadb( regs[inst.rs1()] + inst.imm_i() );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // lw
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case LW:
-      regs[inst.rd()] = mem.load( regs[inst.rs1()] + inst.imm_i() );
+      regs[inst.rd()] = mem.loadw( regs[inst.rs1()] + inst.imm_i() );
       pc              = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // lbu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case LBU:
+      regs[inst.rd()] = mem.loadb( regs[inst.rs1()] + inst.imm_i() );
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // lhu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case LHU:
+      regs[inst.rd()] = mem.loadb( regs[inst.rs1()] + inst.imm_i() );
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sb
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SB:
+      mem.storeb( regs[inst.rs1()] + inst.imm_s(), regs[inst.rs2()] );
+      pc = pc + 4;
+      return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // sh
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case SH:
+      mem.storeh( regs[inst.rs1()] + inst.imm_s(), regs[inst.rs2()] );
+      pc = pc + 4;
+      return FLTrace( inst_pc, 0, 0, 0 );
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // sw
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case SW:
-      mem.store( regs[inst.rs1()] + inst.imm_s(), regs[inst.rs2()] );
+      mem.storew( regs[inst.rs1()] + inst.imm_s(), regs[inst.rs2()] );
       pc = pc + 4;
       return FLTrace( inst_pc, 0, 0, 0 );
 
@@ -396,6 +450,102 @@ FLTrace FLProc::step()
         pc = pc + 4;
       }
       return FLTrace( inst_pc, 0, 0, 0 );
+
+      //------------------------------------------------------------------
+      // RV32M
+      //------------------------------------------------------------------
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // mul
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case MUL:
+      regs[inst.rd()] = regs[inst.rs1()] * regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // mulh
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case MULH:
+      regs[inst.rd()] =
+          ( ( ( (int64_t) ( (int32_t) regs[inst.rs1()] ) ) *
+              ( (int64_t) ( (int32_t) regs[inst.rs2()] ) ) ) >>
+            32 ) &
+          0xFFFFFFFF;
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // mulhu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case MULHU:
+      regs[inst.rd()] = ( ( ( (uint64_t) regs[inst.rs1()] ) *
+                            ( (uint64_t) regs[inst.rs2()] ) ) >>
+                          32 ) &
+                        0xFFFFFFFF;
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // mulhsu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case MULHSU:
+      regs[inst.rd()] = ( ( ( (int64_t) ( (int32_t) regs[inst.rs1()] ) ) *
+                            ( (uint64_t) regs[inst.rs2()] ) ) >>
+                          32 ) &
+                        0xFFFFFFFF;
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // div
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case DIV:
+      regs[inst.rd()] =
+          ( (int32_t) regs[inst.rs1()] ) / ( (int32_t) regs[inst.rs2()] );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // divu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case DIVU:
+      regs[inst.rd()] = regs[inst.rs1()] / regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // rem
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case REM:
+      regs[inst.rd()] =
+          ( (int32_t) regs[inst.rs1()] ) % ( (int32_t) regs[inst.rs2()] );
+      pc = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // remu
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    case REMU:
+      regs[inst.rd()] = regs[inst.rs1()] % regs[inst.rs2()];
+      pc              = pc + 4;
+      return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
+                      inst.rd() != 0 );
 
     default:
       std::string excp =

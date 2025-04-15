@@ -28,8 +28,12 @@ class FLMem {
   void add_peripheral( FLPeripheral* peripheral );
 
   // Access memory
-  uint32_t load( uint32_t addr );
-  void     store( uint32_t addr, uint32_t data );
+  uint8_t  loadb( uint32_t addr );
+  uint16_t loadh( uint32_t addr );
+  uint32_t loadw( uint32_t addr );
+  void     storeb( uint32_t addr, uint8_t data );
+  void     storeh( uint32_t addr, uint16_t data );
+  void     storew( uint32_t addr, uint32_t data );
 
   // Overload with bracket for easier syntax - directly modify map,
   // doesn't check peripherals
