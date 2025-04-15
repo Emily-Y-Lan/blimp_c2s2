@@ -24,6 +24,7 @@ set(V_TEST_FILES
   hw/execute/test/l1/ALUL1_test.v
   hw/execute/test/l1/MultiplierL1_test.v
   hw/execute/test/l2/PipelinedMultiplierL2_test.v
+  hw/execute/test/l2/IterativeMultiplierL2_test.v
   hw/execute/test/l3/LoadStoreUnitL3_test.v
   hw/execute/test/l4/ControlFlowUnitL4_test.v
   hw/execute/test/l5/ControlFlowUnitL5_test.v
