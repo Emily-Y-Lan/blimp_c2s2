@@ -12,6 +12,7 @@ set(BLIMP_VERSIONS
   BlimpV5
   BlimpV6
   BlimpV7
+  BlimpV8
 )
 
 # ------------------------------------------------------------------------
@@ -94,7 +95,7 @@ set(BlimpV6_TESTS
 )
 
 # ------------------------------------------------------------------------
-# BlimpV6
+# BlimpV7
 # ------------------------------------------------------------------------
 
 set(BlimpV7_TESTS
@@ -133,4 +134,54 @@ set(BlimpV7_TESTS
   BlimpV7_test/BlimpV7_bge_test.v
   BlimpV7_test/BlimpV7_bltu_test.v
   BlimpV7_test/BlimpV7_bgeu_test.v
+)
+
+# ------------------------------------------------------------------------
+# BlimpV7
+# ------------------------------------------------------------------------
+
+set(BlimpV8_TESTS
+  BlimpV8_test/BlimpV8_add_test.v
+  BlimpV8_test/BlimpV8_addi_test.v
+  BlimpV8_test/BlimpV8_lw_test.v
+  BlimpV8_test/BlimpV8_sw_test.v
+  BlimpV8_test/BlimpV8_jal_test.v
+  BlimpV8_test/BlimpV8_jalr_test.v
+  BlimpV8_test/BlimpV8_bne_test.v
+
+  BlimpV8_test/BlimpV8_sub_test.v
+  BlimpV8_test/BlimpV8_and_test.v
+  BlimpV8_test/BlimpV8_or_test.v
+  BlimpV8_test/BlimpV8_xor_test.v
+  BlimpV8_test/BlimpV8_slt_test.v
+  BlimpV8_test/BlimpV8_sltu_test.v
+  BlimpV8_test/BlimpV8_sra_test.v
+  BlimpV8_test/BlimpV8_srl_test.v
+  BlimpV8_test/BlimpV8_sll_test.v
+
+  BlimpV8_test/BlimpV8_andi_test.v
+  BlimpV8_test/BlimpV8_ori_test.v
+  BlimpV8_test/BlimpV8_xori_test.v
+  BlimpV8_test/BlimpV8_slti_test.v
+  BlimpV8_test/BlimpV8_sltiu_test.v
+  BlimpV8_test/BlimpV8_srai_test.v
+  BlimpV8_test/BlimpV8_srli_test.v
+  BlimpV8_test/BlimpV8_slli_test.v
+  BlimpV8_test/BlimpV8_lui_test.v
+  BlimpV8_test/BlimpV8_auipc_test.v
+
+  BlimpV8_test/BlimpV8_beq_test.v
+  BlimpV8_test/BlimpV8_blt_test.v
+  BlimpV8_test/BlimpV8_bge_test.v
+  BlimpV8_test/BlimpV8_bltu_test.v
+  BlimpV8_test/BlimpV8_bgeu_test.v
+
+  BlimpV8_test/BlimpV8_mul_test.v
+  BlimpV8_test/BlimpV8_mulh_test.v
+  BlimpV8_test/BlimpV8_mulhu_test.v
+  BlimpV8_test/BlimpV8_mulhsu_test.v
+  BlimpV8_test/BlimpV8_div_test.v
+  BlimpV8_test/BlimpV8_divu_test.v
+  BlimpV8_test/BlimpV8_rem_test.v
+  BlimpV8_test/BlimpV8_remu_test.v
 )

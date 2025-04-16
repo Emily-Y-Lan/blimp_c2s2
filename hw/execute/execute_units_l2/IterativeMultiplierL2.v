@@ -239,7 +239,7 @@ module IterativeMultiplierL2 #(
   // Assign outputs
   //----------------------------------------------------------------------
 
-  assign D.rdy = ( curr_state == IDLE ) || ( curr_state == DONE );
+  assign D.rdy = ( curr_state == IDLE ) || ( ( curr_state == DONE ) & W.rdy );
   
   assign W.val     = ( curr_state == DONE );
   assign W.pc      = D_reg.pc;
