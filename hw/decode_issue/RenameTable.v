@@ -188,7 +188,7 @@ module RenameTable #(
     end else begin
       lookup_preg[1]    = rename_table[lookup_areg[1]].preg;
       if( complete_preg == lookup_preg[1] )
-        lookup_pending[0] = 1'b0; // Bypass
+        lookup_pending[1] = 1'b0; // Bypass
       else
         lookup_pending[1] = rename_table[lookup_areg[1]].pending;
     end

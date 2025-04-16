@@ -72,6 +72,33 @@ module SimUtils
   end
 
   // ---------------------------------------------------------------------
+  // Timeout
+  // ---------------------------------------------------------------------
+
+  int   cycles;
+  int   timeout     = 10000;
+  logic timeout_val = 1'b0;
+
+  initial begin
+    if( $value$plusargs( "timeout=%d", timeout ) )
+      timeout_val = 1'b1;
+  end
+
+  always @( posedge clk ) begin
+
+    if ( rst )
+      cycles <= 0;
+    else
+      cycles <= cycles + 1;
+
+    if ( timeout_val & ( cycles > timeout ) ) begin
+      $write("\n");
+      $fatal("ERROR (cycles=%0d): timeout!", cycles );
+    end
+
+  end
+
+  // ---------------------------------------------------------------------
   // Random Seeding
   // ---------------------------------------------------------------------
 

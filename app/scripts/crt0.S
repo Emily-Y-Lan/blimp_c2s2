@@ -137,7 +137,7 @@ _start:
 
   # use return value from main (a0) as exit code
 
-  sw    a0, -1(x0)
+  sw    a0, -4(x0)
 
   # few nops to enable test harness to stop simulation
 

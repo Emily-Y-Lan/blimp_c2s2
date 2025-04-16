@@ -14,7 +14,7 @@ class FLExit : public FLPeripheral {
   //----------------------------------------------------------------------
 
   std::vector<address_range_t> address_ranges = {
-      { 0xFFFFFFFF, 0xFFFFFFFF, W },  // exit
+      { 0xFFFFFFFC, 0xFFFFFFFC, W },  // exit
   };
 
   //----------------------------------------------------------------------
