@@ -90,8 +90,9 @@ module MemIntfTestServer #(
   // Handle transactions
   //----------------------------------------------------------------------
 
-  t_req_msg  curr_req;
-  t_resp_msg curr_resp;
+  t_req_msg    curr_req;
+  t_resp_msg   curr_resp;
+  logic [31:0] _temp_write_data;
 
   // verilator lint_off BLKSEQ
   always @( posedge clk ) begin
@@ -108,8 +109,17 @@ module MemIntfTestServer #(
           curr_resp.len  = curr_req.len;
         end
         MEM_MSG_WRITE: begin
-          // TODO: Support len - right now, assume all bytes
-          mem[curr_req.addr] = curr_req.data;
+          _temp_write_data = mem[curr_req.addr];
+          if( ( curr_req.len & 4'b0001 ) > 0 )
+            _temp_write_data[7:0] = curr_req.data[7:0];
+          if( ( curr_req.len & 4'b0010 ) > 0 )
+            _temp_write_data[15:8] = curr_req.data[15:8];
+          if( ( curr_req.len & 4'b0100 ) > 0 )
+            _temp_write_data[23:16] = curr_req.data[23:16];
+          if( ( curr_req.len & 4'b1000 ) > 0 )
+            _temp_write_data[31:24] = curr_req.data[31:24];
+
+          mem[curr_req.addr] = _temp_write_data;
           curr_resp.data = 'x;
           curr_resp.len  = curr_req.len;
         end

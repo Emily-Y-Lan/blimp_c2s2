@@ -2,6 +2,16 @@
 // MemMsg.v
 //========================================================================
 // The type of default message to use when communicating with memory
+//
+//  - op: The operation to perform (read or write)
+//  - opaque: Preserved bits (set the same for a request and corresponding
+//            response)
+//  - addr: The memory address to operate on. Must be word-aligned
+//  - len: A byte mask for which bytes are valid on a write (undefined for
+//         a read)
+//  - data:
+//     - Request: The data to write (undefined for a read)
+//     - Response: The data read (undefined for a write)
 
 `ifndef TYPES_MEMMSG_V
 `define TYPES_MEMMSG_V

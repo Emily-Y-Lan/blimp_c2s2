@@ -1,10 +1,10 @@
 //========================================================================
-// LoadStoreUnitL3.v
+// LoadStoreUnitL7.v
 //========================================================================
 // An execute unit for performing memory operations
 
-`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L3_LOADSTOREUNITL3_V
-`define HW_EXECUTE_EXECUTE_VARIANTS_L3_LOADSTOREUNITL3_V
+`ifndef HW_EXECUTE_EXECUTE_VARIANTS_L7_LOADSTOREUNITL7_V
+`define HW_EXECUTE_EXECUTE_VARIANTS_L7_LOADSTOREUNITL7_V
 
 `include "defs/UArch.v"
 `include "intf/D__XIntf.v"
@@ -13,7 +13,7 @@
 
 import UArch::*;
 
-module LoadStoreUnitL3 #(
+module LoadStoreUnitL7 #(
   parameter p_opaq_bits = 8
 )(
   input  logic clk,
@@ -287,4 +287,4 @@ module LoadStoreUnitL3 #(
 
 endmodule
 
-`endif // HW_EXECUTE_EXECUTE_VARIANTS_L3_LOADSTOREUNITL3_V
+`endif // HW_EXECUTE_EXECUTE_VARIANTS_L7_LOADSTOREUNITL7_V
