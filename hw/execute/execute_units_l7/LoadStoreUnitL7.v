@@ -65,7 +65,8 @@ module LoadStoreUnitL7 #(
     logic                  [4:0] waddr;
     logic [p_phys_addr_bits-1:0] preg;
     logic [p_phys_addr_bits-1:0] ppreg;
-    logic                        wen;
+    rv_uop                       uop;
+    logic                  [1:0] offset;
   } stage2_msg;
   
   //----------------------------------------------------------------------
@@ -156,17 +157,54 @@ module LoadStoreUnitL7 #(
 
   always_comb begin
     case( uop )
+      OP_LB:   mem.req_msg.op = MEM_MSG_READ;
+      OP_LH:   mem.req_msg.op = MEM_MSG_READ;
       OP_LW:   mem.req_msg.op = MEM_MSG_READ;
+      OP_LBU:  mem.req_msg.op = MEM_MSG_READ;
+      OP_LHU:  mem.req_msg.op = MEM_MSG_READ;
+      OP_SB:   mem.req_msg.op = MEM_MSG_WRITE;
+      OP_SH:   mem.req_msg.op = MEM_MSG_WRITE;
       OP_SW:   mem.req_msg.op = MEM_MSG_WRITE;
       default: mem.req_msg.op = MEM_MSG_READ;
     endcase
   end
 
+  logic [3:0] base_len;
+
+  always_comb begin
+    case( uop )
+      OP_LB:   base_len = 4'b0001;
+      OP_LH:   base_len = 4'b0011;
+      OP_LW:   base_len = 4'b1111;
+      OP_LBU:  base_len = 4'b0001;
+      OP_LHU:  base_len = 4'b0011;
+      OP_SB:   base_len = 4'b0001;
+      OP_SH:   base_len = 4'b0011;
+      OP_SW:   base_len = 4'b1111;
+      default: base_len = 'x;
+    endcase
+  end
+
+  // Decompose address
+  logic [31:0] aligned_addr;
+  logic  [1:0] stage1_addr_offset;
+
+  assign aligned_addr        = { addr[31:2], 2'b00 };
+  assign stage1_addr_offset  = addr[1:0];
+
   assign mem.req_msg.opaque = '0;
-  assign mem.req_msg.len    = '1;
-  assign mem.req_msg.addr   = addr;
-  assign mem.req_msg.data   = D_reg.mem_data;
+  assign mem.req_msg.len    = base_len << stage1_addr_offset;
+  assign mem.req_msg.addr   = aligned_addr;
   assign mem.req_val        = D_reg.val & stage2_rdy;
+
+  always_comb begin
+    case( stage1_addr_offset )
+      2'd0: mem.req_msg.data = D_reg.mem_data;
+      2'd1: mem.req_msg.data = D_reg.mem_data << 8;
+      2'd2: mem.req_msg.data = D_reg.mem_data << 16;
+      2'd3: mem.req_msg.data = D_reg.mem_data << 24;
+    endcase
+  end
 
   stage2_msg stage1_output;
 
@@ -174,7 +212,8 @@ module LoadStoreUnitL7 #(
   assign stage1_output.pc      = D_reg.pc;
   assign stage1_output.seq_num = D_reg.seq_num;
   assign stage1_output.waddr   = D_reg.waddr;
-  assign stage1_output.wen     = ( uop == OP_LW );
+  assign stage1_output.uop     = uop;
+  assign stage1_output.offset  = stage1_addr_offset;
   assign stage1_output.preg    = D_reg.preg;
   assign stage1_output.ppreg   = D_reg.ppreg;
 
@@ -185,6 +224,7 @@ module LoadStoreUnitL7 #(
   // Stage 2: Response
   //----------------------------------------------------------------------
 
+  // verilator lint_off ENUMVALUE
   always_ff @( posedge clk ) begin
     if ( rst )
       stage2_reg <= '{ 
@@ -194,14 +234,15 @@ module LoadStoreUnitL7 #(
         waddr:   'x,
         preg:    'x,
         ppreg:   'x,
-        wen:     'x
+        uop:     'x,
+        offset:  'x
       };
     else
       stage2_reg <= stage2_reg_next;
   end
 
   always_comb begin
-    W_xfer      = W.val      & W.rdy;
+    W_xfer = W.val & W.rdy;
 
     if ( stage2_xfer )
       stage2_reg_next = stage1_output;
@@ -213,10 +254,40 @@ module LoadStoreUnitL7 #(
         waddr:   'x,
         preg:    'x,
         ppreg:   'x,
-        wen:     'x
+        uop:     'x,
+        offset:  'x
       };
     else
       stage2_reg_next = stage2_reg;
+  end
+  // verilator lint_on ENUMVALUE
+
+  //----------------------------------------------------------------------
+  // Determine correct data
+  //----------------------------------------------------------------------
+
+  logic [31:0] base_data, sext_data;
+  always_comb begin
+    case( stage2_reg.offset )
+      2'd0: base_data = mem.resp_msg.data;
+      2'd1: base_data = mem.resp_msg.data >> 8;
+      2'd2: base_data = mem.resp_msg.data >> 16;
+      2'd3: base_data = mem.resp_msg.data >> 24;
+    endcase
+  end
+
+  always_comb begin
+    case( stage2_reg.uop )
+      OP_LB:   sext_data = { {24{base_data[7] }}, base_data[7:0]  };
+      OP_LH:   sext_data = { {16{base_data[15]}}, base_data[15:0] };
+      OP_LW:   sext_data = base_data;
+      OP_LBU:  sext_data = { 24'b0, base_data[7:0]  };
+      OP_LHU:  sext_data = { 16'b0, base_data[15:0] };
+      OP_SB:   sext_data = 'x;
+      OP_SH:   sext_data = 'x;
+      OP_SW:   sext_data = 'x;
+      default: sext_data = 'x;
+    endcase
   end
 
   //----------------------------------------------------------------------
@@ -232,14 +303,27 @@ module LoadStoreUnitL7 #(
   assign unused_resp_opaque = mem.resp_msg.opaque;
   assign unused_resp_addr   = mem.resp_msg.addr;
   assign unused_resp_len    = mem.resp_msg.len;
-  assign W.wdata            = mem.resp_msg.data;
+  assign W.wdata            = sext_data;
 
   assign W.pc               = stage2_reg.pc;
   assign W.waddr            = stage2_reg.waddr;
   assign W.seq_num          = stage2_reg.seq_num;
-  assign W.wen              = stage2_reg.wen;
   assign W.preg             = stage2_reg.preg;
   assign W.ppreg            = stage2_reg.ppreg;
+
+  always_comb begin
+    case( stage2_reg.uop )
+      OP_LB:   W.wen = 1'b1;
+      OP_LH:   W.wen = 1'b1;
+      OP_LW:   W.wen = 1'b1;
+      OP_LBU:  W.wen = 1'b1;
+      OP_LHU:  W.wen = 1'b1;
+      OP_SB:   W.wen = 1'b0;
+      OP_SH:   W.wen = 1'b0;
+      OP_SW:   W.wen = 1'b0;
+      default: W.wen = 1'bx;
+    endcase
+  end
 
   assign mem.resp_rdy = stage2_reg.val & W.rdy;
   assign W.val        = stage2_reg.val & mem.resp_val;
@@ -278,7 +362,7 @@ module LoadStoreUnitL7 #(
 
     if( W.val & W.rdy )
       trace = {trace, $sformatf("%11s:%h:%h:%h",
-                      (stage2_reg.wen ? "OP_LW" : "OP_SW"),
+                      stage2_reg.uop.name(),
                       stage2_reg.seq_num, mem.resp_msg.addr, W.wdata )};
     else
       trace = {trace, {resp_len{" "}}};

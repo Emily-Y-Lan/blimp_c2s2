@@ -176,6 +176,12 @@ set(BlimpV8_TESTS
   BlimpV8_test/BlimpV8_bltu_test.v
   BlimpV8_test/BlimpV8_bgeu_test.v
 
+  BlimpV8_test/BlimpV8_lb_test.v
+  BlimpV8_test/BlimpV8_lh_test.v
+  BlimpV8_test/BlimpV8_lbu_test.v
+  BlimpV8_test/BlimpV8_lhu_test.v
+  BlimpV8_test/BlimpV8_sb_test.v
+  BlimpV8_test/BlimpV8_sh_test.v
   BlimpV8_test/BlimpV8_fence_test.v
 
   BlimpV8_test/BlimpV8_mul_test.v

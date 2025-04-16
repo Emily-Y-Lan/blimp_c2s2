@@ -119,7 +119,13 @@ module InstDecoder (
         `RVI_INST_LUI:    cs( y, OP_LUI,    j_n,    rx,    rx,    rd,   y,  IMM_U,  op2_imm, op3_x   );
         `RVI_INST_AUIPC:  cs( y, OP_AUIPC,  j_n,    rx,    rx,    rd,   y,  IMM_U,  op2_imm, op3_x   );
 
+        `RVI_INST_LB:     cs( y, OP_LB,     j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
+        `RVI_INST_LH:     cs( y, OP_LH,     j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
         `RVI_INST_LW:     cs( y, OP_LW,     j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
+        `RVI_INST_LBU:    cs( y, OP_LBU,    j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
+        `RVI_INST_LHU:    cs( y, OP_LHU,    j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
+        `RVI_INST_SB:     cs( y, OP_SB,     j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
+        `RVI_INST_SH:     cs( y, OP_SH,     j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
         `RVI_INST_SW:     cs( y, OP_SW,     j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
         `RVI_INST_FENCE:  cs( y, OP_ADD,    j_n,    5'b0,  5'b0,  5'b0, n,  'x,     op2_rf,  op3_x   );
 

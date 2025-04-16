@@ -12,7 +12,7 @@
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL5.v"
 `include "hw/execute/execute_units_l6/ALUL6.v"
 `include "hw/execute/execute_units_l7/IterativeMulDivRemL7.v"
-`include "hw/execute/execute_units_l3/LoadStoreUnitL3.v"
+`include "hw/execute/execute_units_l7/LoadStoreUnitL7.v"
 `include "hw/execute/execute_units_l6/ControlFlowUnitL6.v"
 `include "hw/squash/SquashUnitL1.v"
 `include "hw/writeback_commit/writeback_commit_unit_variants/WritebackCommitUnitL3.v"
@@ -125,7 +125,13 @@ module BlimpV8 #(
                            OP_REM_VEC    |
                            OP_REMU_VEC;
 
-  parameter p_mem_subset = OP_LW_VEC |
+  parameter p_mem_subset = OP_LB_VEC  |
+                           OP_LH_VEC  |
+                           OP_LW_VEC  |
+                           OP_LBU_VEC |
+                           OP_LHU_VEC |
+                           OP_SB_VEC  |
+                           OP_SH_VEC  |
                            OP_SW_VEC;
 
   parameter p_ctrl_subset = OP_JAL_VEC  |
@@ -178,7 +184,7 @@ module BlimpV8 #(
     .*
   );
 
-  LoadStoreUnitL3 #(
+  LoadStoreUnitL7 #(
     .p_opaq_bits (p_opaq_bits)
   ) MEM_XU (
     .D   (d__x_intfs[2]),

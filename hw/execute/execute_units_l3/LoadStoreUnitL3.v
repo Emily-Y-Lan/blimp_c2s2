@@ -201,7 +201,7 @@ module LoadStoreUnitL3 #(
   end
 
   always_comb begin
-    W_xfer      = W.val      & W.rdy;
+    W_xfer = W.val & W.rdy;
 
     if ( stage2_xfer )
       stage2_reg_next = stage1_output;

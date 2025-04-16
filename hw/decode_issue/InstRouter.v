@@ -47,7 +47,13 @@ module InstRouterUnit #(
       if( in_subset(p_isa_subset, OP_LUI_VEC    ) ) val_uop |= ( uop == OP_LUI    );
       if( in_subset(p_isa_subset, OP_AUIPC_VEC  ) ) val_uop |= ( uop == OP_AUIPC  );
 
+      if( in_subset(p_isa_subset, OP_LB_VEC     ) ) val_uop |= ( uop == OP_LB     );
+      if( in_subset(p_isa_subset, OP_LH_VEC     ) ) val_uop |= ( uop == OP_LH     );
       if( in_subset(p_isa_subset, OP_LW_VEC     ) ) val_uop |= ( uop == OP_LW     );
+      if( in_subset(p_isa_subset, OP_LBU_VEC    ) ) val_uop |= ( uop == OP_LBU    );
+      if( in_subset(p_isa_subset, OP_LHU_VEC    ) ) val_uop |= ( uop == OP_LHU    );
+      if( in_subset(p_isa_subset, OP_SB_VEC     ) ) val_uop |= ( uop == OP_SB     );
+      if( in_subset(p_isa_subset, OP_SH_VEC     ) ) val_uop |= ( uop == OP_SH     );
       if( in_subset(p_isa_subset, OP_SW_VEC     ) ) val_uop |= ( uop == OP_SW     );
 
       if( in_subset(p_isa_subset, OP_JAL_VEC    ) ) val_uop |= ( uop == OP_JAL    );
