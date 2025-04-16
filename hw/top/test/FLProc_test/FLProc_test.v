@@ -54,6 +54,13 @@ module FLProc_test #();
   `include "hw/top/test/test_cases/directed/bgeu_test_cases.v"
 
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
+  `include "hw/top/test/test_cases/directed/mulh_test_cases.v"
+  `include "hw/top/test/test_cases/directed/mulhu_test_cases.v"
+  `include "hw/top/test/test_cases/directed/mulhsu_test_cases.v"
+  `include "hw/top/test/test_cases/directed/div_test_cases.v"
+  `include "hw/top/test/test_cases/directed/divu_test_cases.v"
+  `include "hw/top/test/test_cases/directed/rem_test_cases.v"
+  `include "hw/top/test/test_cases/directed/remu_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_tests
@@ -106,6 +113,13 @@ module FLProc_test #();
     run_directed_bgeu_tests();
 
     run_directed_mul_tests();
+    run_directed_mulh_tests();
+    run_directed_mulhu_tests();
+    run_directed_mulhsu_tests();
+    run_directed_div_tests();
+    run_directed_divu_tests();
+    run_directed_rem_tests();
+    run_directed_remu_tests();
 
     test_bench_end();
   endtask

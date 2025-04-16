@@ -510,8 +510,17 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case DIV:
-      regs[inst.rd()] =
-          ( (int32_t) regs[inst.rs1()] ) / ( (int32_t) regs[inst.rs2()] );
+      if ( regs[inst.rs2()] == 0 ) {  // Divide by 0
+        regs[inst.rd()] = -1;
+      }
+      else if ( ( regs[inst.rs1()] == 0x80000000 ) &&
+                ( regs[inst.rs2()] == 0xffffffff ) ) {  // Overflow
+        regs[inst.rd()] = 0x80000000;
+      }
+      else {
+        regs[inst.rd()] = ( (int32_t) regs[inst.rs1()] ) /
+                          ( (int32_t) regs[inst.rs2()] );
+      }
       pc = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -521,8 +530,13 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case DIVU:
-      regs[inst.rd()] = regs[inst.rs1()] / regs[inst.rs2()];
-      pc              = pc + 4;
+      if ( regs[inst.rs2()] == 0 ) {  // Divide by 0
+        regs[inst.rd()] = -1;
+      }
+      else {
+        regs[inst.rd()] = regs[inst.rs1()] / regs[inst.rs2()];
+      }
+      pc = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
@@ -531,8 +545,17 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case REM:
-      regs[inst.rd()] =
-          ( (int32_t) regs[inst.rs1()] ) % ( (int32_t) regs[inst.rs2()] );
+      if ( regs[inst.rs2()] == 0 ) {  // Divide by 0
+        regs[inst.rd()] = regs[inst.rs1()];
+      }
+      else if ( ( regs[inst.rs1()] == 0x80000000 ) &&
+                ( regs[inst.rs2()] == 0xffffffff ) ) {  // Overflow
+        regs[inst.rd()] = 0;
+      }
+      else {
+        regs[inst.rd()] = ( (int32_t) regs[inst.rs1()] ) %
+                          ( (int32_t) regs[inst.rs2()] );
+      }
       pc = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -542,8 +565,13 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case REMU:
-      regs[inst.rd()] = regs[inst.rs1()] % regs[inst.rs2()];
-      pc              = pc + 4;
+      if ( regs[inst.rs2()] == 0 ) {  // Divide by 0
+        regs[inst.rd()] = regs[inst.rs1()];
+      }
+      else {
+        regs[inst.rd()] = regs[inst.rs1()] % regs[inst.rs2()];
+      }
+      pc = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
 
