@@ -55,6 +55,7 @@ enum inst_name_t {
   SB,
   SH,
   SW,
+  FENCE,
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Unconditional Control Flow
@@ -68,6 +69,13 @@ enum inst_name_t {
   BGE,
   BLTU,
   BGEU,
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // System Calls
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  ECALL,
+  EBREAK,
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // M-Extension
@@ -139,6 +147,7 @@ const inst_spec_t inst_specs[] = {
     { SB, "sb     rs2, imm_s(rs1)", 0x00000023, 0x0000707F },
     { SH, "sh     rs2, imm_s(rs1)", 0x00001023, 0x0000707F },
     { SW, "sw     rs2, imm_s(rs1)", 0x00002023, 0x0000707F },
+    { FENCE, "fence  pred, succ", 0x0000000F, 0x0000707F },
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Control Flow
@@ -152,6 +161,13 @@ const inst_spec_t inst_specs[] = {
     { BGE, "bge    rs1, rs2, addr_b", 0x00005063, 0x0000707F },
     { BLTU, "bltu   rs1, rs2, addr_b", 0x00006063, 0x0000707F },
     { BGEU, "bgeu   rs1, rs2, addr_b", 0x00007063, 0x0000707F },
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // System Calls
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    { ECALL, "ecall", 0x00000073, 0xFFFFFFFF },
+    { EBREAK, "ebreak", 0x00100073, 0xFFFFFFFF },
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // M-Extension

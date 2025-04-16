@@ -15,6 +15,16 @@
 // Internal helper functions
 //------------------------------------------------------------------------
 
+bool bit( uint32_t binary, int idx )
+{
+  return ( binary >> idx ) & 0x1;
+}
+
+uint32_t bitmask( int idx )
+{
+  return (uint32_t) 0x1 << idx;
+}
+
 template <typename T>
 uint32_t bitslice( T val, int end, int start )
 {
@@ -24,7 +34,7 @@ uint32_t bitslice( T val, int end, int start )
   return (uint32_t) ( val >> start ) & mask;
 }
 
-uint32_t repl_upper( uint32_t bit, int start_idx )
+uint32_t repl_upper( bool bit, int start_idx )
 {
   bit = bit & 0x1;
 
@@ -401,4 +411,80 @@ std::string get_addr_j_id( uint32_t binary, uint32_t pc )
   stream << "0x" << std::setfill( '0' ) << std::setw( 8 ) << std::hex
          << get_addr_j( binary, pc );
   return stream.str();
+}
+
+//------------------------------------------------------------------------
+// Fence Arguments
+//------------------------------------------------------------------------
+
+uint32_t pred_mask( const std::string& mem_spec )
+{
+  uint32_t mask = 0;
+  if ( mem_spec.find( 'i' ) != std::string::npos ) {
+    mask |= bitmask( 27 );
+  }
+  if ( mem_spec.find( 'o' ) != std::string::npos ) {
+    mask |= bitmask( 26 );
+  }
+  if ( mem_spec.find( 'r' ) != std::string::npos ) {
+    mask |= bitmask( 25 );
+  }
+  if ( mem_spec.find( 'w' ) != std::string::npos ) {
+    mask |= bitmask( 24 );
+  }
+  return mask;
+}
+
+uint32_t succ_mask( const std::string& mem_spec )
+{
+  uint32_t mask = 0;
+  if ( mem_spec.find( 'i' ) != std::string::npos ) {
+    mask |= bitmask( 23 );
+  }
+  if ( mem_spec.find( 'o' ) != std::string::npos ) {
+    mask |= bitmask( 22 );
+  }
+  if ( mem_spec.find( 'r' ) != std::string::npos ) {
+    mask |= bitmask( 21 );
+  }
+  if ( mem_spec.find( 'w' ) != std::string::npos ) {
+    mask |= bitmask( 20 );
+  }
+  return mask;
+}
+
+std::string get_pred_id( uint32_t binary )
+{
+  std::string result = "";
+  if ( bit( binary, 27 ) ) {
+    result += 'i';
+  }
+  if ( bit( binary, 26 ) ) {
+    result += 'o';
+  }
+  if ( bit( binary, 25 ) ) {
+    result += 'r';
+  }
+  if ( bit( binary, 24 ) ) {
+    result += 'w';
+  }
+  return result;
+}
+
+std::string get_succ_id( uint32_t binary )
+{
+  std::string result = "";
+  if ( bit( binary, 23 ) ) {
+    result += 'i';
+  }
+  if ( bit( binary, 22 ) ) {
+    result += 'o';
+  }
+  if ( bit( binary, 21 ) ) {
+    result += 'r';
+  }
+  if ( bit( binary, 20 ) ) {
+    result += 'w';
+  }
+  return result;
 }

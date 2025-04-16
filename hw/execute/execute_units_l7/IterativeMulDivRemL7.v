@@ -32,7 +32,6 @@ module IterativeMulDivRemStepL7 (
   output logic        done
 );
 
-  logic [63:0] next_div_result;
   logic [63:0] abs_a;       // Absolute value of a
   logic [63:0] adj_b;       // Value of b to take from a
   logic [63:0] adj_b_shift; // Value to add to the result

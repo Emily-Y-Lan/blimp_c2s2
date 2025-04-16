@@ -451,6 +451,33 @@ FLTrace FLProc::step()
       }
       return FLTrace( inst_pc, 0, 0, 0 );
 
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // fence
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // NOP
+
+    case FENCE:
+      pc = pc + 4;
+      return FLTrace( inst_pc, 0, 0, 0 );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // ecall
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // NOP
+
+    case ECALL:
+      throw std::invalid_argument(
+          "No surrounding instruction environment" );
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // ebreak
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // NOP
+
+    case EBREAK:
+      throw std::invalid_argument(
+          "No surrounding debugging environment: '{}'" );
+
       //------------------------------------------------------------------
       // RV32M
       //------------------------------------------------------------------

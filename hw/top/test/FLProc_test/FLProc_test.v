@@ -53,6 +53,8 @@ module FLProc_test #();
   `include "hw/top/test/test_cases/directed/bltu_test_cases.v"
   `include "hw/top/test/test_cases/directed/bgeu_test_cases.v"
 
+  `include "hw/top/test/test_cases/directed/fence_test_cases.v"
+
   `include "hw/top/test/test_cases/directed/mul_test_cases.v"
   `include "hw/top/test/test_cases/directed/mulh_test_cases.v"
   `include "hw/top/test/test_cases/directed/mulhu_test_cases.v"
@@ -111,6 +113,8 @@ module FLProc_test #();
     run_directed_bge_tests();
     run_directed_bltu_tests();
     run_directed_bgeu_tests();
+
+    run_directed_fence_tests();
 
     run_directed_mul_tests();
     run_directed_mulh_tests();

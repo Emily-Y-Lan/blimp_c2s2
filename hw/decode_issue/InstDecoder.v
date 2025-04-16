@@ -121,6 +121,7 @@ module InstDecoder (
 
         `RVI_INST_LW:     cs( y, OP_LW,     j_n,    rs1,   rx,    rd,   y,  IMM_I,  op2_imm, op3_mem );
         `RVI_INST_SW:     cs( y, OP_SW,     j_n,    rs1,   rs2,   rx,   n,  IMM_S,  op2_imm, op3_mem );
+        `RVI_INST_FENCE:  cs( y, OP_ADD,    j_n,    5'b0,  5'b0,  5'b0, n,  'x,     op2_rf,  op3_x   );
 
         `RVI_INST_JAL:    cs( y, OP_JAL,    j_jal,  rx,    rx,    rd,   y,  IMM_J,  op2_x,   op3_x   );
         `RVI_INST_JALR:   cs( y, OP_JALR,   j_jalr, rs1,   rx,    rd,   y,  IMM_I,  op2_x,   op3_x   );

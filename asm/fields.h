@@ -63,4 +63,14 @@ uint32_t get_addr_j( uint32_t binary, uint32_t pc );
 std::string get_addr_b_id( uint32_t binary, uint32_t pc );
 std::string get_addr_j_id( uint32_t binary, uint32_t pc );
 
+//------------------------------------------------------------------------
+// Fence Arguments
+//------------------------------------------------------------------------
+
+uint32_t pred_mask( const std::string& mem_spec );
+uint32_t succ_mask( const std::string& mem_spec );
+
+std::string get_pred_id( uint32_t binary );
+std::string get_succ_id( uint32_t binary );
+
 #endif  // FIELDSS_H

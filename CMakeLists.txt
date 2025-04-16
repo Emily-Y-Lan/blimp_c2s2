@@ -45,10 +45,6 @@ set(V_TEST_FILES
   hw/writeback_commit/test/ROB_test.v
 )
 
-set(V_SIM_FILES
-  hw/top/sim/BlimpV7_sim.v
-)
-
 set(ASM_FILES
   asm/assemble.cpp
   asm/disassemble.cpp
@@ -334,7 +330,10 @@ target_link_libraries(fl-sim PRIVATE FL_PROC)
 # Add our SystemVerilog simulators
 #------------------------------------------------------------------------
 
-foreach(V_SIM_FILE_REL_PATH ${V_SIM_FILES})
+include(${CMAKE_CURRENT_SOURCE_DIR}/hw/top/sim/sims.cmake)
+add_prefix(BLIMP_SIMS "hw/top/sim/")
+
+foreach(V_SIM_FILE_REL_PATH ${BLIMP_SIMS})
   set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
   get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
   remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
