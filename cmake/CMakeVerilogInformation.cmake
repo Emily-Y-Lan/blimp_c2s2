@@ -16,6 +16,7 @@ if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
         "<CMAKE_Verilog_COMPILER> <FLAGS> --cc --main <DEFINES> -DVERILATOR=1 <INCLUDES> <SOURCE> --Mdir <OBJECT>.vobjs --prefix VModel"
         "+make -C <OBJECT>.vobjs -f VModel.mk VM_PARALLEL_BUILDS=1"
         "<CMAKE_LINKER> -r -o <OBJECT> <OBJECT>.vobjs/*.o"
+        "rm -r <OBJECT>.vobjs" # Otherwise it won't be cleaned by CMake
       )
     else() # Can't use jobserver support
       message(WARNING 
@@ -26,6 +27,7 @@ if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
         "<CMAKE_Verilog_COMPILER> <FLAGS> --cc --main <DEFINES> -DVERILATOR=1 <INCLUDES> <SOURCE> --Mdir <OBJECT>.vobjs --prefix VModel"
         "make -s -C <OBJECT>.vobjs -f VModel.mk VM_PARALLEL_BUILDS=1"
         "<CMAKE_LINKER> -r -o <OBJECT> <OBJECT>.vobjs/*.o"
+        "rm -r <OBJECT>.vobjs" # Otherwise it won't be cleaned by CMake
       )
     endif()
   endif()
@@ -51,6 +53,7 @@ elseif(CMAKE_Verilog_COMPILER_ID STREQUAL "VCS")
       "mkdir -p <OBJECT>.preproc"
       "bash -c 'set -o pipefail && cd <OBJECT>.preproc && <CMAKE_Verilog_COMPILER> <FLAGS> -sverilog <DEFINES> <INCLUDES> <SOURCE> -Xman=4 -q +warn=none | sed -n \'/Error/,+5p\''"
       "mv <OBJECT>.preproc/tokens.v <OBJECT>"
+      "rm -r <OBJECT>.preproc" # Otherwise it won't be cleaned by CMake
     )
   endif()
 

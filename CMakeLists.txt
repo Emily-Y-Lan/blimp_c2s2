@@ -37,14 +37,6 @@ set(V_TEST_FILES
   hw/fetch/test/SeqNumGenL3_test.v
   hw/squash/test/SquashUnitL1_test.v
   hw/squash/test/SquashUnitL1Chain_test.v
-  # hw/top/test/BlimpV1_test.v
-  # hw/top/test/BlimpV2_test.v
-  # hw/top/test/BlimpV3_test.v
-  # hw/top/test/BlimpV4_test.v
-  # hw/top/test/BlimpV5_test.v
-  # hw/top/test/BlimpV6_test.v
-  # hw/top/test/BlimpV7_test.v
-  # hw/top/test/FLProc_test.v
   hw/util/test/SeqAge_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
   hw/writeback_commit/test/WritebackCommitUnitL2_test.v

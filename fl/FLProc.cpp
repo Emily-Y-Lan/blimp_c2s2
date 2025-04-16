@@ -291,7 +291,7 @@ FLTrace FLProc::step()
 
     case LH:
       regs[inst.rd()] =
-          (int16_t) mem.loadb( regs[inst.rs1()] + inst.imm_i() );
+          (int16_t) mem.loadh( regs[inst.rs1()] + inst.imm_i() );
       pc = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );
@@ -321,7 +321,7 @@ FLTrace FLProc::step()
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     case LHU:
-      regs[inst.rd()] = mem.loadb( regs[inst.rs1()] + inst.imm_i() );
+      regs[inst.rd()] = mem.loadh( regs[inst.rs1()] + inst.imm_i() );
       pc              = pc + 4;
       return FLTrace( inst_pc, inst.rd(), regs[inst.rd()],
                       inst.rd() != 0 );

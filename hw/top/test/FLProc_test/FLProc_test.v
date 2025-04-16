@@ -13,7 +13,6 @@ module FLProc_test #();
 
   `include "hw/top/test/test_cases/directed/addi_test_cases.v"
   `include "hw/top/test/test_cases/directed/add_test_cases.v"
-  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
   `include "hw/top/test/test_cases/directed/lw_test_cases.v"
   `include "hw/top/test/test_cases/directed/sw_test_cases.v"
   `include "hw/top/test/test_cases/directed/jal_test_cases.v"
@@ -41,11 +40,20 @@ module FLProc_test #();
   `include "hw/top/test/test_cases/directed/lui_test_cases.v"
   `include "hw/top/test/test_cases/directed/auipc_test_cases.v"
 
+  `include "hw/top/test/test_cases/directed/lb_test_cases.v"
+  `include "hw/top/test/test_cases/directed/lh_test_cases.v"
+  `include "hw/top/test/test_cases/directed/lbu_test_cases.v"
+  `include "hw/top/test/test_cases/directed/lhu_test_cases.v"
+  `include "hw/top/test/test_cases/directed/sb_test_cases.v"
+  `include "hw/top/test/test_cases/directed/sh_test_cases.v"
+
   `include "hw/top/test/test_cases/directed/beq_test_cases.v"
   `include "hw/top/test/test_cases/directed/blt_test_cases.v"
   `include "hw/top/test/test_cases/directed/bge_test_cases.v"
   `include "hw/top/test/test_cases/directed/bltu_test_cases.v"
   `include "hw/top/test/test_cases/directed/bgeu_test_cases.v"
+
+  `include "hw/top/test/test_cases/directed/mul_test_cases.v"
 
   //----------------------------------------------------------------------
   // run_tests
@@ -57,7 +65,6 @@ module FLProc_test #();
     h.t.test_suite_begin( "FLProc_test" );
     run_directed_addi_tests();
     run_directed_add_tests();
-    run_directed_mul_tests();
     run_directed_lw_tests();
     run_directed_sw_tests();
     run_directed_jal_tests();
@@ -85,11 +92,20 @@ module FLProc_test #();
     run_directed_lui_tests();
     run_directed_auipc_tests();
 
+    run_directed_lb_tests();
+    run_directed_lh_tests();
+    run_directed_lbu_tests();
+    run_directed_lhu_tests();
+    run_directed_sb_tests();
+    run_directed_sh_tests();
+
     run_directed_beq_tests();
     run_directed_blt_tests();
     run_directed_bge_tests();
     run_directed_bltu_tests();
     run_directed_bgeu_tests();
+
+    run_directed_mul_tests();
 
     test_bench_end();
   endtask
