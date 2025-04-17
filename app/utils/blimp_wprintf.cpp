@@ -17,10 +17,8 @@
 
 inline void blimp_wprint_int( int i )
 {
-  __asm__(
-      "lui t0, 0xf0000 \n"
-      "sw  %0, 0(t0)" ::"r"( i )
-      : "t0" );
+  wchar_t* term = (wchar_t*) 0xf0000000;
+  *term         = i;
 }
 
 // -----------------------------------------------------------------------
@@ -29,11 +27,8 @@ inline void blimp_wprint_int( int i )
 
 inline void blimp_wprint_char( wchar_t c )
 {
-  __asm__(
-      "lui  t0, 0xf0000 \n"
-      "addi t0, t0, 4   \n"
-      "sw   %0, 0(t0)" ::"r"( c )
-      : "t0" );
+  wchar_t* term = (wchar_t*) 0xf0000004;
+  *term         = c;
 }
 
 // -----------------------------------------------------------------------

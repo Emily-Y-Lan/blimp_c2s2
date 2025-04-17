@@ -4,7 +4,6 @@
 # Building RISCV binaries for use in Blimp
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/rv32.cmake)
-add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 #-------------------------------------------------------------------------
@@ -75,6 +74,7 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
       ${APP_FILE_PATH}
       ${ABSOLUTE_SRC_FILES}
     )
+    target_compile_options(app-${APP_BIN} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     add_dependencies(app-${APP_BIN} compile_crt)
     set_target_properties(app-${APP_BIN} PROPERTIES OUTPUT_NAME ${APP_BIN})
     target_compile_options(app-${APP_BIN} PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)

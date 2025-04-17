@@ -10,7 +10,13 @@
 
 #ifdef _RISCV
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void blimp_wprintf( const wchar_t* fmt, ... );
+#ifdef __cplusplus
+}
+#endif
 
 #else
 
