@@ -14,6 +14,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(APP_SUBDIRS
   hello
   sqrt
+  vvadd
 )
 
 #-------------------------------------------------------------------------
@@ -21,7 +22,7 @@ set(APP_SUBDIRS
 #-------------------------------------------------------------------------
 
 set(UTIL_FILES
-  utils/blimp_wprintf.c
+  utils/blimp_wprintf.cpp
 )
 
 #-------------------------------------------------------------------------

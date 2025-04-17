@@ -1,10 +1,10 @@
 # ========================================================================
 # CMakeLists.txt
 # ========================================================================
-# Specifying the files to build "hello"
+# Specifying the files to build vvadd
 
 set(APP_FILES
-  hello.cpp
+  vvadd.cpp
   PARENT_SCOPE
 )
 
