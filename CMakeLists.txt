@@ -300,7 +300,7 @@ add_custom_target(
 foreach(APP_SUBDIR ${APP_SUBDIRS})
   set(APP_FILES "")
   set(SRC_FILES "")
-  add_subdirectory(app)
+  add_subdirectory(${APP_SUBDIR})
   add_prefix(SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
   add_prefix(APP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
 
@@ -308,10 +308,10 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
   foreach(APP_FILE_PATH ${APP_FILES})
     get_leaf(APP_FILE ${APP_FILE_PATH})
     remove_extension(APP_BIN ${APP_FILE})
-    add_executable(app-${APP_BIN}-native ${APP_FILE_PATH} ${SRC_FILES})
-    target_compile_options(app-${APP_BIN}-native PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
-    target_include_directories(app-${APP_BIN}-native PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR})
-    set_target_properties(app-${APP_BIN}-native PROPERTIES
+    add_executable(${APP_SUBDIR}-${APP_BIN}-native ${APP_FILE_PATH} ${SRC_FILES})
+    target_compile_options(${APP_SUBDIR}-${APP_BIN}-native PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
+    target_include_directories(${APP_SUBDIR}-${APP_BIN}-native PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR})
+    set_target_properties(${APP_SUBDIR}-${APP_BIN}-native PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${APP_SUBDIR}"
       OUTPUT_NAME ${APP_BIN}-native
     )

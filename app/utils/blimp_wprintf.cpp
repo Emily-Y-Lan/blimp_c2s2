@@ -78,15 +78,4 @@ void blimp_wprintf( const wchar_t* fmt, ... )
   va_end( args );
 }
 
-#else
-
-// We always need at least something in an object file, otherwise
-// the native build won't work. So we create a dummy function for native
-// builds.
-
-int blimp_( int arg )
-{
-  return arg;
-}
-
 #endif  // _RISCV
