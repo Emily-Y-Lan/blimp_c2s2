@@ -88,3 +88,9 @@ endforeach(APP_SUBDIR)
 
 set(APP_FILES ${ALL_APP_FILES} PARENT_SCOPE)
 set(SRC_FILES ${ALL_SRC_FILES} ${UTIL_FILES} PARENT_SCOPE)
+
+#-------------------------------------------------------------------------
+# Include Doom
+#-------------------------------------------------------------------------
+
+add_subdirectory(doom)

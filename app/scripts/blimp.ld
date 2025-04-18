@@ -1,6 +1,7 @@
 /*======================================================================*/
-/* Default TinyRV2 linker script                                          */
+/* Default Blimp linker script                                          */
 /*======================================================================*/
+/* Adapted from ECE 4750's TinyRV2 linker script                        */
 
 /*----------------------------------------------------------------------*/
 /* Setup                                                                */
@@ -11,6 +12,27 @@
 
 ENTRY( _start )
 STARTUP( crt0.o )
+
+/*----------------------------------------------------------------------*/
+/* Memory                                                               */
+/*----------------------------------------------------------------------*/
+/* This is where we specify the different regions of memory. These
+   could be used to specify where different sections reside, if desired.
+
+   Here, we define a large default memory region named `mem` which is
+   meant to hold all of our sections. We also define a separate region
+   at the top of the address space named `io`. This is where all of the
+   memory-mapped peripheral addresses will live; accordingly, no space
+   should be allocated there for other code
+
+   Since our entry point is 0x200, we'll define `mem` to start there
+*/
+
+MEMORY
+{
+  mem (rwx)        : ORIGIN = 0x00000200, LENGTH = 0xF0000000
+  io  (!r!w!x!a!i) : ORIGIN = 0xF0000000, LENGTH = 0x10000000
+}
 
 /*----------------------------------------------------------------------*/
 /* Sections                                                             */
@@ -47,6 +69,10 @@ STARTUP( crt0.o )
     .text :
     { }
 
+   These sections will be placed in the `mem` region above, as its the
+   only region with the appropriate permissions (starting at address
+   0x200)
+
 */
 
 SECTIONS
@@ -55,9 +81,6 @@ SECTIONS
   /*--------------------------------------------------------------------*/
   /* Code and read-only segment                                         */
   /*--------------------------------------------------------------------*/
-
-  /* Begining of code and text segment */
-  . = 0x000200;
 
   /* text: Program code section */
   .text : 
@@ -127,4 +150,8 @@ SECTIONS
 
   /* End of uninitialized data segment (used for heap) */
   _end = ALIGN(16);
+
+  /*--------------------------------------------------------------------*/
+  /* Memory-Mapped Peripherals                                          */
+  /*--------------------------------------------------------------------*/
 }
