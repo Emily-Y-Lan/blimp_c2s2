@@ -32,7 +32,7 @@ int main( int argc, char *argv[] )
     ++argv;
     if ( **argv != '-' )
       break;
-    switch ( tolower( argv[0][1] ) ) {
+    switch ( blimp_tolower( argv[0][1] ) ) {
       case 'r':
         ++rflag;
         continue;
@@ -40,7 +40,7 @@ int main( int argc, char *argv[] )
         ++dbugflg;
         continue;
       default:
-        printf( "unknown flag: %c\n", argv[0][1] );
+        blimp_printf( "unknown flag: %c\n", argv[0][1] );
         continue;
     }
   }
@@ -175,22 +175,22 @@ void opentxt( void )
 #ifndef BUILTIN
   fd1 = fopen( ADV1, "r" );
   if ( !fd1 ) {
-    printf( "Sorry, I cannot open %s...\n", ADV1 );
+    blimp_printf( "Sorry, I cannot open %s...\n", ADV1 );
     exit( -1 );
   }
   fd2 = fopen( ADV2, "r" );
   if ( !fd2 ) {
-    printf( "Sorry, I cannot open %s...\n", ADV2 );
+    blimp_printf( "Sorry, I cannot open %s...\n", ADV2 );
     exit( -1 );
   }
   fd3 = fopen( ADV3, "r" );
   if ( !fd3 ) {
-    printf( "Sorry, I cannot open %s...\n", ADV3 );
+    blimp_printf( "Sorry, I cannot open %s...\n", ADV3 );
     exit( -1 );
   }
   fd4 = fopen( ADV4, "r" );
   if ( !fd4 ) {
-    printf( "Sorry, I cannot open %s...\n", ADV4 );
+    blimp_printf( "Sorry, I cannot open %s...\n", ADV4 );
     exit( -1 );
   }
 #endif
@@ -202,7 +202,7 @@ void opentxt( void )
 void saveadv( void )
 {
 #ifdef _RISCV
-  printf( "Sorry, saving the game for RISCV isn't implemented\n" );
+  blimp_printf( "Sorry, saving the game for RISCV isn't implemented\n" );
 #else
   char  nm[64];
   FILE *fp;
@@ -211,7 +211,7 @@ void saveadv( void )
 
   fp = fopen( nm, "w" );
   if ( !fp ) {
-    printf( "Sorry, I cannot save your game to %s", nm );
+    blimp_printf( "Sorry, I cannot save your game to %s", nm );
   }
 
   fwrite( &turns, sizeof( int ), 1, fp );
@@ -253,10 +253,11 @@ void saveadv( void )
   fwrite( &gaveup, sizeof( int ), 1, fp );  /* 1 if he quit early	*/
   fwrite( &foobar, sizeof( int ), 1, fp );  /* fie fie foe foo...	*/
   if ( fclose( fp ) == -1 ) {
-    printf( "Sorry, I cannot seem to close the save game file %s", nm );
+    blimp_printf( "Sorry, I cannot seem to close the save game file %s",
+                  nm );
   }
 
-  printf( "Game saved to %s -- see you later!\n", nm );
+  blimp_printf( "Game saved to %s -- see you later!\n", nm );
 #endif  // _RISCV
 }
 
@@ -265,6 +266,10 @@ void saveadv( void )
 */
 void restore( void )
 {
+#ifdef _RISCV
+  blimp_printf(
+      "Sorry, restoring the game for RISCV isn't implemented\n" );
+#else
   char  nm[64];
   FILE *fp;
 
@@ -272,7 +277,8 @@ void restore( void )
 
   fp = fopen( nm, "r" );
   if ( fp == NULL ) {
-    printf( "Sorry, cannot find any saved game to load from %s", nm );
+    blimp_printf( "Sorry, cannot find any saved game to load from %s",
+                  nm );
     return;
   }
 
@@ -335,19 +341,28 @@ void restore( void )
            1 || /* 1 if he quit early	*/
        fread( &foobar, sizeof( int ), 1, fp ) !=
            1 ) { /* fie fie foe foo...	*/
-    printf( "Failed reading saved gave file, %s, data format error", nm );
+    blimp_printf( "Failed reading saved gave file, %s, data format error",
+                  nm );
     fclose( fp );
     return;
   }
 
   fclose( fp );
 
-  printf( "Game restored from %s\n", nm );
+  blimp_printf( "Game restored from %s\n", nm );
   describe();
+#endif  // _RISCV
 }
 
 char *savefile( int save, char *path, size_t len )
 {
+#ifdef _RISCV
+  (void) save;
+  (void) path;
+  (void) len;
+  blimp_printf( "Sorry, saving the game for RISCV isn't implemented\n" );
+  return NULL;
+#else
   char *home;
 
 #ifndef SAVEDIR
@@ -392,4 +407,5 @@ char *savefile( int save, char *path, size_t len )
 #endif
 
   return path;
+#endif  // _RISCV
 }

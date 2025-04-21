@@ -31,7 +31,8 @@
 */
 void gettrav( int loc )
 {
-  char  atrav[240] = { 0 }; /* max length of any cave pos = 144 bytes */
+  char atrav[240]; /* max length of any cave pos = 144 bytes */
+  blimp_memset( atrav, 0, 240 );
   char *aptr;
   long  t;
   int   i;
