@@ -1,12 +1,10 @@
 //========================================================================
-// blimp_wprintf.h
+// blimp_exit.h
 //========================================================================
-// A simple printing mechanism for Blimp
+// A mechanism for Blimp to signal to exit
 
-#ifndef BLIMP_WPRINTF_H
-#define BLIMP_WPRINTF_H
-
-#include <wchar.h>
+#ifndef BLIMP_EXIT_H
+#define BLIMP_EXIT_H
 
 // -----------------------------------------------------------------------
 // RISCV
@@ -18,7 +16,7 @@
 extern "C" {
 #endif
 
-void blimp_wprintf( const wchar_t* fmt, ... );
+void blimp_exit( int exit_code );
 
 #ifdef __cplusplus
 }
@@ -30,8 +28,8 @@ void blimp_wprintf( const wchar_t* fmt, ... );
 
 #else
 
-#define blimp_wprintf wprintf
+#include <stdlib.h>
+#define blimp_exit exit
+#endif
 
-#endif  // _RISCV
-
-#endif  // BLIMP_WPRINTF_H
+#endif  // BLIMP_EXIT_H

@@ -150,8 +150,4 @@ SECTIONS
 
   /* End of uninitialized data segment (used for heap) */
   _end = ALIGN(16);
-
-  /*--------------------------------------------------------------------*/
-  /* Memory-Mapped Peripherals                                          */
-  /*--------------------------------------------------------------------*/
 }

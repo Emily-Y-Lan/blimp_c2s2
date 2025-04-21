@@ -5,12 +5,15 @@
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/rv32.cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_compile_definitions(BUILTIN)
 
 #-------------------------------------------------------------------------
 # Set all of the directories to look in
 #-------------------------------------------------------------------------
 
 set(APP_SUBDIRS
+  adventure
+  echo
   hello
   sqrt
   vvadd
@@ -21,6 +24,11 @@ set(APP_SUBDIRS
 #-------------------------------------------------------------------------
 
 set(UTIL_FILES
+  utils/blimp_exit.cpp
+  utils/blimp_misc.cpp
+  utils/blimp_rand.cpp
+  utils/blimp_stdio.cpp
+  utils/blimp_string.cpp
   utils/blimp_wprintf.cpp
 )
 
@@ -88,9 +96,3 @@ endforeach(APP_SUBDIR)
 
 set(APP_FILES ${ALL_APP_FILES} PARENT_SCOPE)
 set(SRC_FILES ${ALL_SRC_FILES} ${UTIL_FILES} PARENT_SCOPE)
-
-#-------------------------------------------------------------------------
-# Include Doom
-#-------------------------------------------------------------------------
-
-add_subdirectory(doom)

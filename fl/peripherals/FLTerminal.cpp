@@ -10,27 +10,37 @@
 // read
 //------------------------------------------------------------------------
 
-void FLTerminal::read( uint32_t, uint32_t* )
+static std::string stdin_buffer = "";
+
+void FLTerminal::read( uint32_t addr, uint32_t* data )
 {
-  // Never called
+  // Unused address
+  (void) addr;
+
+  // Cannot get characters individually; instead, take in a string and
+  // store for later calls
+  while ( stdin_buffer.empty() ) {
+    std::getline( std::cin, stdin_buffer );
+    stdin_buffer += '\n';
+  }
+  *data = stdin_buffer[0];
+  stdin_buffer.erase( 0, 1 );
 }
 
 //------------------------------------------------------------------------
 // write
 //------------------------------------------------------------------------
 
-#define WPRINTF_INT_ADDR 0xF0000000
-#define WPRINTF_CHAR_ADDR 0xF0000004
+#define TERMINAL_CHAR_ADDR 0xF0000000
+#define TERMINAL_UNGETC_ADDR 0xF0000008
 
 void FLTerminal::write( uint32_t addr, uint32_t data )
 {
-  if ( addr == WPRINTF_INT_ADDR ) {
-    std::cout << (int) data;
-  }
-  else {
-    std::cout << (char) data;
-    if ( (char) data == '\n' ) {
-      std::cout.flush();
-    }
+  // Unused address
+  (void) addr;
+
+  std::cout << (char) data;
+  if ( (char) data == '\n' ) {
+    std::cout.flush();
   }
 }

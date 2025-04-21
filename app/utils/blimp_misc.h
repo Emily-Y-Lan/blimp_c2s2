@@ -1,12 +1,10 @@
 //========================================================================
-// blimp_wprintf.h
+// blimp_misc.h
 //========================================================================
-// A simple printing mechanism for Blimp
+// Other miscellaneous operations
 
-#ifndef BLIMP_WPRINTF_H
-#define BLIMP_WPRINTF_H
-
-#include <wchar.h>
+#ifndef BLIMP_MISC_H
+#define BLIMP_MISC_H
 
 // -----------------------------------------------------------------------
 // RISCV
@@ -18,7 +16,7 @@
 extern "C" {
 #endif
 
-void blimp_wprintf( const wchar_t* fmt, ... );
+long blimp_atol( const char* str );
 
 #ifdef __cplusplus
 }
@@ -30,8 +28,8 @@ void blimp_wprintf( const wchar_t* fmt, ... );
 
 #else
 
-#define blimp_wprintf wprintf
+#include <stdlib.h>
+#define blimp_atol atol
+#endif
 
-#endif  // _RISCV
-
-#endif  // BLIMP_WPRINTF_H
+#endif  // BLIMP_MISC_H

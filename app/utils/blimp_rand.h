@@ -1,12 +1,10 @@
 //========================================================================
-// blimp_wprintf.h
+// blimp_rand.h
 //========================================================================
-// A simple printing mechanism for Blimp
+// A software-defined RNG (not secure, but works well)
 
-#ifndef BLIMP_WPRINTF_H
-#define BLIMP_WPRINTF_H
-
-#include <wchar.h>
+#ifndef BLIMP_RAND_H
+#define BLIMP_RAND_H
 
 // -----------------------------------------------------------------------
 // RISCV
@@ -18,7 +16,8 @@
 extern "C" {
 #endif
 
-void blimp_wprintf( const wchar_t* fmt, ... );
+int  blimp_rand();
+void blimp_srand( unsigned int seed );
 
 #ifdef __cplusplus
 }
@@ -30,8 +29,9 @@ void blimp_wprintf( const wchar_t* fmt, ... );
 
 #else
 
-#define blimp_wprintf wprintf
+#include <stdlib.h>
+#define blimp_rand rand
+#define blimp_srand srand
+#endif
 
-#endif  // _RISCV
-
-#endif  // BLIMP_WPRINTF_H
+#endif  // BLIMP_EXIT_H

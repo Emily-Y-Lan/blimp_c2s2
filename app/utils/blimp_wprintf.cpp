@@ -12,22 +12,12 @@
 #include <stdarg.h>
 
 // -----------------------------------------------------------------------
-// blimp_wprintf_int
-// -----------------------------------------------------------------------
-
-inline void blimp_wprint_int( int i )
-{
-  wchar_t* term = (wchar_t*) 0xf0000000;
-  *term         = i;
-}
-
-// -----------------------------------------------------------------------
 // blimp_wprintf_char
 // -----------------------------------------------------------------------
 
 inline void blimp_wprint_char( wchar_t c )
 {
-  wchar_t* term = (wchar_t*) 0xf0000004;
+  wchar_t* term = (wchar_t*) 0xF0000000;
   *term         = c;
 }
 
@@ -58,20 +48,34 @@ void blimp_wprintf( const wchar_t* fmt, ... )
       flag = 1;
     }
     else if ( flag && ( *fmt == 'd' ) ) {
-      blimp_wprint_int( va_arg( args, int ) );
+      int     num = va_arg( args, int );
+      wchar_t buffer[20];
+      int     i = 0;
+      if ( num < 0 ) {
+        blimp_wprint_char( L'-' );
+        num = -num;
+      }
+      do {
+        buffer[i++] = num % 10 + L'0';
+        num /= 10;
+      } while ( num > 0 );
+      while ( i > 0 ) {
+        blimp_wprint_char( buffer[--i] );
+      }
       flag = 0;
     }
-    else if ( flag && ( *fmt == 'C' ) ) {
+    else if ( flag && ( *fmt == 'c' ) ) {
       // note automatic conversion to integral type
       blimp_wprint_char( (wchar_t) ( va_arg( args, int ) ) );
       flag = 0;
     }
-    else if ( flag && ( *fmt == 'S' ) ) {
+    else if ( flag && ( *fmt == 's' ) ) {
       blimp_wprint_str( va_arg( args, wchar_t* ) );
       flag = 0;
     }
     else {
       blimp_wprint_char( *fmt );
+      flag = 0;
     }
     ++fmt;
   }
