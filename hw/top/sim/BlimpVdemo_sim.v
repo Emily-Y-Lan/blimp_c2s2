@@ -115,6 +115,15 @@ module BlimpVdemo_sim;
     trace = {trace, fl_mem.trace( t.trace_level )};
     trace = {trace, " || "};
     trace = {trace, dut.trace( t.trace_level )};
+    trace = {trace, " || "};
+
+    // Instruction trace
+    if( inst_trace_val ) begin
+      trace = {trace, $sformatf("0x%08x: ", inst_trace_pc)};
+      if( inst_trace_wen ) begin
+        trace = {trace, $sformatf("0x%08x -> R[%0d]", inst_trace_wdata, inst_trace_waddr)};
+      end
+    end
 
     t.trace( trace );
   end

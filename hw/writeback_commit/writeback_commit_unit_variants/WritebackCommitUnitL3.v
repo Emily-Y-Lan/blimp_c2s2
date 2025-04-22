@@ -251,13 +251,14 @@ module WritebackCommitUnitL3 #(
 
   int str_len;
   assign str_len = ceil_div_4( p_seq_num_bits ) + 1 + // seq_num
+                   1                            + 1 + // wen
                    ceil_div_4( 5 )              + 1 + // addr
                    8;                                 // data
   
   function string trace( int trace_level );
-    if( X_reg.wen ) begin
+    if( X_reg.val ) begin
       if( trace_level > 0 )
-        trace = $sformatf("%h:%h:%h", X_reg.seq_num, X_reg.waddr, X_reg.wdata );
+        trace = $sformatf("%h:%h:%h:%h", X_reg.seq_num, X_reg.wen, X_reg.waddr, X_reg.wdata );
       else
         trace = $sformatf("%h", X_reg.seq_num);
     end else begin

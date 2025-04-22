@@ -155,14 +155,14 @@ module FetchUnitL2
       trace = {trace, " > "};
 
       if( memresp_xfer )
-        trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, D.seq_num)};
+        trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, alloc_seq_num)};
       else
         trace = {trace, {(11 + ceil_div_4(p_seq_num_bits)){" "}}};
     end else begin
       if( memresp_xfer )
-        trace = $sformatf("%h", D.seq_num);
+        trace = $sformatf("%h: %h", alloc_seq_num, mem.resp_msg.addr);
       else
-        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+        trace = {(ceil_div_4(p_seq_num_bits) + 2 + 8){" "}};
     end
   endfunction
 `endif

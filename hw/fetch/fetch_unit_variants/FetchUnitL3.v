@@ -233,18 +233,18 @@ module FetchUnitL3
 
       if( memresp_xfer )
         trace = {trace, $sformatf("%h (%h) %s ", 
-                                  mem.resp_msg.addr, D.seq_num,
+                                  mem.resp_msg.addr, alloc_seq_num,
                                   (should_drop ? "X" : " "))};
       else
         trace = {trace, {(14 + ceil_div_4(p_seq_num_bits)){" "}}};
     end else begin
       if( memresp_xfer )
         if( should_drop )
-          trace = {(ceil_div_4(p_seq_num_bits)){"X"}};
+          trace = {(ceil_div_4(p_seq_num_bits) + 2 + 8){"X"}};
         else
-          trace = $sformatf("%h", D.seq_num);
+          trace = $sformatf("%h: %h", alloc_seq_num, mem.resp_msg.addr);
       else
-        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+        trace = {(ceil_div_4(p_seq_num_bits) + 2 + 8){" "}};
     end
   endfunction
 `endif

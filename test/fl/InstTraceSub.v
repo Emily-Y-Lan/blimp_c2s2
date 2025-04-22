@@ -104,6 +104,19 @@ module InstTraceSub (
       trace = {{(str_len-1){" "}}, "."};
   endfunction
 
+  function string inst_trace(
+    // verilator lint_off UNUSEDSIGNAL
+    int trace_level
+    // verilator lint_on UNUSEDSIGNAL
+  );
+    if( val ) begin
+      if( wen )
+        inst_trace = $sformatf("0x%08x: 0x%08x -> R[%02d]", pc, wdata, waddr);
+      else
+        inst_trace = $sformatf("0x%08x                     ", pc);
+    end
+  endfunction
+
 endmodule
 
 `endif // TEST_FL_INSTTRACESUB_V

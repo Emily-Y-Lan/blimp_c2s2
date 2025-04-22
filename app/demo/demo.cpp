@@ -11,7 +11,8 @@
 // Performs element-wise multiplication on two arrays, and stores the
 // result in a destination
 
-void vvmul( int* dest, int* src1, int* src2, int len )
+void __attribute__( ( noinline ) ) vvmul( int* dest, int* src1, int* src2,
+                                          int len )
 {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // DEMO TASK: Implement vvmul
