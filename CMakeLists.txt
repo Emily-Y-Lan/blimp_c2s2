@@ -40,6 +40,7 @@ set(V_TEST_FILES
   hw/squash/test/SquashUnitL1_test.v
   hw/squash/test/SquashUnitL1Chain_test.v
   hw/util/test/SeqAge_test.v
+  hw/util/test/SeqArb_test.v
   hw/writeback_commit/test/WritebackCommitUnitL1_test.v
   hw/writeback_commit/test/WritebackCommitUnitL2_test.v
   hw/writeback_commit/test/WritebackCommitUnitL3_test.v
