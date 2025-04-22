@@ -13,6 +13,7 @@ add_compile_definitions(BUILTIN)
 
 set(APP_SUBDIRS
   adventure
+  demo
   echo
   hello
   sqrt
@@ -58,16 +59,12 @@ add_library(UTILS STATIC ${UTIL_FILES})
 # Make targets
 #-------------------------------------------------------------------------
 
-set(ALL_APP_FILES)
-set(ALL_SRC_FILES)
+set(PROGS "")
 
 foreach(APP_SUBDIR ${APP_SUBDIRS})
   add_subdirectory(${APP_SUBDIR} "${CMAKE_CURRENT_BINARY_DIR}/${APP_SUBDIR}_cmake")
   add_prefix(SRC_FILES "${APP_SUBDIR}/")
   add_prefix(APP_FILES "${APP_SUBDIR}/")
-
-  set(ALL_APP_FILES ${ALL_APP_FILES} ${APP_FILES})
-  set(ALL_SRC_FILES ${ALL_SRC_FILES} ${SRC_FILES})
 
   set(ABSOLUTE_SRC_FILES ${SRC_FILES})
   add_prefix(ABSOLUTE_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/")
@@ -87,12 +84,18 @@ foreach(APP_SUBDIR ${APP_SUBDIRS})
     set_target_properties(app-${APP_BIN} PROPERTIES OUTPUT_NAME ${APP_BIN})
     target_compile_options(app-${APP_BIN} PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
     target_link_libraries(app-${APP_BIN} PRIVATE UTILS)
+
+    # Add to list of programs for parent
+    set(app-${APP_BIN}-files
+      ${APP_FILE_REL_PATH}
+      ${SRC_FILES}
+    PARENT_SCOPE)
+    set(PROGS ${PROGS} ${APP_BIN})
   endforeach(APP_FILE_REL_PATH)
 endforeach(APP_SUBDIR)
 
 #-------------------------------------------------------------------------
-# Give parent our source files for native builds
+# Give parent our programs for native builds
 #-------------------------------------------------------------------------
 
-set(APP_FILES ${ALL_APP_FILES} PARENT_SCOPE)
-set(SRC_FILES ${ALL_SRC_FILES} ${UTIL_FILES} PARENT_SCOPE)
+set(PROGS ${PROGS} PARENT_SCOPE)

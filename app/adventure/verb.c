@@ -12,7 +12,7 @@
 
 #include "advent.h"
 #include "advdec.h"
-#include "utils/blimp_stdio.h"
+#include "utils/blimp_stdlib.h"
 // clang-format on
 
 /*

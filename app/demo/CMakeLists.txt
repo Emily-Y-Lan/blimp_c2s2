@@ -1,10 +1,13 @@
 # ========================================================================
-# sims.cmake
+# CMakeLists.txt
 # ========================================================================
-# Identify all of Blimp's simulators
+# Specifying the files to build the demo
 
-set(BLIMP_SIMS
-  BlimpV7_sim.v
-  BlimpV8_sim.v
-  BlimpVdemo_sim.v
+set(APP_FILES
+  demo.cpp
+  PARENT_SCOPE
+)
+
+set(SRC_FILES
+  PARENT_SCOPE
 )

@@ -15,10 +15,7 @@
 #include "advtext.h" /* definition of "text" arrays	*/
 #endif
 #include "advdef.h"
-#include "utils/blimp_exit.h"
-#include "utils/blimp_rand.h"
-#include "utils/blimp_stdio.h"
-#include "utils/blimp_string.h"
+#include "utils/blimp_stdlib.h"
 
 #define setmem( l, s, c ) blimp_memset( l, c, s )
 

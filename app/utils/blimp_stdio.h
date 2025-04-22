@@ -25,6 +25,9 @@ void blimp_putchar( char c );
 char blimp_getchar();
 
 // Supported format specifiers: %c, %d, %s
+//
+// printf also supports basic width specifiers for %d and %s,
+// using space padding
 void blimp_printf( const char *format, ... );
 int  blimp_sscanf( const char *input, const char *format, ... );
 

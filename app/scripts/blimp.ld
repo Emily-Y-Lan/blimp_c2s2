@@ -23,7 +23,11 @@ STARTUP( crt0.o )
    meant to hold all of our sections. We also define a separate region
    at the top of the address space named `io`. This is where all of the
    memory-mapped peripheral addresses will live; accordingly, no space
-   should be allocated there for other code
+   should be allocated there for other code.
+
+   Note that this will usually emit a warning, since we're putting
+   .text in a RWX section; however, you can suppress it in the linker
+   with -Wl,--no-warn-rwx-segments
 
    Since our entry point is 0x200, we'll define `mem` to start there
 */

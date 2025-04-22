@@ -165,7 +165,7 @@ endfunction()
 # name
 
 function(sim_name SIMNAME FILE_NAME)
-  string(REGEX MATCH "BlimpV([0-9]+)_sim\\.v" FILE_NAME ${FILE_NAME})
+  string(REGEX MATCH "BlimpV(.+)_sim\\.v" FILE_NAME ${FILE_NAME})
   set(${SIMNAME} "v${CMAKE_MATCH_1}-sim" PARENT_SCOPE)
 endfunction()
 
@@ -298,24 +298,23 @@ add_custom_target(
 #------------------------------------------------------------------------
 
 foreach(APP_SUBDIR ${APP_SUBDIRS})
-  set(APP_FILES "")
-  set(SRC_FILES "")
+  set(PROGS "")
   add_subdirectory(${APP_SUBDIR})
   add_prefix(SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
   add_prefix(APP_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
 
   # Include native builds for all apps
-  foreach(APP_FILE_PATH ${APP_FILES})
-    get_leaf(APP_FILE ${APP_FILE_PATH})
-    remove_extension(APP_BIN ${APP_FILE})
-    add_executable(${APP_SUBDIR}-${APP_BIN}-native ${APP_FILE_PATH} ${SRC_FILES})
-    target_compile_options(${APP_SUBDIR}-${APP_BIN}-native PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
-    target_include_directories(${APP_SUBDIR}-${APP_BIN}-native PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR})
-    set_target_properties(${APP_SUBDIR}-${APP_BIN}-native PROPERTIES
+  foreach(PROG ${PROGS})
+    set(SRC_FILES ${${APP_SUBDIR}-${PROG}-files})
+    add_prefix(SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR}/)
+    add_executable(${APP_SUBDIR}-${PROG}-native ${SRC_FILES})
+    target_compile_options(${APP_SUBDIR}-${PROG}-native PRIVATE -O3 -Wall -Wextra -Wpedantic -Werror)
+    target_include_directories(${APP_SUBDIR}-${PROG}-native PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${APP_SUBDIR})
+    set_target_properties(${APP_SUBDIR}-${PROG}-native PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${APP_SUBDIR}"
-      OUTPUT_NAME ${APP_BIN}-native
+      OUTPUT_NAME ${PROG}-native
     )
-  endforeach(APP_FILE_PATH)
+  endforeach(PROG)
 endforeach(APP_SUBDIR)
 
 #-------------------------------------------------------------------------

@@ -145,14 +145,16 @@ module SimUtils
     input logic [31:0] wdata,
     input logic        wen
   );
-    $fwrite(fd, "0x%08x: ", pc);
-    if( wen ) begin
-      $fwrite(fd, "0x%08x -> R[%0d]",
-        wdata,
-        waddr
-      );
+    if( dump_trace ) begin
+      $fwrite(fd, "0x%08x: ", pc);
+      if( wen ) begin
+        $fwrite(fd, "0x%08x -> R[%0d]",
+          wdata,
+          waddr
+        );
+      end
+      $fdisplay(fd, "");
     end
-    $fdisplay(fd, "");
   endtask
 
 endmodule

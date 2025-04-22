@@ -8,7 +8,7 @@
 #include <stdio.h> /* drv = 1.1st file 2.def 3.A	*/
 #include "advent.h"
 #include "advdec.h"
-#include "utils/blimp_stdio.h"
+#include "utils/blimp_stdlib.h"
 // clang-format on
 
 /*

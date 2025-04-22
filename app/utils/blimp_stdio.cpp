@@ -62,6 +62,11 @@ void blimp_printf( const char* format, ... )
   while ( *format != '\0' ) {
     if ( *format == '%' ) {
       format++;
+      int width = 0;
+      while ( *format >= '0' && *format <= '9' ) {
+        width = ( width * 10 ) + ( *format - '0' );
+        format++;
+      }
       switch ( *format ) {
         case 'c': {
           char c = va_arg( args, int );
@@ -70,6 +75,9 @@ void blimp_printf( const char* format, ... )
         }
         case 's': {
           char* s = va_arg( args, char* );
+          for ( int i = blimp_strlen( s ); i < width; i++ ) {
+            blimp_print_char( ' ' );
+          }
           while ( *s != '\0' ) {
             blimp_print_char( *s );
             s++;
@@ -88,6 +96,9 @@ void blimp_printf( const char* format, ... )
             buffer[i++] = num % 10 + '0';
             num /= 10;
           } while ( num > 0 );
+          for ( int j = i; j < width; j++ ) {
+            blimp_print_char( ' ' );
+          }
           while ( i > 0 ) {
             blimp_print_char( buffer[--i] );
           }
