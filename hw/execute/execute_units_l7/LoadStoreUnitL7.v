@@ -351,21 +351,35 @@ module LoadStoreUnitL7 #(
                     8;                               // data
                     
 
-  function string trace();
-    if( stage2_val & stage2_rdy )
-      trace = $sformatf("%11s:%h:%h:%h", uop.name(), 
-                        D_reg.seq_num, addr, D_reg.mem_data );
-    else
-      trace = {req_len{" "}};
+  function string trace( int trace_level );
+    if( stage2_val & stage2_rdy ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%11s:%h:%h:%h", uop.name(), 
+                          D_reg.seq_num, addr, D_reg.mem_data );
+      else
+        trace = $sformatf("%h", D_reg.seq_num);
+    end else begin
+      if( trace_level > 0 )
+        trace = {req_len{" "}};
+      else
+        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+    end
 
     trace = {trace, " > "};
 
-    if( W.val & W.rdy )
-      trace = {trace, $sformatf("%11s:%h:%h:%h",
+    if( W.val & W.rdy ) begin
+      if( trace_level > 0 )
+        trace = {trace, $sformatf("%11s:%h:%h:%h",
                       stage2_reg.uop.name(),
                       stage2_reg.seq_num, mem.resp_msg.addr, W.wdata )};
-    else
-      trace = {trace, {resp_len{" "}}};
+      else
+        trace = {trace, $sformatf("%h", stage2_reg.seq_num)};
+    end else begin
+      if( trace_level > 0 )
+        trace = {trace, {resp_len{" "}}};
+      else
+        trace = {trace, {(ceil_div_4(p_seq_num_bits)){" "}}};
+    end
   endfunction
 `endif
 

@@ -132,11 +132,11 @@ module SeqNumGenL2TestSuite #(
     #2;
     trace = "";
 
-    trace = {trace, alloc_Ostream.trace()};
+    trace = {trace, alloc_Ostream.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, free_pub.trace()};
+    trace = {trace, free_pub.trace( t.trace_level )};
 
     t.trace( trace );
   end

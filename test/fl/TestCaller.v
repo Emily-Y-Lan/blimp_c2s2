@@ -72,7 +72,11 @@ module TestCaller #(
     trace_len = test_trace.len();
   end
 
-  function string trace();
+  function string trace(
+    // verilator lint_off UNUSEDSIGNAL
+    int trace_level
+    // verilator lint_on UNUSEDSIGNAL
+  );
     if( en & rdy )
       trace = $sformatf("%x:%x", call_msg, ret_msg);
     else if( rdy )

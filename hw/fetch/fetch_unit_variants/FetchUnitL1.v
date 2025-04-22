@@ -107,7 +107,11 @@ module FetchUnitL1 (
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
-  function string trace();
+  function string trace(
+    // verilator lint_off UNUSEDSIGNAL
+    int trace_level
+    // verilator lint_on UNUSEDSIGNAL
+  );
     if( memreq_xfer )
       trace = $sformatf("%h", mem.req_msg.addr);
     else

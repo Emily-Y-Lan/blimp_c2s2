@@ -234,24 +234,48 @@ module RenameTable #(
     free_len   = test_trace.len();
   end
 
-  function string trace();
+  function string trace( int trace_level );
     trace = "[";
-    if( alloc_en & alloc_rdy )
-      trace = {trace, $sformatf("%x > %x (%x)", alloc_areg, alloc_preg, alloc_ppreg)};
-    else
-      trace = {trace, {(alloc_len){" "}}};
+    if( alloc_en & alloc_rdy ) begin
+      if( trace_level > 0 )
+        trace = {trace, $sformatf("%x > %x (%x)", alloc_areg, alloc_preg, alloc_ppreg)};
+      else
+        trace = {trace, $sformatf("%x", alloc_areg)};
+    end
+    else begin
+      if( trace_level > 0 )
+        trace = {trace, {(alloc_len){" "}}};
+      else
+        trace = {trace, {(2){" "}}};
+    end
 
     trace = {trace, "] ["};
 
-    if( lookup_en[0] )
-      trace = {trace, $sformatf("%x > %x", lookup_areg[0], lookup_preg[0])};
-    else
-      trace = {trace, {(lookup_len){" "}}};
+    if( lookup_en[0] ) begin
+      if( trace_level > 0 )
+        trace = {trace, $sformatf("%x > %x", lookup_areg[0], lookup_preg[0])};
+      else
+        trace = {trace, $sformatf("%x", lookup_areg[0])};
+    end
+    else begin
+      if( trace_level > 0 )
+        trace = {trace, {(lookup_len){" "}}};
+      else
+        trace = {trace, {(2){" "}}};
+    end
     trace = {trace, ", "};
-    if( lookup_en[1] )
-      trace = {trace, $sformatf("%x > %x", lookup_areg[1], lookup_preg[1])};
-    else
-      trace = {trace, {(lookup_len){" "}}};
+    if( lookup_en[1] ) begin
+      if( trace_level > 0 )
+        trace = {trace, $sformatf("%x > %x", lookup_areg[1], lookup_preg[1])};
+      else
+        trace = {trace, $sformatf("%x", lookup_areg[1])};
+    end
+    else begin
+      if( trace_level > 0 )
+        trace = {trace, {(lookup_len){" "}}};
+      else
+        trace = {trace, {(2){" "}}};
+    end
 
     trace = {trace, "] ["};
 

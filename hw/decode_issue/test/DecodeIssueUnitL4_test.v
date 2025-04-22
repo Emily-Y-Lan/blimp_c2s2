@@ -418,7 +418,7 @@ module DecodeIssueUnitL4TestSuite #(
       // verilator lint_off BLKSEQ
       always @( posedge clk ) begin
         #2;
-        X_traces[i] = X_Ostreams[i].X_Ostream.trace();
+        X_traces[i] = X_Ostreams[i].X_Ostream.trace( t.trace_level );
       end
       // verilator lint_on BLKSEQ
     end
@@ -435,11 +435,11 @@ module DecodeIssueUnitL4TestSuite #(
   // verilator lint_off BLKSEQ
   always @( posedge clk ) begin
     #2;
-    F_Istream_trace = F_Istream.trace();
-    dut_trace       = dut.trace();
-    complete_trace  = complete_pub.trace();
-    commit_trace    = commit_pub.trace();
-    squash_trace    = squash_sub.trace();
+    F_Istream_trace = F_Istream.trace( t.trace_level );
+    dut_trace       = dut.trace( t.trace_level );
+    complete_trace  = complete_pub.trace( t.trace_level );
+    commit_trace    = commit_pub.trace( t.trace_level );
+    squash_trace    = squash_sub.trace( t.trace_level );
 
     // Wait until X_Ostream traces are ready
     #1;

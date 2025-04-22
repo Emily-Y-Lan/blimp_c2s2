@@ -232,11 +232,18 @@ module WritebackCommitUnitL2 #(
                    ceil_div_4( 5 )              + 1 + // addr
                    8;                                 // data
   
-  function string trace();
-    if( X_reg.wen )
-      trace = $sformatf("%h:%h:%h", X_reg.seq_num, X_reg.waddr, X_reg.wdata );
-    else
-      trace = {str_len{" "}};
+  function string trace( int trace_level );
+    if( X_reg.wen ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%h:%h:%h", X_reg.seq_num, X_reg.waddr, X_reg.wdata );
+      else
+        trace = $sformatf("%h", X_reg.seq_num);
+    end else begin
+      if( trace_level > 0 )
+        trace = {str_len{" "}};
+      else
+        trace = {(ceil_div_4( p_seq_num_bits )){" "}};
+    end
   endfunction
 `endif
 

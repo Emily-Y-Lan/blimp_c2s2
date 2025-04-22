@@ -196,11 +196,25 @@ module DecodeIssueUnitL2 #(
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS  
-  function string trace();
+  function int ceil_div_4( int val );
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
+  endfunction
+
+  string inst_name;
+
+  function string trace( int trace_level );
     if( F_reg.val & F.rdy )
-      trace = $sformatf("%-20s", disassemble(F_reg.inst, F_reg.pc) );
+      if( trace_level > 0 )
+        trace = $sformatf("%x: %-20s", F_reg.seq_num, disassemble(F_reg.inst, F_reg.pc) );
+      else begin
+        $sscanf( disassemble(F_reg.inst, F_reg.pc), "%s", inst_name );
+        trace = $sformatf("%x: %-7s", F_reg.seq_num, inst_name);
+      end
     else
-      trace = {20{" "}};
+      if( trace_level > 0 )
+        trace = {(22 + ceil_div_4( p_seq_num_bits )){" "}};
+      else
+        trace = {(9 + ceil_div_4( p_seq_num_bits )){" "}};
   endfunction
 `endif
 

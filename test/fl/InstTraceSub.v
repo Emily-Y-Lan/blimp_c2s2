@@ -77,7 +77,11 @@ module InstTraceSub (
     return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
-  function string trace();
+  function string trace(
+    // verilator lint_off UNUSEDSIGNAL
+    int trace_level
+    // verilator lint_on UNUSEDSIGNAL
+  );
     int str_len;
     str_len = 8 + 1 + // pc
               1 + 1 + // wen

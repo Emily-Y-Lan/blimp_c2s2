@@ -166,11 +166,11 @@ module IterativeMultiplierL2TestSuite #(
     #2;
     trace = "";
 
-    trace = {trace, D_Istream.trace()};
+    trace = {trace, D_Istream.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, W_Ostream.trace()};
+    trace = {trace, W_Ostream.trace( t.trace_level )};
 
     t.trace( trace );
   end

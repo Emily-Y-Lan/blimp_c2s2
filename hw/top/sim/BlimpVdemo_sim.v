@@ -112,9 +112,9 @@ module BlimpVdemo_sim;
     #2;
     trace = "";
 
-    trace = {trace, fl_mem.trace()};
+    trace = {trace, fl_mem.trace( t.trace_level )};
     trace = {trace, " || "};
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
 
     t.trace( trace );
   end

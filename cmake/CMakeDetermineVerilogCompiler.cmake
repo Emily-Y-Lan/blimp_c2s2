@@ -18,7 +18,7 @@ if(CMAKE_Verilog_COMPILER_ID STREQUAL "Verilator")
     NAMES verilator_bin verilator_bin.exe
     DOC "Verilog compiler" 
   )
-  set(CMAKE_Verilog_OUTPUT_EXTENSION .a)
+  set(CMAKE_Verilog_OUTPUT_EXTENSION .o)
   set(CMAKE_Verilog_LINKER_PREFERENCE 0) # No linker
 
   # Get the version and report

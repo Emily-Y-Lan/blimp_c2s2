@@ -216,11 +216,18 @@ module SquashUnitL1 #(
   assign str_len = ceil_div_4(p_seq_num_bits) + 1 + // seq_num
                    ceil_div_4(32);                  // waddr
 
-  function string trace();
-    if( gnt.val )
-      trace = $sformatf("%h:%h", gnt.seq_num, gnt.target);
-    else
-      trace = {str_len{" "}};
+  function string trace( int trace_level );
+    if( trace_level > 0 ) begin
+      if( gnt.val )
+        trace = $sformatf("%h:%h", gnt.seq_num, gnt.target);
+      else
+        trace = {str_len{" "}};
+    end else begin
+      if( gnt.val )
+        trace = $sformatf("%h", gnt.seq_num);
+      else
+        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+    end
   endfunction
 `endif
 

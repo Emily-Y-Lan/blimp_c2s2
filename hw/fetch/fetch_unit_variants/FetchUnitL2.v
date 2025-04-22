@@ -145,18 +145,25 @@ module FetchUnitL2
     return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
-  function string trace();
-    if( memreq_xfer )
-      trace = $sformatf("%h", mem.req_msg.addr);
-    else
-      trace = {8{" "}};
+  function string trace( int trace_level );
+    if( trace_level > 0 ) begin
+      if( memreq_xfer )
+        trace = $sformatf("%h", mem.req_msg.addr);
+      else
+        trace = {8{" "}};
 
-    trace = {trace, " > "};
+      trace = {trace, " > "};
 
-    if( memresp_xfer )
-      trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, D.seq_num)};
-    else
-      trace = {trace, {(11 + ceil_div_4(p_seq_num_bits)){" "}}};
+      if( memresp_xfer )
+        trace = {trace, $sformatf("%h (%h)", mem.resp_msg.addr, D.seq_num)};
+      else
+        trace = {trace, {(11 + ceil_div_4(p_seq_num_bits)){" "}}};
+    end else begin
+      if( memresp_xfer )
+        trace = $sformatf("%h", D.seq_num);
+      else
+        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+    end
   endfunction
 `endif
 

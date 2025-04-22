@@ -253,7 +253,7 @@ module WritebackCommitUnitL2TestSuite #(
       // verilator lint_off BLKSEQ
       always @( posedge clk ) begin
         #2;
-        X_traces[i] = X_Istreams[i].X_Istream.trace();
+        X_traces[i] = X_Istreams[i].X_Istream.trace( t.trace_level );
       end
       // verilator lint_on BLKSEQ
     end
@@ -268,9 +268,9 @@ module WritebackCommitUnitL2TestSuite #(
   // verilator lint_off BLKSEQ
   always @( posedge clk ) begin
     #2;
-    dut_trace         = dut.trace();
-    CompleteSub_trace = CompleteSub.trace();
-    CommitSub_trace   = CommitSub.trace();
+    dut_trace         = dut.trace( t.trace_level );
+    CompleteSub_trace = CompleteSub.trace( t.trace_level );
+    CommitSub_trace   = CommitSub.trace( t.trace_level );
 
     // Wait until X_Istream traces are ready
     #1;

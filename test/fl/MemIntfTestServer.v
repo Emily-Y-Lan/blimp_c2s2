@@ -143,7 +143,7 @@ module MemIntfTestServer #(
     return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
-  function string trace();
+  function string trace(int trace_level);
     string req_linetrace, resp_linetrace;
     int str_len;
 
@@ -154,30 +154,40 @@ module MemIntfTestServer #(
 
     if( dut.req_val & dut.req_rdy ) begin
       case( dut.req_msg.op )
-        MEM_MSG_READ:  req_linetrace = "rd:";
-        MEM_MSG_WRITE: req_linetrace = "wr:";
-        default:       req_linetrace = "??:";
+        MEM_MSG_READ:  req_linetrace = "rd";
+        MEM_MSG_WRITE: req_linetrace = "wr";
+        default:       req_linetrace = "??";
       endcase
 
-      req_linetrace = {req_linetrace, $sformatf("%h:%h:%h", 
-                       dut.req_msg.opaque, dut.req_msg.addr,
-                       dut.req_msg.data)};
+      if( trace_level > 0 ) begin
+        req_linetrace = {req_linetrace, ":", $sformatf("%h:%h:%h", 
+                         dut.req_msg.opaque, dut.req_msg.addr,
+                         dut.req_msg.data)};
+      end
     end else begin
-      req_linetrace = {str_len{" "}};
+      if( trace_level > 0 )
+        req_linetrace = {str_len{" "}};
+      else
+        req_linetrace = {2{" "}};
     end
 
     if( dut.resp_val & dut.resp_rdy ) begin
       case( dut.resp_msg.op )
-        MEM_MSG_READ:  resp_linetrace = "rd:";
-        MEM_MSG_WRITE: resp_linetrace = "wr:";
-        default:       resp_linetrace = "??:";
+        MEM_MSG_READ:  resp_linetrace = "rd";
+        MEM_MSG_WRITE: resp_linetrace = "wr";
+        default:       resp_linetrace = "??";
       endcase
 
-      resp_linetrace = {resp_linetrace, $sformatf("%h:%h:%h", 
-                       dut.resp_msg.opaque, dut.resp_msg.addr,
-                       dut.resp_msg.data)};
+      if( trace_level > 0 ) begin
+        resp_linetrace = {resp_linetrace, ":", $sformatf("%h:%h:%h", 
+                         dut.resp_msg.opaque, dut.resp_msg.addr,
+                         dut.resp_msg.data)};
+      end
     end else begin
-      resp_linetrace = {str_len{" "}};
+      if( trace_level > 0 )
+        resp_linetrace = {str_len{" "}};
+      else
+        resp_linetrace = {2{" "}};
     end
 
     trace = $sformatf("%s > %s", req_linetrace, resp_linetrace);

@@ -229,7 +229,7 @@ module MemIntfTestServer_2Port #(
     return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
-  function string trace();
+  function string trace(int trace_level);
     string req_linetrace, resp_linetrace;
     int str_len;
 
@@ -244,30 +244,40 @@ module MemIntfTestServer_2Port #(
 
     if( dut[0].req_val & dut[0].req_rdy ) begin
       case( dut[0].req_msg.op )
-        MEM_MSG_READ:  req_linetrace = "rd:";
-        MEM_MSG_WRITE: req_linetrace = "wr:";
-        default:       req_linetrace = "??:";
+        MEM_MSG_READ:  req_linetrace = "rd";
+        MEM_MSG_WRITE: req_linetrace = "wr";
+        default:       req_linetrace = "??";
       endcase
 
-      req_linetrace = {req_linetrace, $sformatf("%h:%h:%h", 
-                       dut[0].req_msg.opaque, dut[0].req_msg.addr,
-                       dut[0].req_msg.data)};
+      if( trace_level > 0 ) begin
+        req_linetrace = {req_linetrace, ":", $sformatf("%h:%h:%h", 
+                         dut[0].req_msg.opaque, dut[0].req_msg.addr,
+                         dut[0].req_msg.data)};
+      end
     end else begin
-      req_linetrace = {str_len{" "}};
+      if( trace_level > 0 )
+        req_linetrace = {str_len{" "}};
+      else
+        req_linetrace = {2{" "}};
     end
 
     if( dut[0].resp_val & dut[0].resp_rdy ) begin
       case( dut[0].resp_msg.op )
-        MEM_MSG_READ:  resp_linetrace = "rd:";
-        MEM_MSG_WRITE: resp_linetrace = "wr:";
-        default:       resp_linetrace = "??:";
+        MEM_MSG_READ:  resp_linetrace = "rd";
+        MEM_MSG_WRITE: resp_linetrace = "wr";
+        default:       resp_linetrace = "??";
       endcase
 
-      resp_linetrace = {resp_linetrace, $sformatf("%h:%h:%h", 
-                       dut[0].resp_msg.opaque, dut[0].resp_msg.addr,
-                       dut[0].resp_msg.data)};
+      if( trace_level > 0 ) begin
+        resp_linetrace = {resp_linetrace, ":", $sformatf("%h:%h:%h", 
+                         dut[0].resp_msg.opaque, dut[0].resp_msg.addr,
+                         dut[0].resp_msg.data)};
+      end
     end else begin
-      resp_linetrace = {str_len{" "}};
+      if( trace_level > 0 )
+        resp_linetrace = {str_len{" "}};
+      else
+        resp_linetrace = {2{" "}};
     end
 
     trace = $sformatf("%s > %s", req_linetrace, resp_linetrace);
@@ -278,30 +288,40 @@ module MemIntfTestServer_2Port #(
 
     if( dut[1].req_val & dut[1].req_rdy ) begin
       case( dut[1].req_msg.op )
-        MEM_MSG_READ:  req_linetrace = "rd:";
-        MEM_MSG_WRITE: req_linetrace = "wr:";
-        default:       req_linetrace = "??:";
+        MEM_MSG_READ:  req_linetrace = "rd";
+        MEM_MSG_WRITE: req_linetrace = "wr";
+        default:       req_linetrace = "??";
       endcase
 
-      req_linetrace = {req_linetrace, $sformatf("%h:%h:%h", 
-                       dut[1].req_msg.opaque, dut[1].req_msg.addr,
-                       dut[1].req_msg.data)};
+      if( trace_level > 0 ) begin
+        req_linetrace = {req_linetrace, ":", $sformatf("%h:%h:%h", 
+                         dut[1].req_msg.opaque, dut[1].req_msg.addr,
+                         dut[1].req_msg.data)};
+      end
     end else begin
-      req_linetrace = {str_len{" "}};
+      if( trace_level > 0 )
+        req_linetrace = {str_len{" "}};
+      else
+        req_linetrace = {2{" "}};
     end
 
     if( dut[1].resp_val & dut[1].resp_rdy ) begin
       case( dut[1].resp_msg.op )
-        MEM_MSG_READ:  resp_linetrace = "rd:";
-        MEM_MSG_WRITE: resp_linetrace = "wr:";
-        default:       resp_linetrace = "??:";
+        MEM_MSG_READ:  resp_linetrace = "rd";
+        MEM_MSG_WRITE: resp_linetrace = "wr";
+        default:       resp_linetrace = "??";
       endcase
 
-      resp_linetrace = {resp_linetrace, $sformatf("%h:%h:%h", 
-                       dut[1].resp_msg.opaque, dut[1].resp_msg.addr,
-                       dut[1].resp_msg.data)};
+      if( trace_level > 0 ) begin
+        resp_linetrace = {resp_linetrace, ":", $sformatf("%h:%h:%h", 
+                         dut[1].resp_msg.opaque, dut[1].resp_msg.addr,
+                         dut[1].resp_msg.data)};
+      end
     end else begin
-      resp_linetrace = {str_len{" "}};
+      if( trace_level > 0 )
+        resp_linetrace = {str_len{" "}};
+      else
+        resp_linetrace = {2{" "}};
     end
 
     trace = {trace, $sformatf(" - %s > %s", req_linetrace, resp_linetrace)};

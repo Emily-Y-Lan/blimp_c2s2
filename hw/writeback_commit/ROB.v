@@ -105,6 +105,10 @@ module ROB #(
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  function int ceil_div_4( int val );
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
+  endfunction
+
   string test_trace;
   int    msg_len;
 
@@ -113,18 +117,32 @@ module ROB #(
     msg_len = test_trace.len();
   end
 
-  function string trace();
-    if( ins_en )
-      trace = $sformatf("%x:%x", ins_idx, ins_msg);
-    else 
-      trace = {(msg_len){" "}};
+  function string trace( int trace_level );
+    if( ins_en ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%x:%x", ins_idx, ins_msg);
+      else
+        trace = $sformatf("%x", ins_idx);
+    end else begin
+      if( trace_level > 0 )
+        trace = {(msg_len){" "}};
+      else 
+        trace = {(ceil_div_4(p_entry_bits)){" "}};
+    end
 
     trace = {trace, " > "};
 
-    if( deq_en & deq_rdy )
-      trace = $sformatf("%x:%x", deq_idx, deq_msg);
-    else 
-      trace = {(msg_len){" "}};
+    if( deq_en & deq_rdy ) begin
+      if( trace_level > 0 )
+        trace = {trace, $sformatf("%x:%x", deq_idx, deq_msg)};
+      else
+        trace = {trace, $sformatf("%x", deq_idx)};
+    end else begin
+      if( trace_level > 0 )
+        trace = {trace, {(msg_len){" "}}};
+      else 
+        trace = {trace, {(ceil_div_4(p_entry_bits)){" "}}};
+    end
   endfunction
 `endif
 

@@ -139,19 +139,26 @@ module ALUL6 (
   endfunction
 
   int str_len;
-  assign str_len = 11                         + 1 + // uop
+  assign str_len = 11                         + 3 + // uop
                    ceil_div_4(p_seq_num_bits) + 1 + // seq_num
                    ceil_div_4(5)              + 1 + // waddr
                    8                          + 1 + // op1
                    8                          + 1 + // op2
                    8;                               // wdata
 
-  function string trace();
-    if( W.val & W.rdy )
-      trace = $sformatf("%11s:%h:%h:%h:%h:%h", D_reg.uop.name(), 
-                        W.seq_num, W.waddr, op1, op2, W.wdata );
-    else
-      trace = {str_len{" "}};
+  function string trace( int trace_level );
+    if( W.val & W.rdy ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%h: %11s:%h:%h:%h:%h", W.seq_num, D_reg.uop.name(), 
+                          W.waddr, op1, op2, W.wdata );
+      else
+        trace = $sformatf("%h", W.seq_num);
+    end else begin
+      if( trace_level > 0 )
+        trace = {str_len{" "}};
+      else
+        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+    end
   endfunction
 `endif
 

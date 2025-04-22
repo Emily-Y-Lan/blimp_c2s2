@@ -211,15 +211,15 @@ module FetchUnitL3TestSuite #(
     #2;
     trace = "";
 
-    trace = {trace, fl_mem.trace()};
+    trace = {trace, fl_mem.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, D_Ostream.trace()};
+    trace = {trace, D_Ostream.trace( t.trace_level )};
     trace = {trace, " - "};
-    trace = {trace, commit_pub.trace()};
+    trace = {trace, commit_pub.trace( t.trace_level )};
     trace = {trace, " - "};
-    trace = {trace, squash_pub.trace()};
+    trace = {trace, squash_pub.trace( t.trace_level )};
 
     t.trace( trace );
   end

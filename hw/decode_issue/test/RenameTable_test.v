@@ -257,17 +257,17 @@ module RenameTableTestSuite #(
     #2;
     trace = "";
 
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, alloc_caller.trace()};
+    trace = {trace, alloc_caller.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, lookup_caller[0].trace()};
+    trace = {trace, lookup_caller[0].trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, lookup_caller[1].trace()};
+    trace = {trace, lookup_caller[1].trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, complete_pub.trace()};
+    trace = {trace, complete_pub.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, commit_pub.trace()};
+    trace = {trace, commit_pub.trace( t.trace_level )};
 
     t.trace( trace );
   end

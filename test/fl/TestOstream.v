@@ -79,7 +79,11 @@ module TestOstream #(
     trace_len = test_trace.len();
   end
 
-  function string trace();
+  function string trace(
+    // verilator lint_off UNUSEDSIGNAL
+    int trace_level
+    // verilator lint_on UNUSEDSIGNAL
+  );
     if( val & rdy )
       trace = $sformatf("%x", msg);
     else if( rdy )

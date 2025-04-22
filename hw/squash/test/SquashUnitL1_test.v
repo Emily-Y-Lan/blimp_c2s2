@@ -209,7 +209,7 @@ module SquashUnitL1TestSuite #(
       // verilator lint_off BLKSEQ
       always @( posedge clk ) begin
         #2;
-        arb_traces[i] = squash_arb_pubs[i].squash_arb_pub.trace();
+        arb_traces[i] = squash_arb_pubs[i].squash_arb_pub.trace( t.trace_level );
       end
       // verilator lint_on BLKSEQ
     end
@@ -224,9 +224,9 @@ module SquashUnitL1TestSuite #(
   // verilator lint_off BLKSEQ
   always @( posedge clk ) begin
     #2;
-    dut_trace    = dut.trace();
-    gnt_trace    = squash_gnt_sub.trace();
-    commit_trace = commit_pub.trace();
+    dut_trace    = dut.trace( t.trace_level );
+    gnt_trace    = squash_gnt_sub.trace( t.trace_level );
+    commit_trace = commit_pub.trace( t.trace_level );
 
     // Wait until X_Istream traces are ready
     #1;

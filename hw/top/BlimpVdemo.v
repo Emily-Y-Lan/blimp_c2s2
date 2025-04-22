@@ -256,23 +256,23 @@ module BlimpVdemo #(
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 `ifndef SYNTHESIS
-  function string trace();
+  function string trace( int trace_level );
     trace = "";
-    trace = {trace, FU.trace()};
+    trace = {trace, FU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, DIU.trace()};
+    trace = {trace, DIU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, ALU_XU.trace()};
+    trace = {trace, ALU_XU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, MUL_XU.trace()};
+    trace = {trace, MUL_XU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, MULH_DIV_REM_XU.trace()};
+    trace = {trace, MULH_DIV_REM_XU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, MEM_XU.trace()};
+    trace = {trace, MEM_XU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, CTRL_XU.trace()};
+    trace = {trace, CTRL_XU.trace( trace_level )};
     trace = {trace, " | "};
-    trace = {trace, WCU.trace()};
+    trace = {trace, WCU.trace( trace_level )};
   endfunction
 `endif
 

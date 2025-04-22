@@ -123,12 +123,19 @@ module ControlFlowUnitL4 (
                    ceil_div_4(5)              + 1 + // waddr
                    8;                               // wdata
 
-  function string trace();
-    if( W.val & W.rdy )
-      trace = $sformatf("%h:%h:%h",
-                        W.seq_num, W.waddr, W.wdata );
-    else
-      trace = {str_len{" "}};
+  function string trace( int trace_level );
+    if( W.val & W.rdy ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%h:%h:%h",
+                          W.seq_num, W.waddr, W.wdata );
+      else
+        trace = $sformatf("%h", W.seq_num);
+    end else begin
+      if( trace_level > 0 )
+        trace = {str_len{" "}};
+      else
+        trace = {(ceil_div_4(p_seq_num_bits)){" "}};
+    end
   endfunction
 `endif
 

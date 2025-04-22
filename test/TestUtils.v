@@ -113,6 +113,7 @@ module TestUtils
   string select;
   logic select_active;
   logic verbose;
+  int trace_level;
   // verilator lint_on UNUSEDSIGNAL
 
   initial begin
@@ -124,12 +125,26 @@ module TestUtils
   end
 
   initial begin
-    if ( $test$plusargs ("verbose") )
-      verbose = 1'b1;
-    else if ( $test$plusargs ("v") )
-      verbose = 1'b1;
-    else
-      verbose = 1'b0;
+    if ( $test$plusargs ("vverbose") ) begin
+      verbose     = 1'b1;
+      trace_level = 1;
+    end
+    else if ( $test$plusargs ("vv") ) begin
+      verbose     = 1'b1;
+      trace_level = 1;
+    end
+    else if ( $test$plusargs ("verbose") ) begin
+      verbose     = 1'b1;
+      trace_level = 0;
+    end
+    else if ( $test$plusargs ("v") ) begin
+      verbose     = 1'b1;
+      trace_level = 0;
+    end
+    else begin
+      verbose     = 1'b0;
+      trace_level = 0;
+    end
   end
 
   function logic contains( input string test_name );

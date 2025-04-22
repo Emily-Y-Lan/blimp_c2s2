@@ -154,11 +154,11 @@ module ROBTestSuite #(
     #2;
     trace = "";
 
-    trace = {trace, ins_caller.trace()};
+    trace = {trace, ins_caller.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
     trace = {trace, " | "};
-    trace = {trace, deq_caller.trace()};
+    trace = {trace, deq_caller.trace( t.trace_level )};
 
     t.trace( trace );
   end

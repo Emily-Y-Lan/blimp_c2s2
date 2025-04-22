@@ -255,11 +255,33 @@ module IterativeMultiplierL2 #(
   //----------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+  function int ceil_div_4( int val );
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
+  endfunction
 
-  function string trace();
-    trace = $sformatf("%1s:%h:%h:%h:%h:%h",
-                     ( curr_state == IDLE ) ? "I" : ( curr_state == CALC ) ? "C" : "D", 
-                     W.seq_num, W.waddr, opa, opb, result );
+  int str_len;
+  assign str_len = ceil_div_4(p_seq_num_bits) + 2 + // seq_num
+                   1                          + 1 + // state
+                   2                          + 1 + // waddr
+                   8                          + 1 + // op1
+                   8                          + 1 + // op2
+                   8;                               // wdata
+
+  function string trace( int trace_level );
+    if( curr_state != IDLE ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%h: %1s:%h:%h:%h:%h", W.seq_num,
+                         ( curr_state == IDLE ) ? "I" : ( curr_state == CALC ) ? "C" : "D", 
+                         W.waddr, opa, opb, result );
+      else
+        trace = $sformatf("%h: %1s", W.seq_num,
+                         ( curr_state == IDLE ) ? "I" : ( curr_state == CALC ) ? "C" : "D" );
+    end else begin
+      if( trace_level > 0 )
+        trace = {str_len{" "}};
+      else
+        trace = {(ceil_div_4(p_seq_num_bits) + 3){" "}};
+    end
   endfunction
 `endif
 

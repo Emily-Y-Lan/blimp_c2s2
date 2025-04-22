@@ -420,6 +420,19 @@ module IterativeMulDivRemL7 (
 
 `ifndef SYNTHESIS
 
+  function int ceil_div_4( int val );
+    return (val / 4) + ((val % 4) > 0 ? 1 : 0);
+  endfunction
+
+  int str_len;
+  assign str_len = ceil_div_4(p_seq_num_bits) + 2 + // seq_num
+                   1                          + 1 + // state
+                   1                          + 1 + // sign-restore
+                   2                          + 1 + // waddr
+                   8                          + 1 + // op1
+                   8                          + 1 + // op2
+                   16;                              // result
+
   function string state_str();
     if( curr_state == IDLE )
       return "I";
@@ -433,10 +446,20 @@ module IterativeMulDivRemL7 (
       return "D";
   endfunction
 
-  function string trace();
-    trace = $sformatf("%1s:%h:%h:%h:%h:%h:%h",
-                     state_str(), need_to_sign_restore,
-                     W.seq_num, W.waddr, opa[31:0], opb[31:0], result );
+  function string trace( int trace_level );
+    if( curr_state != IDLE ) begin
+      if( trace_level > 0 )
+        trace = $sformatf("%h: %1s:%h:%h:%h:%h:%h", W.seq_num,
+                         state_str(), need_to_sign_restore,
+                         W.waddr, opa[31:0], opb[31:0], result );
+      else
+        trace = $sformatf("%h: %1s", W.seq_num, state_str());
+    end else begin
+      if( trace_level > 0 )
+        trace = {str_len{" "}};
+      else
+        trace = {(ceil_div_4(p_seq_num_bits) + 3){" "}};
+    end
   endfunction
 `endif
 

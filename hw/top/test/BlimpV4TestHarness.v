@@ -147,11 +147,11 @@ module BlimpV4TestHarness #(
     #2;
     trace = "";
 
-    trace = {trace, fl_mem.trace()};
+    trace = {trace, fl_mem.trace( t.trace_level )};
     trace = {trace, " || "};
-    trace = {trace, dut.trace()};
+    trace = {trace, dut.trace( t.trace_level )};
     trace = {trace, " || "};
-    trace = {trace, inst_trace_sub.trace()};
+    trace = {trace, inst_trace_sub.trace( t.trace_level )};
 
     t.trace( trace );
   end

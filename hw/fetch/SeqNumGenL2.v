@@ -159,7 +159,7 @@ module SeqNumGenL2 #(
     return (val / 4) + ((val % 4) > 0 ? 1 : 0);
   endfunction
 
-  function automatic string trace();
+  function automatic string trace( int trace_level );
     string alloc_trace, free_trace;
 
     if( is_alloc )
@@ -172,12 +172,15 @@ module SeqNumGenL2 #(
     else
       free_trace = {ceil_div_4(p_seq_num_bits){" "}};
 
-    trace = $sformatf("%h::%h (%s) (%s)",
-      curr_head_ptr,
-      curr_tail_ptr,
-      alloc_trace,
-      free_trace
-    );
+    if( trace_level > 0 )
+      trace = $sformatf("%h::%h (%s) (%s)",
+        curr_head_ptr,
+        curr_tail_ptr,
+        alloc_trace,
+        free_trace
+      );
+    else
+      trace = $sformatf("%s - %s", alloc_trace, free_trace);
   endfunction
 `endif
 
