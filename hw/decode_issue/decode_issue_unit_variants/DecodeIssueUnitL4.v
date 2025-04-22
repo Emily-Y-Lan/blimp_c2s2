@@ -195,7 +195,17 @@ module DecodeIssueUnitL4 #(
     endcase
   end
 
-  assign squash.val     = (decoder_jal != 0) & X_xfer;
+  logic squash_sent;
+  always_ff @( posedge clk ) begin
+    if( rst )
+      squash_sent <= 1'b0;
+    else if( F_xfer )
+      squash_sent <= 1'b0;
+    else if( squash.val )
+      squash_sent <= 1'b1;
+  end
+
+  assign squash.val     = (decoder_jal != 0) & F_reg.val & !squash_sent & !stall_pending;
   assign squash.target  = jump_target;
   assign squash.seq_num = F_reg.seq_num;
 

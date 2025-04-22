@@ -95,25 +95,6 @@ _start:
 
   lui   sp, 0x000ff
 
-  # allocate 0x4000 (16KB) stack memory for each core
-  #  - core #0 stack starts at 0xff000
-  #  - core #1 stack starts at 0xfb000
-  #  - core #2 stack starts at 0xf7000
-  #  - core #3 stack starts at 0xf3000
-
-  // lui   t0, 4       # t0 = 16K
-  // csrr  t1, 0xf14   # t1 = tid (thread id)
-  // mul   t2, t0, t1  # t2 = tid * 16K
-  // sub   sp, sp, t2  # sp = sp - t2
-
-  # more than one core, then call ece6745_bthread_init
-  # cores 1,2,3 should not return
-  # core 0 continues with initialization and calls main
-
-  // csrr  t0, 0xfc1   # t0 = ncores
-  // addi  t1, x0, 1   # t1 = 1
-  // beq   t0, t1, 1f  # skip if ncores == 1
-  // jal   x1, ece6745_bthread_init
 1:
 
   # clear the bss segment
@@ -128,8 +109,9 @@ _start:
 
   # set a0 to argc and a1 to argv
 
-  lw    a0, 0(sp)
-  addi  a1, sp, 4
+  // lw    a0, 0(sp)
+  // addi  a1, sp, 4
+  addi a0, x0, 1 // No arguments
 
   # call main
 

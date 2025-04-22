@@ -127,7 +127,7 @@ void parse_elf( std::string                               elf_path,
 
     // Read the data in
     uint32_t curr_addr = section_header->sh_addr;
-    for ( unsigned int i = 0; i < section_header->sh_size; i++ ) {
+    for ( unsigned int i = 0; i < section_header->sh_size; i += 4 ) {
       if ( strcmp( section_name, ".sbss" ) == 0 ||
            strcmp( section_name, ".bss" ) == 0 ) {
         // Should be empty

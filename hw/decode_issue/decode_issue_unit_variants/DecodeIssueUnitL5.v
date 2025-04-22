@@ -200,11 +200,11 @@ module DecodeIssueUnitL5 #(
       squash_sent <= 1'b0;
     else if( F_xfer )
       squash_sent <= 1'b0;
-    else
+    else if( squash_pub.val )
       squash_sent <= 1'b1;
   end
 
-  assign squash_pub.val     = (decoder_jal != 0) & F_reg.val & !squash_sent;
+  assign squash_pub.val     = (decoder_jal != 0) & F_reg.val & !squash_sent & !stall_pending;
   assign squash_pub.target  = jump_target;
   assign squash_pub.seq_num = F_reg.seq_num;
 

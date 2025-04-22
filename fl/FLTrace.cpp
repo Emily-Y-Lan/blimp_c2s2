@@ -53,9 +53,9 @@ bool FLTrace::operator!=( const FLTrace &other )
 
 std::string FLTrace::str() const
 {
-  std::string str_rep = std::format( "0x{:08X}: ", pc );
+  std::string str_rep = std::format( "0x{:08x}: ", pc );
   if ( wen ) {
-    str_rep += std::format( "0x{:08X} -> R[{}]", wdata, waddr );
+    str_rep += std::format( "0x{:08x} -> R[{}]", wdata, waddr );
   }
   return str_rep;
 }

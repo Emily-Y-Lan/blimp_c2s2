@@ -53,17 +53,29 @@ module BlimpV8_sim;
     .*
   );
 
-  logic [31:0] unused_trace_pc;
-  logic  [4:0] unused_trace_waddr;
-  logic [31:0] unused_trace_wdata;
-  logic        unused_trace_wen;
-  logic        unused_trace_val;
+  logic [31:0] inst_trace_pc;
+  logic  [4:0] inst_trace_waddr;
+  logic [31:0] inst_trace_wdata;
+  logic        inst_trace_wen;
+  logic        inst_trace_val;
 
-  assign unused_trace_pc    = inst_trace_notif.pc;
-  assign unused_trace_waddr = inst_trace_notif.waddr;
-  assign unused_trace_wdata = inst_trace_notif.wdata;
-  assign unused_trace_wen   = inst_trace_notif.wen;
-  assign unused_trace_val   = inst_trace_notif.val;
+  assign inst_trace_pc    = inst_trace_notif.pc;
+  assign inst_trace_waddr = inst_trace_notif.waddr;
+  assign inst_trace_wdata = inst_trace_notif.wdata;
+  assign inst_trace_wen   = inst_trace_notif.wen;
+  assign inst_trace_val   = inst_trace_notif.val;
+
+  always @( posedge clk ) begin
+    #2;
+    if( inst_trace_val ) begin
+      t.inst_trace(
+        inst_trace_pc,
+        inst_trace_waddr,
+        inst_trace_wdata,
+        inst_trace_wen
+      );
+    end
+  end
 
   //----------------------------------------------------------------------
   // FL Memory

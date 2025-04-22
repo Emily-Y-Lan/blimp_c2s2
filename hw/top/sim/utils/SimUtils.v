@@ -71,6 +71,18 @@ module SimUtils
     end
   end
 
+  int fd;
+  logic dump_trace;
+  string trace_filename;
+  initial begin
+    if ( $value$plusargs( "dump-trace=%s", trace_filename ) ) begin
+      fd = $fopen (trace_filename, "w");
+      dump_trace = 1'b1;
+    end else begin
+      dump_trace = 1'b0;
+    end
+  end
+
   // ---------------------------------------------------------------------
   // Timeout
   // ---------------------------------------------------------------------
@@ -121,6 +133,26 @@ module SimUtils
   task trace( string msg_to_trace );
     if( verbose )
       $display( msg_to_trace );
+  endtask
+
+  //----------------------------------------------------------------------
+  // inst_trace
+  //----------------------------------------------------------------------
+
+  task inst_trace(
+    input logic [31:0] pc,
+    input logic  [4:0] waddr,
+    input logic [31:0] wdata,
+    input logic        wen
+  );
+    $fwrite(fd, "0x%08x: ", pc);
+    if( wen ) begin
+      $fwrite(fd, "0x%08x -> R[%0d]",
+        wdata,
+        waddr
+      );
+    end
+    $fdisplay(fd, "");
   endtask
 
 endmodule
