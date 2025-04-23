@@ -133,7 +133,7 @@ const inst_spec_t inst_specs[] = {
     { SRLI, "srli   rd, rs1, imm_is", 0x00005013, 0xFE00707F },
     { SLLI, "slli   rd, rs1, imm_is", 0x00001013, 0xFE00707F },
     { LUI, "lui    rd, imm_u", 0x00000037, 0x0000007F },
-    { AUIPC, "auipc rd, imm_u", 0x00000017, 0x0000007F },
+    { AUIPC, "auipc  rd, imm_u", 0x00000017, 0x0000007F },
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Memory
