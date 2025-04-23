@@ -139,8 +139,8 @@ module ALUL6 (
   endfunction
 
   int str_len;
-  assign str_len = 11                         + 3 + // uop
-                   ceil_div_4(p_seq_num_bits) + 1 + // seq_num
+  assign str_len = ceil_div_4(p_seq_num_bits) + 2 + // seq_num
+                   11                         + 1 + // uop
                    ceil_div_4(5)              + 1 + // waddr
                    8                          + 1 + // op1
                    8                          + 1 + // op2
