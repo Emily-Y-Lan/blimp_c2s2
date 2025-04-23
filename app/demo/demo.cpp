@@ -17,9 +17,6 @@ void __attribute__( ( noinline ) ) vvmul( int* dest, int* src1, int* src2,
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // DEMO TASK: Implement vvmul
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  for ( int i = 0; i < len; i++ ) {
-    dest[i] = src1[i] * src2[i];
-  }
 }
 
 //------------------------------------------------------------------------

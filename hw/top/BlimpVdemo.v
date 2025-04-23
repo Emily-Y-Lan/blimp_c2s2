@@ -191,7 +191,9 @@ module BlimpVdemo #(
     .*
   );
 
-  IterativeMultiplierL2 MUL_XU (
+  IterativeMultiplierL2 #(
+    .p_num_cycles (16)
+  ) MUL_XU (
     .D (d__x_intfs[1]),
     .W (x__w_intfs[1]),
     .*
