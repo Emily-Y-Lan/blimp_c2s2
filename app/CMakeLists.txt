@@ -28,6 +28,7 @@ set(UTIL_FILES
   utils/blimp_exit.cpp
   utils/blimp_misc.cpp
   utils/blimp_rand.cpp
+  utils/blimp_stats.cpp
   utils/blimp_stdio.cpp
   utils/blimp_string.cpp
   utils/blimp_wprintf.cpp

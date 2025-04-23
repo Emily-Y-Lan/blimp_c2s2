@@ -47,6 +47,21 @@ module MemIntfTestServer #(
   endtask
 
   //----------------------------------------------------------------------
+  // Keep track of cycles since reset
+  //----------------------------------------------------------------------
+
+  localparam CYCLE_COUNT_ADDR = 32'hFFFFFF00;
+
+  logic [31:0] cycle_count;
+
+  always_ff @( posedge clk ) begin
+    if( rst )
+      cycle_count <= '0;
+    else
+      cycle_count <= cycle_count + 1;
+  end
+
+  //----------------------------------------------------------------------
   // Have queues for sending and receiving memory messages
   //----------------------------------------------------------------------
 
@@ -102,7 +117,9 @@ module MemIntfTestServer #(
       // Execute the transaction
       case( curr_req.op )
         MEM_MSG_READ: begin
-          if( mem.exists( curr_req.addr ) == 1 )
+          if( curr_req.addr  == CYCLE_COUNT_ADDR )
+            curr_resp.data = cycle_count;
+          else if( mem.exists( curr_req.addr ) == 1 )
             curr_resp.data = mem[curr_req.addr];
           else
             curr_resp.data = 'x;

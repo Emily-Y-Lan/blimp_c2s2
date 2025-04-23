@@ -29,7 +29,7 @@
 module BlimpVdemo #(
   parameter p_opaq_bits     = 8,
   parameter p_seq_num_bits  = 5,
-  parameter p_num_phys_regs = 36
+  parameter p_num_phys_regs = 40
 ) (
   input logic clk,
   input logic rst,

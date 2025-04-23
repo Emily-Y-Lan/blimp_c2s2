@@ -29,7 +29,12 @@ int dest[10];
 
 int main()
 {
+  int start_cycles = blimp_cycle_count();
   vvmul( dest, src1, src2, 10 );
+  int end_cycles = blimp_cycle_count();
+
+  blimp_printf( "vvmul completed in %d cycles\n",
+                end_cycles - start_cycles );
 
   for ( int i = 0; i < 10; i++ ) {
     blimp_printf( "%2d: %2d * %2d = %4d\n", i, src1[i], src2[i],

@@ -48,6 +48,21 @@ module MemIntfTestServer_2Port #(
   endtask
 
   //----------------------------------------------------------------------
+  // Keep track of cycles since reset
+  //----------------------------------------------------------------------
+
+  localparam CYCLE_COUNT_ADDR = 32'hFFFFFF00;
+
+  logic [31:0] cycle_count;
+
+  always_ff @( posedge clk ) begin
+    if( rst )
+      cycle_count <= '0;
+    else
+      cycle_count <= cycle_count + 1;
+  end
+
+  //----------------------------------------------------------------------
   // Have queues for sending and receiving memory messages
   //----------------------------------------------------------------------
 
@@ -136,6 +151,8 @@ module MemIntfTestServer_2Port #(
       case( curr_req[0].op )
         MEM_MSG_READ: begin
           if( try_fl_read(curr_req[0].addr, curr_resp[0].data) );
+          else if( curr_req[0].addr  == CYCLE_COUNT_ADDR )
+            curr_resp[0].data = cycle_count;
           else if( mem.exists( curr_req[0].addr ) == 1 )
             curr_resp[0].data = mem[curr_req[0].addr];
           else
@@ -182,6 +199,8 @@ module MemIntfTestServer_2Port #(
       case( curr_req[1].op )
         MEM_MSG_READ: begin
           if( try_fl_read(curr_req[1].addr, curr_resp[1].data) );
+          else if( curr_req[1].addr  == CYCLE_COUNT_ADDR )
+            curr_resp[1].data = cycle_count;
           else if( mem.exists( curr_req[1].addr ) == 1 )
             curr_resp[1].data = mem[curr_req[1].addr];
           else
