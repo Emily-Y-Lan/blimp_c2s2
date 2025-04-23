@@ -69,12 +69,12 @@ module BlimpV7 #(
   ) d__x_intfs[4]();
 
   X__WIntf #(
-    .p_seq_num_bits (p_seq_num_bits),
+    .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
   ) x__w_intfs[4]();
 
   X__WIntf #(
-    .p_seq_num_bits (p_seq_num_bits),
+    .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
   ) buffer_intf();
 

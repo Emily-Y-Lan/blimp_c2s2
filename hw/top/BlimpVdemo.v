@@ -69,7 +69,7 @@ module BlimpVdemo #(
   ) d__x_intfs[5]();
 
   X__WIntf #(
-    .p_seq_num_bits (p_seq_num_bits),
+    .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
   ) x__w_intfs[5]();
 
