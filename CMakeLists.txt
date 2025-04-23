@@ -21,6 +21,7 @@ set(V_TEST_FILES
   hw/decode_issue/test/ImmGen_test.v
   hw/decode_issue/test/RegfilePending_test.v
   hw/decode_issue/test/RenameTable_test.v
+  hw/execute/test/ExQueue_test.v
   hw/execute/test/l1/ALUL1_test.v
   hw/execute/test/l1/MultiplierL1_test.v
   hw/execute/test/l2/PipelinedMultiplierL2_test.v

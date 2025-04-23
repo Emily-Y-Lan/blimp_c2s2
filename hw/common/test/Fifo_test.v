@@ -100,16 +100,19 @@ module FifoTestSuite #(
   // test_case_1_basic
   //----------------------------------------------------------------------
 
+  t_entry empty_data;
+  assign empty_data = (p_depth == 1) ? t_entry'('hdeadbeef) : t_entry'('h00000000);
+
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
     if( !t.run_test ) return;
 
-    //     rst push pop empty full wdata                 rdata
-    check( 0,  0,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
-    check( 0,  1,   0,  1,    0,   t_entry'('hdeadbeef), t_entry'('h00000000) );
-    check( 0,  0,   0,  0,    0,   t_entry'('h00000000), t_entry'('hdeadbeef) );
-    check( 0,  0,   1,  0,    0,   t_entry'('h00000000), t_entry'('hdeadbeef) );
-    check( 0,  0,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
+    //     rst push pop empty        full                 wdata                 rdata
+    check( 0,  0,   0,  1,              0, t_entry'('h00000000), t_entry'('h00000000) );
+    check( 0,  1,   0,  1,              0, t_entry'('hdeadbeef), t_entry'('h00000000) );
+    check( 0,  0,   0,  0, (p_depth == 1), t_entry'('h00000000), t_entry'('hdeadbeef) );
+    check( 0,  0,   1,  0, (p_depth == 1), t_entry'('h00000000), t_entry'('hdeadbeef) );
+    check( 0,  0,   0,  1,              0, t_entry'('h00000000),           empty_data );
 
     t.test_case_end();
   endtask
@@ -206,9 +209,10 @@ endmodule
 //========================================================================
 
 module Fifo_test;
-  FifoTestSuite #(1)                  suite_1();
-  FifoTestSuite #(2, logic,       32) suite_2();
-  FifoTestSuite #(3, logic [7:0], 2 ) suite_3();
+  FifoTestSuite #(1)                   suite_1();
+  FifoTestSuite #(2, logic,        32) suite_2();
+  FifoTestSuite #(3, logic [7:0],  2 ) suite_3();
+  FifoTestSuite #(3, logic [16:0], 1 ) suite_4();
 
   int s;
 
@@ -219,6 +223,7 @@ module Fifo_test;
     if ((s <= 0) || (s == 1)) suite_1.run_test_suite();
     if ((s <= 0) || (s == 2)) suite_2.run_test_suite();
     if ((s <= 0) || (s == 3)) suite_3.run_test_suite();
+    if ((s <= 0) || (s == 4)) suite_4.run_test_suite();
 
     test_bench_end();
   end

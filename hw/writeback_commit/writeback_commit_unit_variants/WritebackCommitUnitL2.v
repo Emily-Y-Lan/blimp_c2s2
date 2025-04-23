@@ -6,8 +6,8 @@
 `ifndef HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V
 `define HW_WRITEBACK_WRITEBACKCOMMITUNITVARIANTS_WRITEBACKCOMMITUNITL2_V
 
-`include "hw/common/RRArb.v"
 `include "hw/writeback_commit/ROB.v"
+`include "hw/util/SeqArb.v"
 `include "intf/CompleteNotif.v"
 `include "intf/CommitNotif.v"
 `include "intf/X__WIntf.v"
@@ -64,22 +64,23 @@ module WritebackCommitUnitL2 #(
     end
   endgenerate
 
-  logic [p_num_pipes-1:0] Ex_val_packed;
-  logic [p_num_pipes-1:0] Ex_gnt_packed;
-  logic                   Ex_gnt [p_num_pipes-1:0];
+  logic Ex_gnt [p_num_pipes-1:0];
 
-  generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
-      assign Ex_val_packed[i] = Ex_val[i];
-      assign Ex_gnt[i] = Ex_gnt_packed[i];
-    end
-  endgenerate
+  CommitNotif #(
+    .p_seq_num_bits   (p_seq_num_bits),
+    .p_phys_addr_bits (commit.p_phys_addr_bits)
+  ) arb_commit();
 
-  RRArb #(p_num_pipes) ex_arb (
-    .clk (clk),
-    .rst (rst),
-    .req (Ex_val_packed),
-    .gnt (Ex_gnt_packed)
+  SeqArb #(
+    .p_seq_num_bits (p_seq_num_bits),
+    .p_num_arb      (p_num_pipes)
+  ) ex_arb (
+    .clk     (clk),
+    .rst     (rst),
+    .seq_num (Ex_seq_num),
+    .val     (Ex_val),
+    .gnt     (Ex_gnt),
+    .commit  (arb_commit)
   );
 
   logic               [31:0] Ex_pc_masked      [p_num_pipes-1:0];
@@ -213,10 +214,15 @@ module WritebackCommitUnitL2 #(
     .*
   );
 
-  assign commit.pc      = rob_output.pc;
-  assign commit.waddr   = rob_output.waddr;
-  assign commit.wdata   = rob_output.wdata;
-  assign commit.wen     = rob_output.wen;
+  assign commit.pc    = rob_output.pc;
+  assign commit.waddr = rob_output.waddr;
+  assign commit.wdata = rob_output.wdata;
+  assign commit.wen   = rob_output.wen;
+
+  assign arb_commit.pc    = rob_output.pc;
+  assign arb_commit.waddr = rob_output.waddr;
+  assign arb_commit.wdata = rob_output.wdata;
+  assign arb_commit.wen   = rob_output.wen;
 
   //----------------------------------------------------------------------
   // Linetracing

@@ -12,7 +12,7 @@
 
 interface X__WIntf
 #(
-  parameter p_seq_num_bits  = 5,
+  parameter p_seq_num_bits   = 5,
   parameter p_phys_addr_bits = 6
 );
 

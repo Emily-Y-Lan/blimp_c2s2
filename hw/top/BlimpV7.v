@@ -10,6 +10,7 @@
 `include "defs/UArch.v"
 `include "hw/fetch/fetch_unit_variants/FetchUnitL3.v"
 `include "hw/decode_issue/decode_issue_unit_variants/DecodeIssueUnitL5.v"
+`include "hw/execute/ExQueue.v"
 `include "hw/execute/execute_units_l6/ALUL6.v"
 `include "hw/execute/execute_units_l2/PipelinedMultiplierL2.v"
 `include "hw/execute/execute_units_l3/LoadStoreUnitL3.v"
@@ -71,6 +72,11 @@ module BlimpV7 #(
     .p_seq_num_bits (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
   ) x__w_intfs[4]();
+
+  X__WIntf #(
+    .p_seq_num_bits (p_seq_num_bits),
+    .p_phys_addr_bits (p_phys_addr_bits)
+  ) buffer_intf();
 
   SquashNotif #(
     .p_seq_num_bits (p_seq_num_bits)
@@ -161,7 +167,13 @@ module BlimpV7 #(
 
   ALUL6 ALU_XU (
     .D (d__x_intfs[0]),
-    .W (x__w_intfs[0]),
+    .W (buffer_intf),
+    .*
+  );
+
+  ExQueue #(1) alu_buf (
+    .in  (buffer_intf),
+    .out (x__w_intfs[0]),
     .*
   );
 
