@@ -26,7 +26,7 @@ void init_mem( uint32_t addr, uint32_t data )
 
 int main( int argc, char* argv[] )
 {
-  if ( argc < 2 ) {
+  if ( ( argc < 2 ) | ( argc > 3 ) ) {
     std::cout << "Usage: " << argv[0]
               << " elf_file [--dump-trace=/path/to/file.trace]"
               << std::endl;

@@ -338,7 +338,6 @@ add_prefix(BLIMP_SIMS "hw/top/sim/")
 foreach(V_SIM_FILE_REL_PATH ${BLIMP_SIMS})
   set(V_SIM_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${V_SIM_FILE_REL_PATH}")
   get_leaf(V_SIM_FILE ${V_SIM_FILE_PATH})
-  remove_extension(V_SIM_FILE_STUB ${V_SIM_FILE})
   sim_name(V_SIM_BIN ${V_SIM_FILE})
 
   add_executable(${V_SIM_BIN} ${V_SIM_FILE_PATH} "hw/top/sim/utils/load_elf.cpp")
@@ -376,3 +375,19 @@ foreach(V_SIM_FILE_REL_PATH ${BLIMP_SIMS})
   )
   add_dependencies(${V_SIM_BIN} ${V_SIM_BIN}-lint)
 endforeach(V_SIM_FILE_REL_PATH)
+
+#------------------------------------------------------------------------
+# Add our CLI tools
+#------------------------------------------------------------------------
+
+add_subdirectory(tools)
+
+foreach(TOOL_FILE_REL_PATH ${TOOL_FILES})
+  set(TOOL_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/tools/${TOOL_FILE_REL_PATH}")
+  get_leaf(TOOL_FILE ${TOOL_FILE_PATH})
+  remove_extension(TOOL_BIN ${TOOL_FILE})
+
+  add_executable(${TOOL_BIN} ${TOOL_FILE_PATH})
+  target_compile_options(${TOOL_BIN} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+  target_link_libraries(${TOOL_BIN} PRIVATE FL_PROC)
+endforeach(TOOL_FILE_REL_PATH)
