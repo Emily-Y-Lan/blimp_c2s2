@@ -10,6 +10,8 @@ SET(CMAKE_CXX_STANDARD_LIBRARIES "")
 #-------------------------------------------------------------------------
 
 set(V_TEST_FILES
+  fpga/test/CharBuf_test.v
+  fpga/test/CharLUT_test.v
   hw/common/test/Fifo_test.v
   hw/common/test/PriorityEncoder_test.v
   hw/common/test/RRArb_test.v

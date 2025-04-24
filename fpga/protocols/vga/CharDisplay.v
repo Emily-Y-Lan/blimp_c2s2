@@ -8,8 +8,8 @@
 `ifndef FPGA_PROTOCOLS_VGA_CHARDISPLAY
 `define FPGA_PROTOCOLS_VGA_CHARDISPLAY
 
-`include "CharBuf.v"
-`include "VGADriver.v"
+`include "fpga/protocols/vga/CharBuf.v"
+`include "fpga/protocols/vga/VGADriver.v"
 
 module CharDisplay #(
   parameter logic [11:0] p_text_color   = 12'hFFF,
