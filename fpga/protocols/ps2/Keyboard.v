@@ -2,6 +2,8 @@
 // Keyboard.v
 //========================================================================
 // A module for capturing characters typed on a PS2 keyboard
+//
+// Protocol reference: https://www.burtonsys.com/ps2_chapweske.htm
 
 `ifndef FPGA_PROTOCOLS_PS2_KEYBOARD_V
 `define FPGA_PROTOCOLS_PS2_KEYBOARD_V
