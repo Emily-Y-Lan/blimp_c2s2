@@ -136,7 +136,7 @@ module CharBufTestSuite #(
           #10;
 
           if ( t.verbose != 0 ) begin
-            $display( "%3d: %s (%d.%d,%d.%d) > %b", t.cycles,
+            $display( "%3d: %s (%0d.%0d, %0d.%0d) > %b", t.cycles,
                       ascii_char, dut_read_vchar, dut_read_voffset, 
                       dut_read_hchar, dut_read_hoffset, dut_read_lit );
           end
@@ -419,8 +419,8 @@ endmodule
 module CharBuf_test();
   CharBufTestSuite #(1,  8,  8) suite_1();
   CharBufTestSuite #(2, 16, 16) suite_2();
-  CharBufTestSuite #(3,  8,  8) suite_3();
-  CharBufTestSuite #(4, 16, 16) suite_4();
+  CharBufTestSuite #(3,  8,  7) suite_3();
+  CharBufTestSuite #(4, 17, 13) suite_4();
 
   int s;
 

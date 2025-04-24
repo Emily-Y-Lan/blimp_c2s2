@@ -186,8 +186,13 @@ module CharBuf #(
 
     else if( buf_write ) begin
       next_cursor_x = cursor_x + cursor_x_inc;
-      if( next_cursor_x == '0 )
+      if( next_cursor_x == ($clog2(p_num_cols))'(p_num_cols) )
+        next_cursor_x = '0;
+      if( next_cursor_x == '0 ) begin
         next_cursor_y = cursor_y + cursor_y_inc;
+        if( next_cursor_y == ($clog2(p_num_rows))'(p_num_rows) )
+          next_cursor_y = '0;
+      end
     end
   end
 
@@ -233,8 +238,16 @@ module CharBuf #(
   // Assign reading signals
   //----------------------------------------------------------------------
 
-  assign rrow = ( read_vchar[$clog2(p_num_rows)-1:0] + shift_offset );
   assign rcol = read_hchar[$clog2(p_num_cols)-1:0];
+
+  // Avoid lint errors when comparison to p_num_rows is constant
+  // verilator lint_off UNSIGNED
+  always_comb begin
+    rrow = ( read_vchar[$clog2(p_num_rows)-1:0] + shift_offset );
+    if( rrow >= ($clog2(p_num_rows))'(p_num_rows) )
+      rrow = rrow - ($clog2(p_num_rows))'(p_num_rows);
+  end
+  // verilator lint_on UNSIGNED
 
   //----------------------------------------------------------------------
   // Assign final output
