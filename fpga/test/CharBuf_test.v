@@ -3,8 +3,8 @@
 //========================================================================
 // A testbench for our character buffer
 
-`include "fpga/protocols/vga/CharBuf.v"
-`include "fpga/protocols/vga/CharLUT.v"
+`include "fpga/vga/CharBuf.v"
+`include "fpga/vga/CharLUT.v"
 `include "test/TestUtils.v"
 
 import TestEnv::*;

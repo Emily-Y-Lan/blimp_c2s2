@@ -3,7 +3,7 @@
 //========================================================================
 // A testbench for our character look-up table
 
-`include "fpga/protocols/vga/CharLUT.v"
+`include "fpga/vga/CharLUT.v"
 `include "test/TestUtils.v"
 
 import TestEnv::*;

@@ -13,7 +13,7 @@
 `ifndef FPGA_PROTOCOLS_VGA_CHARBUF_V
 `define FPGA_PROTOCOLS_VGA_CHARBUF_V
 
-`include "fpga/protocols/vga/CharLUT.v"
+`include "fpga/vga/CharLUT.v"
 
 module CharBuf #(
   parameter p_num_rows = 16,
