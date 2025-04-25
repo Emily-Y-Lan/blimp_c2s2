@@ -37,7 +37,7 @@ int main()
                 end_cycles - start_cycles );
 
   for ( int i = 0; i < 10; i++ ) {
-    blimp_printf( "%2d: %2d * %2d = %4d\n", i, src1[i], src2[i],
+    blimp_printf( "%02d: %2d * %2d = %4d\n", i, src1[i], src2[i],
                   dest[i] );
   }
 }
