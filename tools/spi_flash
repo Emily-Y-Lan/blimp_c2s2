@@ -66,7 +66,7 @@ def info(msg: str, end: str = "\n") -> None:
         print(f"{BLUE}[INFO]{RESET} {msg}", end=end)
 
 
-def byte_str(B):
+def byte_str(B: int):
     """Return the given bytes as a human friendly KB, MB, GB, or TB string.
 
     Source: https://stackoverflow.com/a/31631711
@@ -109,7 +109,7 @@ map_regex = re.compile(
 class ParseError(Exception):
     """An exception from incorrect data formatting"""
 
-    def __init__(self, message, file, line):
+    def __init__(self, message: str, file: str, line: int):
         self.message = (
             f"Couldn't extract data from line '{message}' ({file}:{line})\n"
         )
