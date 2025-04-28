@@ -1,0 +1,7 @@
+# ========================================================================
+# requirements.txt
+# ========================================================================
+# Python libraries required for Blimp's tools
+
+# See https://eblot.github.io/pyftdi/installation.html
+pyftdi==0.56.0
