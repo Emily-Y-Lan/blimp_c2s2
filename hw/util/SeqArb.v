@@ -154,7 +154,7 @@ module SeqArb #(
 
       assign gnt_seq_num = intermediate_seq_num[p_num_intf - 1];
 
-      for( i = 0; i < p_num_arb; i = i + 1 ) begin
+      for( i = 0; i < p_num_arb; i = i + 1 ) begin: ASSIGN_GNT
         assign gnt[i] = ( seq_num[i] == gnt_seq_num ) & val[i];
       end
     end
