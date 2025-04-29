@@ -7,7 +7,7 @@
 `define HW_DECODE_REGFILE_V
 
 module Regfile #(
-  parameter type t_entry = logic [31:0],
+  parameter p_entry_bits = 32,
   parameter p_num_regs   = 32
 ) (
   input  logic clk,
@@ -18,14 +18,14 @@ module Regfile #(
   //----------------------------------------------------------------------
 
   input  logic [$clog2(p_num_regs)-1:0] raddr   [1:0],
-  output t_entry                        rdata   [1:0],
+  output logic [      p_entry_bits-1:0] rdata   [1:0],
 
   //----------------------------------------------------------------------
   // Write Interface
   //----------------------------------------------------------------------
 
   input  logic [$clog2(p_num_regs)-1:0] waddr,
-  input  t_entry                        wdata,
+  input  logic [      p_entry_bits-1:0] wdata,
   input  logic                          wen
 );
 
@@ -33,7 +33,7 @@ module Regfile #(
   // Storage Elements
   //----------------------------------------------------------------------
 
-  t_entry regs [p_num_regs-1:1];
+  logic [p_entry_bits-1:0] regs [p_num_regs-1:1];
 
   //----------------------------------------------------------------------
   // Read Interface

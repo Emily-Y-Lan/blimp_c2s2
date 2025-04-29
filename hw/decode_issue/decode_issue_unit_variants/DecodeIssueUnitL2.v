@@ -121,8 +121,8 @@ module DecodeIssueUnitL2 #(
   logic write_pending;
 
   RegfilePending #(
-    .t_entry (logic [31:0]),
-    .p_num_regs (32)
+    .p_entry_bits (32),
+    .p_num_regs   (32)
   ) regfile (
     .clk                (clk),
     .rst                (rst),

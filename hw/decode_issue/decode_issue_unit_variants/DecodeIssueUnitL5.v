@@ -161,8 +161,8 @@ module DecodeIssueUnitL5 #(
   );
 
   Regfile #(
-    .t_entry    (logic [31:0]),
-    .p_num_regs (p_num_phys_regs)
+    .p_entry_bits (32),
+    .p_num_regs   (p_num_phys_regs)
   ) regfile (
     .clk                (clk),
     .rst                (rst),

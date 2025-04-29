@@ -9,7 +9,7 @@
 `include "hw/decode_issue/Regfile.v"
 
 module RegfilePending #(
-  parameter type t_entry = logic [31:0],
+  parameter p_entry_bits = 32,
   parameter p_num_regs   = 32,
 
   parameter p_addr_bits  = $clog2(p_num_regs)
@@ -21,8 +21,8 @@ module RegfilePending #(
   // Read Interface
   //----------------------------------------------------------------------
 
-  input  logic [p_addr_bits-1:0] raddr   [1:0],
-  output t_entry                 rdata   [1:0],
+  input  logic [ p_addr_bits-1:0] raddr   [1:0],
+  output logic [p_entry_bits-1:0] rdata   [1:0],
 
   // Include checking whether the instruction's write address is pending
   input  logic [p_addr_bits-1:0] check_addr,
@@ -31,9 +31,9 @@ module RegfilePending #(
   // Write Interface
   //----------------------------------------------------------------------
 
-  input  logic [p_addr_bits-1:0] waddr,
-  input  t_entry                 wdata,
-  input  logic                   wen,
+  input  logic [ p_addr_bits-1:0] waddr,
+  input  logic [p_entry_bits-1:0] wdata,
+  input  logic                    wen,
 
   //----------------------------------------------------------------------
   // Pending Interface
@@ -50,8 +50,8 @@ module RegfilePending #(
   //----------------------------------------------------------------------
 
   Regfile #(
-    .t_entry    (t_entry),
-    .p_num_regs (p_num_regs)
+    .p_entry_bits (p_entry_bits),
+    .p_num_regs   (p_num_regs)
   ) registers (
     .*
   );

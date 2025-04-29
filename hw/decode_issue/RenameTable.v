@@ -78,7 +78,7 @@ module RenameTable #(
 
   genvar i;
   generate
-    for( i = 1; i < 32; i = i + 1 ) begin
+    for( i = 1; i < 32; i = i + 1 ) begin: RENAME_UPDATE
       always_ff @( posedge clk ) begin
         if( rst ) begin
           rename_table[i] <= '{pending: 1'b0, preg: p_phys_addr_bits'(i)};
@@ -100,7 +100,7 @@ module RenameTable #(
   endgenerate
 
   generate
-    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin
+    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin: FREE_UPDATE
       always_ff @( posedge clk ) begin
         if( rst ) begin
           if( i < 32 )
@@ -133,7 +133,7 @@ module RenameTable #(
   logic [p_num_phys_regs-1:1] preg_alloc_sel_in, preg_alloc_sel_out;
 
   generate
-    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin
+    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin: PACK_FREE
       assign preg_alloc_sel_in[i] = free_list[i];
     end
   endgenerate
@@ -148,7 +148,7 @@ module RenameTable #(
   logic [p_phys_addr_bits-1:0] preg_alloc_mask [p_num_phys_regs-1:1];
 
   generate
-    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin
+    for( i = 1; i < p_num_phys_regs; i = i + 1 ) begin: SELECT_PHYS
       assign preg_alloc_mask[i] = ( preg_alloc_sel_out[i] ) ? p_phys_addr_bits'(i)
                                                             : '0;
     end
