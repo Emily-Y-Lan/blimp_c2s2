@@ -128,7 +128,7 @@ module Keyboard (
   // ---------------------------------------------------------------------
 
   logic parity;
-  assign parity = ( ^ascii ) ^ ps2_data_sync;
+  assign parity = ( ^scan_code ) ^ ps2_data_sync;
 
   always_comb begin
     val = 1'b0;
