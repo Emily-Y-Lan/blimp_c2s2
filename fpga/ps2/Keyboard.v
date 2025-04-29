@@ -5,8 +5,8 @@
 //
 // Protocol reference: https://www.burtonsys.com/ps2_chapweske.htm
 
-`ifndef FPGA_PROTOCOLS_PS2_KEYBOARD_V
-`define FPGA_PROTOCOLS_PS2_KEYBOARD_V
+`ifndef FPGA_PS2_KEYBOARD_V
+`define FPGA_PS2_KEYBOARD_V
 
 `include "fpga/util/Synchronizer.v"
 
@@ -25,7 +25,7 @@ module Keyboard (
   // Latency-Sensitive Output
   // ---------------------------------------------------------------------
 
-  output logic [7:0] ascii,
+  output logic [7:0] scan_code,
   output logic       val
 );
 
@@ -107,17 +107,17 @@ module Keyboard (
   // ---------------------------------------------------------------------
 
   always_ff @( posedge clk ) begin
-    if( rst ) ascii <= 8'b0;
+    if( rst ) scan_code <= 8'b0;
     else if( ps2_negedge ) begin
       case( curr_state )
-        DATA0: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA1: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA2: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA3: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA4: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA5: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA6: ascii <= { ascii[6:0], ps2_data_sync };
-        DATA7: ascii <= { ascii[6:0], ps2_data_sync };
+        DATA0: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA1: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA2: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA3: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA4: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA5: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA6: scan_code <= { ps2_data_sync, scan_code[7:1] };
+        DATA7: scan_code <= { ps2_data_sync, scan_code[7:1] };
         default: ; // Do nothing
       endcase
     end
@@ -137,4 +137,4 @@ module Keyboard (
   end
 endmodule
 
-`endif // FPGA_PROTOCOLS_PS2_KEYBOARD_V
+`endif // FPGA_PS2_KEYBOARD_V
