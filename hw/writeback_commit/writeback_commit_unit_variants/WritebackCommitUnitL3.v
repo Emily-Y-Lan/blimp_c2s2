@@ -221,8 +221,8 @@ module WritebackCommitUnitL3 #(
   localparam p_rob_depth = 2 ** p_seq_num_bits;
 
   ROB #(
-    .p_depth (p_rob_depth),
-    .t_msg   (t_rob_msg)
+    .p_depth    (p_rob_depth),
+    .p_msg_bits ($bits(t_rob_msg))
   ) rob (
     .ins_idx (X_reg.seq_num),
     .ins_msg (rob_input),

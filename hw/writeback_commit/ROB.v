@@ -8,7 +8,7 @@
 
 module ROB #(
   parameter p_depth    = 32,
-  parameter type t_msg = logic [31:0],
+  parameter p_msg_bits = 32,
 
   parameter p_entry_bits = $clog2( p_depth )
 )(
@@ -20,7 +20,7 @@ module ROB #(
   //----------------------------------------------------------------------
 
   input  logic [p_entry_bits-1:0] ins_idx,
-  input  t_msg                    ins_msg,
+  input  logic [  p_msg_bits-1:0] ins_msg,
   input  logic                    ins_en,
 
   //----------------------------------------------------------------------
@@ -28,7 +28,7 @@ module ROB #(
   //----------------------------------------------------------------------
 
   output logic [p_entry_bits-1:0] deq_idx,
-  output t_msg                    deq_msg,
+  output logic [  p_msg_bits-1:0] deq_msg,
   input  logic                    deq_en,
   output logic                    deq_rdy
 );
@@ -38,8 +38,8 @@ module ROB #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    t_msg msg;
-    logic val;
+    logic [p_msg_bits-1:0] msg;
+    logic                  val;
   } t_entry;
 
   t_entry entries [p_depth];

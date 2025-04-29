@@ -66,8 +66,8 @@ module ExQueue #(
   msg_t buffer_out;
 
   Fifo #(
-    .t_entry (msg_t),
-    .p_depth (p_depth)
+    .p_entry_bits ($bits(msg_t)),
+    .p_depth      (p_depth)
   ) buffer (
     .clk   (clk),
     .rst   (rst),

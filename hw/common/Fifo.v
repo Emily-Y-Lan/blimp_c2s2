@@ -10,7 +10,7 @@
 
 module Fifo
 #(
-  parameter type t_entry = logic [31:0],
+  parameter p_entry_bits = 32,
   parameter p_depth      = 32
 )(
   input  logic clk,
@@ -29,8 +29,8 @@ module Fifo
   // Data Signals
   //----------------------------------------------------------------------
 
-  input  t_entry wdata,
-  output t_entry rdata
+  input  logic [p_entry_bits-1:0] wdata,
+  output logic [p_entry_bits-1:0] rdata
 );
 
   //----------------------------------------------------------------------
@@ -66,7 +66,7 @@ module Fifo
 
   generate
     if( p_depth == 1 ) begin
-      t_entry arr;
+      logic [p_entry_bits-1:0] arr;
 
       always @( posedge clk ) begin
         if( rst ) begin
@@ -78,7 +78,7 @@ module Fifo
       assign rdata = arr;
 
     end else begin
-      t_entry arr [p_depth-1:0];
+      logic [p_entry_bits-1:0] arr [p_depth-1:0];
 
       always @( posedge clk ) begin
         if( rst ) begin

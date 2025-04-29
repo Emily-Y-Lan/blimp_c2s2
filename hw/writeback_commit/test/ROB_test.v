@@ -16,14 +16,14 @@ import TestEnv::*;
 
 module ROBTestSuite #(
   parameter p_suite_num = 0,
-  parameter type t_msg  = logic [31:0],
+  parameter p_msg_bits  = 32,
   parameter p_depth     = 4
 );
 
   localparam p_addr_bits = $clog2( p_depth );
   
-  string suite_name = $sformatf("%0d: ROBTestSuite_%s_%0d", 
-                                p_suite_num, $typename(t_msg), p_depth);
+  string suite_name = $sformatf("%0d: ROBTestSuite_%d_%0d", 
+                                p_suite_num, p_msg_bits, p_depth);
 
   //----------------------------------------------------------------------
   // Setup
@@ -37,17 +37,17 @@ module ROBTestSuite #(
   //----------------------------------------------------------------------
 
   logic [p_addr_bits-1:0] dut_ins_idx;
-  t_msg                   dut_ins_msg;
+  logic [ p_msg_bits-1:0] dut_ins_msg;
   logic                   dut_ins_en;
 
   logic [p_addr_bits-1:0] dut_deq_idx;
-  t_msg                   dut_deq_msg;
+  logic [ p_msg_bits-1:0] dut_deq_msg;
   logic                   dut_deq_en;
   logic                   dut_deq_rdy;
 
   ROB #(
-    .t_msg   (t_msg),
-    .p_depth (p_depth)
+    .p_msg_bits (p_msg_bits),
+    .p_depth    (p_depth)
   ) dut (
     .clk     (clk),
     .rst     (rst),
@@ -67,7 +67,7 @@ module ROBTestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    t_msg                   msg;
+    logic [ p_msg_bits-1:0] msg;
     logic [p_addr_bits-1:0] idx;
   } t_ins_msg;
 
@@ -94,7 +94,7 @@ module ROBTestSuite #(
   t_ins_msg msg_to_send;
 
   task send(
-    t_msg                   msg,
+    logic [ p_msg_bits-1:0] msg,
     logic [p_addr_bits-1:0] idx
   );
     msg_to_send.msg = msg;
@@ -108,7 +108,7 @@ module ROBTestSuite #(
   //----------------------------------------------------------------------
 
   typedef struct packed {
-    t_msg                   msg;
+    logic [ p_msg_bits-1:0] msg;
     logic [p_addr_bits-1:0] idx;
   } t_deq_msg;
 
@@ -134,7 +134,7 @@ module ROBTestSuite #(
   t_deq_msg msg_to_recv;
 
   task recv(
-    input t_msg                   msg,
+    input logic [ p_msg_bits-1:0] msg,
     input logic [p_addr_bits-1:0] idx
   );
     msg_to_recv.msg = msg;
@@ -190,11 +190,11 @@ module ROBTestSuite #(
     if( !t.run_test ) return;
 
     for( int i = 0; i < p_depth; i = i + 1 ) begin
-      send( t_msg'(i), p_addr_bits'(i) );
+      send( p_msg_bits'(i), p_addr_bits'(i) );
     end
 
     for( int i = 0; i < p_depth; i = i + 1 ) begin
-      recv( t_msg'(i), p_addr_bits'(i) );
+      recv( p_msg_bits'(i), p_addr_bits'(i) );
     end
 
     t.test_case_end();

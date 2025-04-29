@@ -15,11 +15,11 @@ import TestEnv::*;
 
 module FifoTestSuite #(
   parameter p_suite_num  = 0,
-  parameter type t_entry = logic [31:0],
+  parameter p_entry_bits = 32,
   parameter p_depth      = 32
 );
-  string suite_name = $sformatf("%0d: FifoTestSuite_%s_%0d", p_suite_num,
-                                $typename(t_entry), p_depth);
+  string suite_name = $sformatf("%0d: FifoTestSuite_%d_%0d", p_suite_num,
+                                p_entry_bits, p_depth);
 
   //----------------------------------------------------------------------
   // Setup
@@ -32,17 +32,17 @@ module FifoTestSuite #(
   // Instantiate design under test
   //----------------------------------------------------------------------
 
-  logic   dut_rst;
-  logic   dut_push;
-  logic   dut_pop;
-  logic   dut_empty;
-  logic   dut_full;
-  t_entry dut_wdata;
-  t_entry dut_rdata;
+  logic                    dut_rst;
+  logic                    dut_push;
+  logic                    dut_pop;
+  logic                    dut_empty;
+  logic                    dut_full;
+  logic [p_entry_bits-1:0] dut_wdata;
+  logic [p_entry_bits-1:0] dut_rdata;
 
   Fifo #(
-    .t_entry (t_entry),
-    .p_depth (p_depth)
+    .p_entry_bits (p_entry_bits),
+    .p_depth      (p_depth)
   ) DUT (
     .clk     (clk),
     .rst     (rst | dut_rst),
@@ -62,13 +62,13 @@ module FifoTestSuite #(
   // before the next rising edge.
 
   task check (
-    input logic   _rst,
-    input logic   push,
-    input logic   pop,
-    input logic   empty,
-    input logic   full,
-    input t_entry wdata,
-    input t_entry rdata,
+    input logic                    _rst,
+    input logic                    push,
+    input logic                    pop,
+    input logic                    empty,
+    input logic                    full,
+    input logic [p_entry_bits-1:0] wdata,
+    input logic [p_entry_bits-1:0] rdata,
 
     input int     check_rdata = 1
   );
@@ -100,19 +100,20 @@ module FifoTestSuite #(
   // test_case_1_basic
   //----------------------------------------------------------------------
 
-  t_entry empty_data;
-  assign empty_data = (p_depth == 1) ? t_entry'('hdeadbeef) : t_entry'('h00000000);
+  logic [p_entry_bits-1:0] empty_data;
+  assign empty_data = (p_depth == 1) ? p_entry_bits'('hdeadbeef)
+                                     : p_entry_bits'('h00000000);
 
   task test_case_1_basic();
     t.test_case_begin( "test_case_1_basic" );
     if( !t.run_test ) return;
 
-    //     rst push pop empty        full                 wdata                 rdata
-    check( 0,  0,   0,  1,              0, t_entry'('h00000000), t_entry'('h00000000) );
-    check( 0,  1,   0,  1,              0, t_entry'('hdeadbeef), t_entry'('h00000000) );
-    check( 0,  0,   0,  0, (p_depth == 1), t_entry'('h00000000), t_entry'('hdeadbeef) );
-    check( 0,  0,   1,  0, (p_depth == 1), t_entry'('h00000000), t_entry'('hdeadbeef) );
-    check( 0,  0,   0,  1,              0, t_entry'('h00000000),           empty_data );
+    //     rst push pop empty        full                     wdata                     rdata
+    check( 0,  0,   0,  1,              0, p_entry_bits'('h00000000), p_entry_bits'('h00000000) );
+    check( 0,  1,   0,  1,              0, p_entry_bits'('hdeadbeef), p_entry_bits'('h00000000) );
+    check( 0,  0,   0,  0, (p_depth == 1), p_entry_bits'('h00000000), p_entry_bits'('hdeadbeef) );
+    check( 0,  0,   1,  0, (p_depth == 1), p_entry_bits'('h00000000), p_entry_bits'('hdeadbeef) );
+    check( 0,  0,   0,  1,              0, p_entry_bits'('h00000000),                empty_data );
 
     t.test_case_end();
   endtask
@@ -125,23 +126,23 @@ module FifoTestSuite #(
     t.test_case_begin( "test_case_2_full" );
     if( !t.run_test ) return;
 
-    //     rst push pop empty full wdata                 rdata
-    check( 0,  1,   0,  1,    0,   t_entry'('h00000000), t_entry'('h00000000) );
+    //     rst push pop empty full wdata                      rdata
+    check( 0,  1,   0,  1,    0,   p_entry_bits'('h00000000), p_entry_bits'('h00000000) );
     
     for( int i = 1; i < p_depth; i = i + 1 ) begin
-      check( 0, 1, 0, 0, 0, t_entry'(i), t_entry'('h00000000) );
+      check( 0, 1, 0, 0, 0, p_entry_bits'(i), p_entry_bits'('h00000000) );
     end
 
-    //     rst push pop empty full wdata         rdata
-    check( 0,  0,   0,  0,    1,   t_entry'('x), t_entry'('h00000000) );
-    check( 0,  0,   1,  0,    1,   t_entry'('x), t_entry'('h00000000) );
+    //     rst push pop empty full wdata              rdata
+    check( 0,  0,   0,  0,    1,   p_entry_bits'('x), p_entry_bits'('h00000000) );
+    check( 0,  0,   1,  0,    1,   p_entry_bits'('x), p_entry_bits'('h00000000) );
 
     for( int i = 1; i < p_depth; i = i + 1 ) begin
-      check( 0, 0, 1, 0, 0, t_entry'('x), t_entry'(i) );
+      check( 0, 0, 1, 0, 0, p_entry_bits'('x), p_entry_bits'(i) );
     end
 
-    //     rst push pop empty full wdata         rdata
-    check( 0,  0,   0,  1,    0,   t_entry'('x), t_entry'('h00000000) );
+    //     rst push pop empty full wdata              rdata
+    check( 0,  0,   0,  1,    0,   p_entry_bits'('x), p_entry_bits'('h00000000) );
 
     t.test_case_end();
   endtask
@@ -150,35 +151,30 @@ module FifoTestSuite #(
   // test_case_3_random
   //----------------------------------------------------------------------
 
-  t_entry fl_queue [$:p_depth];
+  logic [p_entry_bits-1:0] fl_queue [$:p_depth];
 
-  logic   rand_push;
-  logic   rand_pop;
-  t_entry rand_wdata;
-  logic   exp_empty;
-  logic   exp_full;
-  t_entry exp_rdata;
+  logic                    rand_push;
+  logic                    rand_pop;
+  logic [p_entry_bits-1:0] rand_wdata;
+  logic                    exp_empty;
+  logic                    exp_full;
+  logic [p_entry_bits-1:0] exp_rdata;
 
   task test_case_3_random();
     t.test_case_begin( "test_case_3_random" );
     if( !t.run_test ) return;
 
-    // Push once, to avoid having an empty queue (rdata undetermined)
-    // rand_wdata = t_entry'($urandom(t.seed));
-    // check( 0, 1, 0,  1, 0, rand_wdata, t_entry'('h00000000) );
-    // fl_queue.push_back( rand_wdata );
-
     for( int i = 0; i < 30; i = i + 1 ) begin
       rand_push  = 1'($urandom());
       rand_pop   = 1'($urandom());
-      rand_wdata = t_entry'($urandom());
+      rand_wdata = p_entry_bits'($urandom());
 
       if( fl_queue.size() == 0       ) rand_pop  = 0;
       if( fl_queue.size() == p_depth ) rand_push = 0;
 
       exp_empty = ( fl_queue.size() == 0       );
       exp_full  = ( fl_queue.size() == p_depth );
-      exp_rdata = ( exp_empty ) ? t_entry'(1'bx) : fl_queue[0];
+      exp_rdata = ( exp_empty ) ? p_entry_bits'(1'bx) : fl_queue[0];
 
       check( 0, rand_push, rand_pop, exp_empty, exp_full, 
              rand_wdata, exp_rdata, int'(!exp_empty) );
@@ -209,10 +205,10 @@ endmodule
 //========================================================================
 
 module Fifo_test;
-  FifoTestSuite #(1)                   suite_1();
-  FifoTestSuite #(2, logic,        32) suite_2();
-  FifoTestSuite #(3, logic [7:0],  2 ) suite_3();
-  FifoTestSuite #(3, logic [16:0], 1 ) suite_4();
+  FifoTestSuite #(1)         suite_1();
+  FifoTestSuite #(2,  1, 32) suite_2();
+  FifoTestSuite #(3,  8, 2 ) suite_3();
+  FifoTestSuite #(3, 17, 1 ) suite_4();
 
   int s;
 
