@@ -10,21 +10,32 @@
 
 interface MemIntf
 #(
-  parameter type t_req_msg  = `MEM_REQ ( 8 ),
-  parameter type t_resp_msg = `MEM_RESP( 8 )
+  parameter p_opaq_bits = 8
 );
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Message definitions
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  typedef struct packed {
+    t_op                    op;
+    logic [p_opaq_bits-1:0] opaque;
+    logic [31:0]            addr;
+    logic [3:0]             len;
+    logic [31:0]            data;
+  } mem_msg_t;
+  
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Signals
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   logic      req_val;
   logic      req_rdy;
-  t_req_msg  req_msg;
+  mem_msg_t  req_msg;
 
   logic      resp_val;
   logic      resp_rdy;
-  t_resp_msg resp_msg;
+  mem_msg_t  resp_msg;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Modports

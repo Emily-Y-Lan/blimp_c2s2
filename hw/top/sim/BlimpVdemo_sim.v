@@ -36,8 +36,7 @@ module BlimpVdemo_sim;
   //----------------------------------------------------------------------
 
   MemIntf #(
-    .t_req_msg  (`MEM_REQ ( p_opaq_bits )),
-    .t_resp_msg (`MEM_RESP( p_opaq_bits ))
+    .p_opaq_bits (p_opaq_bits)
   ) mem_intf[2]();
 
   InstTraceNotif inst_trace_notif();

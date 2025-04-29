@@ -42,6 +42,7 @@ module LoadStoreUnitL3TestSuite #(
   logic clk, rst;
   TestUtils t( .* );
 
+
   `MEM_REQ_DEFINE ( p_opaq_bits );
   `MEM_RESP_DEFINE( p_opaq_bits );
 
@@ -58,8 +59,7 @@ module LoadStoreUnitL3TestSuite #(
   ) X__W_intf();
 
   MemIntf #(
-    .t_req_msg  (`MEM_REQ ( p_opaq_bits )),
-    .t_resp_msg (`MEM_RESP( p_opaq_bits ))
+    .p_opaq_bits (p_opaq_bits)
   ) mem_intf();
 
   LoadStoreUnitL3 #(
