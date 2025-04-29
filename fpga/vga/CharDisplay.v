@@ -36,7 +36,9 @@ module CharDisplay #(
   output  logic [3:0] VGA_G,
   output  logic [3:0] VGA_B,
   output  logic       VGA_HS,
-  output  logic       VGA_VS
+  output  logic       VGA_VS,
+  output  logic       VGA_BLANK_N,
+  output  logic       VGA_SYNC_N
 );
 
   //----------------------------------------------------------------------
