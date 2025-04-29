@@ -39,6 +39,8 @@ module BlimpV2 #(
   InstTraceNotif.pub inst_trace
 );
 
+  localparam p_num_pipes = 2;
+
   //----------------------------------------------------------------------
   // Interfaces
   //----------------------------------------------------------------------
@@ -49,11 +51,11 @@ module BlimpV2 #(
 
   D__XIntf #(
     .p_seq_num_bits (p_seq_num_bits)
-  ) d__x_intfs[2]();
+  ) d__x_intfs[p_num_pipes]();
 
   X__WIntf #(
     .p_seq_num_bits (p_seq_num_bits)
-  ) x__w_intfs[2]();
+  ) x__w_intfs[p_num_pipes]();
 
   CompleteNotif #(
     .p_seq_num_bits (p_seq_num_bits)
@@ -81,7 +83,7 @@ module BlimpV2 #(
   );
 
   DecodeIssueUnitL2 #(
-    .p_num_pipes    (2),
+    .p_num_pipes    (p_num_pipes),
     .p_pipe_subsets ({
       OP_ADD_VEC, // ALU
       OP_MUL_VEC  // Multiplier
@@ -108,7 +110,7 @@ module BlimpV2 #(
   );
 
   WritebackCommitUnitL2 #(
-    .p_num_pipes (2)
+    .p_num_pipes (p_num_pipes)
   ) WCU (
     .Ex       (x__w_intfs),
     .complete (complete_notif),

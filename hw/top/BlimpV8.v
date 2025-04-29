@@ -53,6 +53,7 @@ module BlimpV8 #(
   InstTraceNotif.pub inst_trace
 );
 
+  localparam p_num_pipes = 4;
   localparam p_phys_addr_bits = $clog2( p_num_phys_regs );
 
   //----------------------------------------------------------------------
@@ -66,12 +67,12 @@ module BlimpV8 #(
   D__XIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) d__x_intfs[4]();
+  ) d__x_intfs[p_num_pipes]();
 
   X__WIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) x__w_intfs[4]();
+  ) x__w_intfs[p_num_pipes]();
 
   X__WIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
@@ -160,7 +161,7 @@ module BlimpV8 #(
   );
 
   DecodeIssueUnitL5 #(
-    .p_num_pipes     (4),
+    .p_num_pipes     (p_num_pipes),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets ({
       p_alu_subset, // ALU
@@ -213,7 +214,7 @@ module BlimpV8 #(
   );
 
   WritebackCommitUnitL3 #(
-    .p_num_pipes (4)
+    .p_num_pipes (p_num_pipes)
   ) WCU (
     .Ex       (x__w_intfs),
     .complete (complete_notif),

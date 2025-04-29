@@ -53,6 +53,11 @@ module BlimpVdemo #(
   InstTraceNotif.pub inst_trace
 );
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // DEMO TASK: Change the number of pipes from 5 to 6
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  
+  localparam p_num_pipes = 5;
   localparam p_phys_addr_bits = $clog2( p_num_phys_regs );
 
   //----------------------------------------------------------------------
@@ -66,17 +71,12 @@ module BlimpVdemo #(
   D__XIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) d__x_intfs[5]();
+  ) d__x_intfs[p_num_pipes]();
 
   X__WIntf #(
     .p_seq_num_bits   (p_seq_num_bits),
     .p_phys_addr_bits (p_phys_addr_bits)
-  ) x__w_intfs[5]();
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // DEMO TASK: Expand D__XIntf and X__WIntf to support another
-  // execute unit
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ) x__w_intfs[p_num_pipes]();
 
   SquashNotif #(
     .p_seq_num_bits (p_seq_num_bits)
@@ -161,12 +161,12 @@ module BlimpVdemo #(
   );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // DEMO TASK: Expand p_num_pipes and p_pipe_subsets for the DIU to
-  // support another multiplier
+  // DEMO TASK: Expand p_pipe_subsets for the DIU to support another
+  // multiplier (add p_mul_subset at the end)
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   DecodeIssueUnitL5 #(
-    .p_num_pipes     (5),
+    .p_num_pipes     (p_num_pipes),
     .p_num_phys_regs (p_num_phys_regs),
     .p_pipe_subsets ({
       p_alu_subset, // ALU
@@ -200,8 +200,8 @@ module BlimpVdemo #(
   );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // DEMO TASK: Instantiate another iterative multiplier, and connect
-  // it to the appropriate interface
+  // DEMO TASK: Instantiate another iterative multiplier
+  // (IterativeMultiplierL2), and connect it to the [5] interfaces
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   IterativeMulDivRemL7 MULH_DIV_REM_XU (
@@ -226,13 +226,8 @@ module BlimpVdemo #(
     .*
   );
 
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // DEMO TASK: Expand p_num_pipes for the WCU to support another
-  // execute unit
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   WritebackCommitUnitL3 #(
-    .p_num_pipes (5)
+    .p_num_pipes (p_num_pipes)
   ) WCU (
     .Ex       (x__w_intfs),
     .complete (complete_notif),
