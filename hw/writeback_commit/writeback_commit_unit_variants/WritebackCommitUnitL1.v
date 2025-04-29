@@ -53,7 +53,7 @@ module WritebackCommitUnitL1 #(
 
   genvar i;
   generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: UNPACK_FROM_INTF
       assign Ex_pc[i]      = Ex[i].pc;
       assign Ex_seq_num[i] = Ex[i].seq_num;
       assign Ex_waddr[i]   = Ex[i].waddr;
@@ -69,7 +69,7 @@ module WritebackCommitUnitL1 #(
   logic                   Ex_gnt [p_num_pipes-1:0];
 
   generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: UNPACK
       assign Ex_val_packed[i] = Ex_val[i];
       assign Ex_gnt[i] = Ex_gnt_packed[i];
     end
@@ -90,7 +90,7 @@ module WritebackCommitUnitL1 #(
   logic                      Ex_val_masked     [p_num_pipes-1:0];
 
   generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: MASK
       assign Ex_pc_masked[i]      = Ex_pc[i]      & {32{Ex_gnt[i]}};
       assign Ex_seq_num_masked[i] = Ex_seq_num[i] & {p_seq_num_bits{Ex_gnt[i]}};
       assign Ex_waddr_masked[i]   = Ex_waddr[i]   & {5{Ex_gnt[i]}};
@@ -116,7 +116,7 @@ module WritebackCommitUnitL1 #(
 
   // No backpressure - always ready
   generate
-    for( i = 0; i < p_num_pipes; i = i + 1 ) begin
+    for( i = 0; i < p_num_pipes; i = i + 1 ) begin: ASSIGN_RDY
       assign Ex_rdy[i] = Ex_gnt[i];
     end
   endgenerate

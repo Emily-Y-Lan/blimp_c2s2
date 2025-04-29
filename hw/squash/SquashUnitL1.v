@@ -126,7 +126,7 @@ module SquashUnitL1 #(
     // Trivial case
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    if( p_num_arb == 1 ) begin: base_case
+    if( p_num_arb == 1 ) begin: BASE_CASE
       assign gnt.seq_num = arb[0].seq_num;
       assign gnt.target  = arb[0].target;
       assign gnt.val     = arb[0].val;
@@ -138,13 +138,13 @@ module SquashUnitL1 #(
     // Use a helper module to arbitrate between two requests, and connect
     // in a binary tree structure
 
-    else begin: tree
+    else begin: TREE
       logic [p_seq_num_bits-1:0] intermediate_seq_num [p_num_intf] /* verilator split_var */;
       logic               [31:0] intermediate_target  [p_num_intf] /* verilator split_var */;
       logic                      intermediate_val     [p_num_intf] /* verilator split_var */;
 
       genvar i, j;
-      for( i = 0; i < 2 ** p_num_levels; i = i + 1 ) begin
+      for( i = 0; i < 2 ** p_num_levels; i = i + 1 ) begin: INITIAL_ASSIGN
         if( i < p_num_arb ) begin
           assign intermediate_seq_num[i] = arb[i].seq_num;
           assign intermediate_target[i]  = arb[i].target;
@@ -156,8 +156,8 @@ module SquashUnitL1 #(
         end
       end
 
-      for( i = 0; i < p_num_levels; i = i + 1 ) begin
-        for( j = 0; j < (2 ** i); j = j + 1 ) begin
+      for( i = 0; i < p_num_levels; i = i + 1 ) begin: LEVEL_ARBITRATE
+        for( j = 0; j < (2 ** i); j = j + 1 ) begin: NODE_ARBITRATE
           SquashUnitL1Helper #(
             .p_seq_num_bits (p_seq_num_bits)
           ) helper (

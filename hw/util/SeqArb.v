@@ -110,7 +110,7 @@ module SeqArb #(
     // Trivial case
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    if( p_num_arb == 1 ) begin: base_case
+    if( p_num_arb == 1 ) begin: BASE_CASE
       assign gnt[0] = val[0];
       assign gnt_seq_num = seq_num[0]; // For tracing
     end
@@ -121,12 +121,12 @@ module SeqArb #(
     // Use a helper module to arbitrate between two requests, and connect
     // in a binary tree structure
 
-    else begin: tree
+    else begin: TREE
       logic [p_seq_num_bits-1:0] intermediate_seq_num [p_num_intf] /* verilator split_var */;
       logic                      intermediate_val     [p_num_intf] /* verilator split_var */;
 
       genvar i, j;
-      for( i = 0; i < 2 ** p_num_levels; i = i + 1 ) begin
+      for( i = 0; i < 2 ** p_num_levels; i = i + 1 ) begin: INITIAL_ASSIGN
         if( i < p_num_arb ) begin
           assign intermediate_seq_num[i] = seq_num[i];
           assign intermediate_val[i]     = val[i];
@@ -136,8 +136,8 @@ module SeqArb #(
         end
       end
 
-      for( i = 0; i < p_num_levels; i = i + 1 ) begin
-        for( j = 0; j < (2 ** i); j = j + 1 ) begin
+      for( i = 0; i < p_num_levels; i = i + 1 ) begin: LEVEL_ARBITRATE
+        for( j = 0; j < (2 ** i); j = j + 1 ) begin: NODE_ARBITRATE
           SeqArbHelper #(
             .p_seq_num_bits (p_seq_num_bits)
           ) helper (
@@ -154,8 +154,9 @@ module SeqArb #(
 
       assign gnt_seq_num = intermediate_seq_num[p_num_intf - 1];
 
-      for( i = 0; i < p_num_arb; i = i + 1 )
+      for( i = 0; i < p_num_arb; i = i + 1 ) begin
         assign gnt[i] = ( seq_num[i] == gnt_seq_num ) & val[i];
+      end
     end
   endgenerate
 

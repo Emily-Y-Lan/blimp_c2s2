@@ -66,7 +66,7 @@ module SquashUnitL1Chain #(
 
   // verilator lint_off ALWCOMBORDER
   generate
-    for( i = 1; i < p_num_arb; i = i + 1 ) begin
+    for( i = 1; i < p_num_arb; i = i + 1 ) begin: ARBITRATE
       always_comb begin
         if( arb[i].val & 
             (
