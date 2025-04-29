@@ -35,7 +35,9 @@ module VGADriver (
   output  logic [3:0] VGA_G,
   output  logic [3:0] VGA_B,
   output  logic       VGA_HS,
-  output  logic       VGA_VS
+  output  logic       VGA_VS,
+  output  logic       VGA_BLANK_N,
+  output  logic       VGA_SYNC_N
 );
 
   //----------------------------------------------------------------------
@@ -207,6 +209,9 @@ module VGADriver (
   assign VGA_R = ( output_color ) ? pixel_red : '0;
   assign VGA_G = ( output_color ) ? pixel_green : '0;
   assign VGA_B = ( output_color ) ? pixel_blue : '0;
+
+  assign VGA_SYNC_N  = 1'b0;
+  assign VGA_BLANK_N = VGA_HS & VGA_VS;
 
 endmodule
 
