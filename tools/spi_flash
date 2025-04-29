@@ -131,6 +131,18 @@ with open(input_path, "r") as file:
 info(f"Parsed file (found {byte_str(4 * len(data_mapping))})")
 
 # ------------------------------------------------------------------------
+# Turn into bytes
+# ------------------------------------------------------------------------
+
+data_mapping = [
+    (
+        addr.to_bytes(4, byteorder=args.endian),
+        data.to_bytes(4, byteorder=args.endian),
+    )
+    for (addr, data) in data_mapping
+]
+
+# ------------------------------------------------------------------------
 # Flash over SPI
 # ------------------------------------------------------------------------
 # Reference: https://forums.adafruit.com/viewtopic.php?t=211165
@@ -142,10 +154,8 @@ info("Connected to SPI Controller")
 
 num_entries = len(data_mapping)
 for idx, (addr, data) in enumerate(data_mapping):
-    addr_bytes = addr.to_bytes(4, byteorder=args.endian)
-    controller.write(addr_bytes)
-    data_bytes = data.to_bytes(4, byteorder=args.endian)
-    controller.write(data_bytes)
+    controller.write(addr)
+    controller.write(data)
     completion = 100 * (idx + 1) / num_entries
     info(
         "Sending data... ({0:.2f}%)".format(completion),
