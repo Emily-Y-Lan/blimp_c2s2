@@ -6,7 +6,10 @@
 `ifndef HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL3_V
 `define HW_DECODEISSUE_DECODEISSUEUNITVARIANTS_DECODEISSUEUNITL3_V
 
+`ifndef SYNTHESIS
 `include "asm/disassemble.v"
+`endif
+
 `include "defs/ISA.v"
 `include "hw/decode_issue/InstDecoder.v"
 `include "hw/decode_issue/ImmGen.v"

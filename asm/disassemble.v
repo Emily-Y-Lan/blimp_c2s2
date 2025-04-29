@@ -6,8 +6,6 @@
 `ifndef ASM_DISASSEMBLE32_V
 `define ASM_DISASSEMBLE32_V
 
-`ifndef SYNTHESIS
 import "DPI-C" function string disassemble( bit [31:0] binary, bit [31:0] pc );
-`endif
 
 `endif // ASM_DISASSEMBLE_V
