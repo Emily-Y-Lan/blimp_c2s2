@@ -6,6 +6,8 @@
 `ifndef FPGA_NET_MEMNETRESP_V
 `define FPGA_NET_MEMNETRESP_V
 
+`include "intf/MemIntf.v"
+
 interface MemNetResp #(
   parameter p_opaq_bits = 8
 );
@@ -38,13 +40,13 @@ interface MemNetResp #(
   modport client (
     input  val,
     output rdy,
-    input  msg,
+    input  msg
   );
 
   modport server (
     output val,
     input  rdy,
-    output msg,
+    output msg
   );
 
 endinterface
