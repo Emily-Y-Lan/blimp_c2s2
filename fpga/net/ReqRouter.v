@@ -20,7 +20,7 @@ module ReqRouter (
 );
 
   // ---------------------------------------------------------------------
-  // Send to the peripheral if the address is 0xF???????
+  // Send to the peripheral if the address is 0xFXXXXXXX
   // ---------------------------------------------------------------------
 
   always_comb begin

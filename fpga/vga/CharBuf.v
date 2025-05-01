@@ -240,14 +240,15 @@ module CharBuf #(
 
   assign rcol = read_hchar[$clog2(p_num_cols)-1:0];
 
-  // Avoid lint errors when comparison to p_num_rows is constant
-  // verilator lint_off UNSIGNED
+  // Use one extra bit to avoid wraparound issues
+  logic [$clog2(p_num_rows):0] rrow_tmp;
   always_comb begin
-    rrow = ( read_vchar[$clog2(p_num_rows)-1:0] + shift_offset );
-    if( rrow >= ($clog2(p_num_rows))'(p_num_rows) )
-      rrow = rrow - ($clog2(p_num_rows))'(p_num_rows);
+    rrow_tmp = ( { 1'b0, read_vchar[$clog2(p_num_rows)-1:0] }
+               + { 1'b0, shift_offset } );
+    if( rrow_tmp >= p_num_rows )
+      rrow_tmp = rrow_tmp - ($clog2(p_num_rows + 1))'(p_num_rows);
   end
-  // verilator lint_on UNSIGNED
+  assign rrow = rrow_tmp[$clog2(p_num_rows)-1:0];
 
   //----------------------------------------------------------------------
   // Assign final output
