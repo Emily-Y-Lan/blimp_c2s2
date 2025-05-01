@@ -45,7 +45,13 @@ module MemXBar #(
   MemNetResp.client bram_resp,
 
   MemNetReq.client  peripheral_req,
-  MemNetResp.client peripheral_resp
+  MemNetResp.client peripheral_resp,
+
+  // ---------------------------------------------------------------------
+  // Go bit (pull low to disable imem transactions)
+  // ---------------------------------------------------------------------
+
+  input  logic go
 );
 
   // ---------------------------------------------------------------------
@@ -63,8 +69,8 @@ module MemXBar #(
   logic [1:0] unused_dmem_resp_origin;
   logic [1:0] unused_spi_resp_origin;
 
-  assign imem_req.val        = imem.req_val;
-  assign imem.req_rdy        = imem_req.rdy;
+  assign imem_req.val        = imem.req_val & go;
+  assign imem.req_rdy        = imem_req.rdy & go;
   assign imem_req.msg.op     = imem.req_msg.op;
   assign imem_req.msg.opaque = imem.req_msg.opaque;
   assign imem_req.msg.addr   = imem.req_msg.addr;

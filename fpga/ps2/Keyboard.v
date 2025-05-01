@@ -26,7 +26,7 @@ module Keyboard (
   // ---------------------------------------------------------------------
 
   output logic [7:0] scan_code,
-  output logic       val
+  output logic       scan_code_val
 );
 
   // ---------------------------------------------------------------------
@@ -131,9 +131,9 @@ module Keyboard (
   assign parity = ( ^scan_code ) ^ ps2_data_sync;
 
   always_comb begin
-    val = 1'b0;
+    scan_code_val = 1'b0;
     if( ps2_negedge & curr_state == CHECK )
-      val = parity;
+      scan_code_val = parity;
   end
 endmodule
 
