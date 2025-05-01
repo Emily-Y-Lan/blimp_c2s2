@@ -132,7 +132,7 @@ module SPIMemClient #(
 
   always_ff @( posedge clk ) begin
     if( rst )
-      go <= 1'b0;
+      go <= 1'b1;
     else if( curr_state == SET_GO )
       go <= data[0];
   end
