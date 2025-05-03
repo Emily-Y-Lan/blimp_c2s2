@@ -7,6 +7,7 @@
 `define HW_EXECUTE_EXECUTE_VARIANTS_L7_LOADSTOREUNITL7_V
 
 `include "defs/UArch.v"
+`include "hw/common/Fifo.v"
 `include "intf/D__XIntf.v"
 `include "intf/X__WIntf.v"
 `include "intf/MemIntf.v"
@@ -14,7 +15,8 @@
 import UArch::*;
 
 module LoadStoreUnitL7 #(
-  parameter p_opaq_bits = 8
+  parameter p_opaq_bits     = 8,
+  parameter p_num_in_flight = 8
 )(
   input  logic clk,
   input  logic rst,
@@ -79,9 +81,9 @@ module LoadStoreUnitL7 #(
 
   logic      stage2_val;
   logic      stage2_rdy;
-  logic      stage2_xfer;
   stage2_msg stage2_reg;
   stage2_msg stage2_reg_next;
+  logic      stage2_push, stage2_pop, stage2_empty, stage2_full;
 
   logic W_xfer;
 
@@ -106,8 +108,7 @@ module LoadStoreUnitL7 #(
   end
 
   always_comb begin
-    D_xfer      = D.val      & D.rdy;
-    stage2_xfer = stage2_val & stage2_rdy;
+    D_xfer = D.val & D.rdy;
 
     if ( D_xfer )
       D_reg_next = '{ 
@@ -122,7 +123,7 @@ module LoadStoreUnitL7 #(
         mem_data: D.op3.mem_data,
         uop:      D.uop
       };
-    else if ( stage2_xfer )
+    else if ( stage2_push )
       D_reg_next = '{ 
         val:      1'b0, 
         pc:       'x,
@@ -220,6 +221,25 @@ module LoadStoreUnitL7 #(
   assign stage2_val = D_reg.val & mem.req_rdy;
   assign D.rdy      = (stage2_rdy & mem.req_rdy) | (!D_reg.val);
 
+  stage2_msg stage2_input;
+  
+  Fifo #(
+    .p_entry_bits ($bits(stage2_msg)),
+    .p_depth      (p_num_in_flight) // Must be at least as long as memory pipeline
+  ) stage2_fifo (
+    .clk   (clk),
+    .rst   (rst),
+    .push  (stage2_push),
+    .pop   (stage2_pop),
+    .empty (stage2_empty),
+    .full  (stage2_full),
+    .wdata (stage1_output),
+    .rdata (stage2_input)
+  );
+
+  assign stage2_rdy = !stage2_full;
+  assign stage2_push = stage2_val;
+
   //----------------------------------------------------------------------
   // Stage 2: Response
   //----------------------------------------------------------------------
@@ -244,8 +264,8 @@ module LoadStoreUnitL7 #(
   always_comb begin
     W_xfer = W.val & W.rdy;
 
-    if ( stage2_xfer )
-      stage2_reg_next = stage1_output;
+    if ( stage2_pop )
+      stage2_reg_next = stage2_input;
     else if ( W_xfer )
       stage2_reg_next = '{ 
         val:     1'b0, 
@@ -327,7 +347,7 @@ module LoadStoreUnitL7 #(
 
   assign mem.resp_rdy = stage2_reg.val & W.rdy;
   assign W.val        = stage2_reg.val & mem.resp_val;
-  assign stage2_rdy   = (W.rdy & mem.resp_val) | !stage2_reg.val;
+  assign stage2_pop   = ((W.rdy & mem.resp_val) | !stage2_reg.val) & !stage2_empty;
 
   //----------------------------------------------------------------------
   // Linetracing

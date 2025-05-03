@@ -151,7 +151,7 @@ module BlimpV8 #(
                             OP_BGEU_VEC;
 
   FetchUnitL3 #(
-    .p_max_in_flight (2)
+    .p_max_in_flight (8)
   ) FU (
     .mem    (inst_mem),
     .D      (f__d_intf),
