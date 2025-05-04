@@ -215,8 +215,8 @@ module IterativeMultiplierL2 #(
   end
 
   always_comb begin
-    assign next_opa = ( opa >> p_num_bits );
-    assign next_opb = ( opb << p_num_bits );
+    next_opa = ( opa >> p_num_bits );
+    next_opb = ( opb << p_num_bits );
   end
 
   logic [31:0] step_result;
