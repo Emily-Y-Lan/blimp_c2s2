@@ -178,6 +178,8 @@ module CharBuf #(
     else if( is_newline & buf_write ) begin
       next_cursor_x = '0;
       next_cursor_y = cursor_y + cursor_y_inc;
+      if( next_cursor_y == ($clog2(p_num_rows))'(p_num_rows) )
+        next_cursor_y = '0;
     end
 
     //--------------------------------------------------------------------
