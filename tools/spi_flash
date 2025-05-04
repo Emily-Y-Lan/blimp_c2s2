@@ -147,10 +147,16 @@ data_mapping = [
 # ------------------------------------------------------------------------
 # Reference: https://forums.adafruit.com/viewtopic.php?t=211165
 
+GO_ADDR = (0x00000000).to_bytes(4, byteorder=args.endian)
+GO_STALL = (0x00000000).to_bytes(4, byteorder=args.endian)
+
 spi = SpiController()
 spi.configure("ftdi://ftdi:232h/1")
 controller = spi.get_port(cs=0, freq=args.freq, mode=args.mode)
 info("Connected to SPI Controller")
+
+controller.write(GO_ADDR)
+controller.write(GO_STALL)
 
 num_entries = len(data_mapping)
 for idx, (addr, data) in enumerate(data_mapping):
@@ -162,3 +168,4 @@ for idx, (addr, data) in enumerate(data_mapping):
         end="\r" if idx < (num_entries - 1) else "\n",
     )
 info("Program flashed")
+info("Reset the board to run")
