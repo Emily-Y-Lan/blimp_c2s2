@@ -18,7 +18,7 @@ import UArch::*;
 // Computes one "step" of the multiplication, looking at the next N bits
 
 module IterativeMultiplyStepL2 #(
-  p_num_bits = 4
+  parameter p_num_bits = 4
 )(
   input  logic [31:0] a,
   input  logic [31:0] b,
