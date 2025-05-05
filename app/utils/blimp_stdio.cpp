@@ -139,6 +139,8 @@ int blimp_fputs( const char* str )
   return 0;
 }
 
+const char DEL = 0x7F;
+
 char* blimp_fgets( char* str, int num )
 {
   if ( num < 2 )
@@ -148,7 +150,10 @@ char* blimp_fgets( char* str, int num )
   char c;
   do {
     c = blimp_get_char();
-    if ( c != EOF ) {
+    if ( ( c == DEL ) & ( idx > 0 ) ) {
+      idx--;
+    }
+    else if ( ( c != EOF ) & ( c != '\n' ) ) {
       str[idx++] = c;
     }
     else {
