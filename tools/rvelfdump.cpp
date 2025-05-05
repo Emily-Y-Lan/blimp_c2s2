@@ -23,7 +23,7 @@ std::ofstream dump_file;
 void dump_map( uint32_t addr, uint32_t data )
 {
   dump_file << std::hex << std::setw( 8 ) << std::setfill( '0' ) << addr
-            << " " << std::hex << std::setw( 8 ) << std::setfill( '0' )
+            << ": " << std::hex << std::setw( 8 ) << std::setfill( '0' )
             << data << "    # " << disassemble( &data, &addr )
             << std::endl;
 }
