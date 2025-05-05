@@ -17,8 +17,8 @@
 
 inline void blimp_wprint_char( wchar_t c )
 {
-  wchar_t* term = (wchar_t*) 0xF0000000;
-  *term         = c;
+  volatile wchar_t* term = (wchar_t*) 0xF0000000;
+  *term                  = c;
 }
 
 // -----------------------------------------------------------------------
@@ -56,9 +56,15 @@ void blimp_wprintf( const wchar_t* fmt, ... )
         num = -num;
       }
       do {
-        buffer[i++] = num % 10 + L'0';
-        num /= 10;
+        buffer[i] = ( num & 0xF ) + L'0';
+        if ( ( num & 0xF ) > 9 ) {
+          buffer[i] = ( num & 0xF ) - 10 + L'A';
+        }
+        num = num >> 4;
+        i++;
       } while ( num > 0 );
+      blimp_wprint_char( L'0' );
+      blimp_wprint_char( L'x' );
       while ( i > 0 ) {
         blimp_wprint_char( buffer[--i] );
       }
