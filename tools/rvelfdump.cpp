@@ -6,7 +6,9 @@
 // The map file will contain an address: data mapping on each line
 // Ex. deadbeef: cafecafe
 
+#include "asm/disassemble.h"
 #include "fl/parse_elf.h"
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -21,8 +23,26 @@ std::ofstream dump_file;
 void dump_map( uint32_t addr, uint32_t data )
 {
   dump_file << std::hex << std::setw( 8 ) << std::setfill( '0' ) << addr
-            << ": " << std::hex << std::setw( 8 ) << std::setfill( '0' )
-            << data << std::endl;
+            << " " << std::hex << std::setw( 8 ) << std::setfill( '0' )
+            << data << " # " << disassemble( &data, &addr ) << std::endl;
+}
+
+//------------------------------------------------------------------------
+// dump_prologue
+//------------------------------------------------------------------------
+// Dump a prologue indicating what the map is for
+
+void dump_prologue( std::string file_path )
+{
+  dump_file
+      << "# ========================================================================"
+      << std::endl;
+  dump_file << "# " << "Memory Map of "
+            << std::filesystem::absolute( file_path ) << std::endl;
+  dump_file
+      << "# ========================================================================"
+      << std::endl;
+  dump_file << "# Addr   Data" << std::endl;
 }
 
 //------------------------------------------------------------------------
@@ -45,6 +65,7 @@ int main( int argc, char* argv[] )
     std::cout << "Error opening output file: " << argv[2] << std::endl;
     exit( 1 );
   }
+  dump_prologue( argv[1] );
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Parse the ELF file
