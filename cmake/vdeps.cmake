@@ -12,45 +12,58 @@ function(vdeps DEPENDENCIES)
   cmake_parse_arguments(
     VDEP
     ""
-    ""
-    "SOURCES;INCLUDE_DIRS"
+    "SOURCE"
+    "INCLUDE_DIRS"
     ${ARGN}
   )
-  set(FILES_TO_CHECK ${VDEP_SOURCES})
-  set(VDEPENDENCIES ${VDEP_SOURCES})
+  set(VDEPENDENCIES ${VDEP_SOURCE})
 
-  # Continue until no more files to check
-  while(FILES_TO_CHECK)
-    set(CURR_FILES_TO_CHECK ${FILES_TO_CHECK})
-    set(FILES_TO_CHECK "")
+  # Get the file
+  unset(FILE_PATH)
+  find_file(
+    FILE_PATH 
+    NAMES ${VDEP_SOURCE}
+    PATHS ${VDEP_INCLUDE_DIRS}
+    NO_DEFAULT_PATH
+    NO_CACHE
+  )
+  if(${FILE_PATH} STREQUAL "FILE_PATH-NOTFOUND")
+    message(FATAL_ERROR "Couldn't find file '${FILE_TO_CHECK}' (searched ${VDEP_INCLUDE_DIRS})")
+  endif()
+  file(READ ${FILE_PATH} FILE_CONTENTS)
+  string(REPLACE "\n" ";" FILE_CONTENTS ${FILE_CONTENTS})
 
-    # Check all files for dependencies
-    foreach(FILE_TO_CHECK ${CURR_FILES_TO_CHECK})
-      # Get contents as a list
-      unset(FILE_PATH)
-      find_file(
-        FILE_PATH 
-        NAMES ${FILE_TO_CHECK}
-        PATHS ${VDEP_INCLUDE_DIRS}
-        NO_DEFAULT_PATH
-        NO_CACHE
+  # Find all `include lines, and recurse
+  foreach(FILE_LINE ${FILE_CONTENTS})
+    string(REGEX MATCHALL "^[^\\/]*`include[ \\t\\r\\n\\f]*(\"(.+)\"|'(.+)')[ \\t\\r\\n\\f]*$" INCL_MATCHES ${FILE_LINE})
+    if(NOT ${CMAKE_MATCH_2} IN_LIST VDEPENDENCIES)
+      # Check for memoization
+      get_property(MEMOIZED
+        DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        PROPERTY ${CMAKE_MATCH_2}_DEPS
+        SET
       )
-      if(${FILE_PATH} STREQUAL "FILE_PATH-NOTFOUND")
-        message(FATAL_ERROR "Couldn't find file '${FILE_TO_CHECK}' (searched ${VDEP_INCLUDE_DIRS})")
+      if(MEMOIZED)
+        get_property(MEMOIZED_DEPS
+          DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+          PROPERTY ${CMAKE_MATCH_2}_DEPS
+        )
+        set(VDEPENDENCIES ${VDEPENDENCIES} ${MEMOIZED_DEPS})
+      else()
+        # Not memoized - call recursively
+        vdeps(NEW_DEPS
+          SOURCE ${CMAKE_MATCH_2}
+          INCLUDE_DIRS ${VDEP_INCLUDE_DIRS}
+        )
+        set(VDEPENDENCIES ${VDEPENDENCIES} ${NEW_DEPS})
       endif()
-      file(READ ${FILE_PATH} FILE_CONTENTS)
-      string(REPLACE "\n" ";" FILE_CONTENTS ${FILE_CONTENTS})
+    endif()
+  endforeach(FILE_LINE)
 
-      # Find all `include lines
-      foreach(FILE_LINE ${FILE_CONTENTS})
-        string(REGEX MATCHALL "^[^\\/]*`include[ \\t\\r\\n\\f]*(\"(.+)\"|'(.+)')[ \\t\\r\\n\\f]*$" INCL_MATCHES ${FILE_LINE})
-        if(NOT ${CMAKE_MATCH_2} IN_LIST DEPENDENCIES)
-          set(FILES_TO_CHECK "${CMAKE_MATCH_2}" ${FILES_TO_CHECK})
-          set(VDEPENDENCIES "${CMAKE_MATCH_2}" ${VDEPENDENCIES})
-        endif()
-      endforeach(FILE_LINE)
-    endforeach(FILE_TO_CHECK)
-  endwhile()
-
+  # Memoize for later calls
+  set_property(
+    DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    PROPERTY ${VDEP_SOURCE}_DEPS ${VDEPENDENCIES}
+  )
   set(${DEPENDENCIES} ${VDEPENDENCIES} PARENT_SCOPE)
 endfunction()
