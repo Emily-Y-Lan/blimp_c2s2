@@ -60,6 +60,9 @@ function(vdeps DEPENDENCIES)
     endif()
   endforeach(FILE_LINE)
 
+  # We could remove duplicates, but just slows down configuration
+  # list(REMOVE_DUPLICATES VDEPENDENCIES)
+
   # Memoize for later calls
   set_property(
     DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
