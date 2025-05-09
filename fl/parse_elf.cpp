@@ -87,6 +87,13 @@ void parse_elf( std::string                               elf_path,
     throw std::invalid_argument( excp );
   }
 
+  // Verify that it's a 32-bit ELF file
+  if ( elf_header->e_ident[EI_CLASS] != ELFCLASS32 ) {
+    std::string excp = std::format(
+        "Error: ELF file isn't for 32b machines '{}'", elf_path );
+    throw std::invalid_argument( excp );
+  }
+
   // Verify that our entry point is as expected
   if ( elf_header->e_entry != 0x200 ) {
     std::string excp = "Error: Entry point isn't 0x200";
