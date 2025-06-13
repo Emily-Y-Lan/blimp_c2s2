@@ -9,21 +9,24 @@ Blimp Documentation
 This is the home for Blimp's documentation, including installation, the
 overall framework, and how users can use and/or modify implementations.
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Overview
+Documentation is currently under construction - come back soon!
 
-   overview/versions
+.. .. toctree::
+..    :maxdepth: 1
+..    :caption: Overview
+..    :hidden:
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Microarchitectural Units
+..    overview/versions
 
-   units/units
+.. .. toctree::
+..    :maxdepth: 2
+..    :caption: Microarchitectural Units
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Microarchitectural Details
+..    units/units
 
-   uarch/seq_nums.md
+.. .. toctree::
+..    :maxdepth: 1
+..    :caption: Microarchitectural Details
+
+..    uarch/seq_nums.md
 
